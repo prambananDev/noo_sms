@@ -1,0 +1,66 @@
+// views/dashboard/dashboard_approvalpp.dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:noo_sms/controllers/dashboard/dashboard_approvalpp_controller.dart'; // Ensure the import path is correct
+
+class DashboardApprovalPP extends StatefulWidget {
+  final int initialIndex;
+
+  const DashboardApprovalPP({Key? key, required this.initialIndex})
+      : super(key: key);
+
+  @override
+  State<DashboardApprovalPP> createState() => _DashboardApprovalPPState();
+}
+
+class _DashboardApprovalPPState extends State<DashboardApprovalPP>
+    with SingleTickerProviderStateMixin {
+  late DashboardApprovalPPTabController tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Properly initialize the controller with GetX
+    tabController = Get.put(
+        DashboardApprovalPPTabController(initialIndex: widget.initialIndex));
+    tabController.initController(this); // Pass `this` as the TickerProvider
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed
+    Get.delete<DashboardApprovalPPTabController>();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<DashboardApprovalPPTabController>(
+      builder: (_) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TabBar(
+              unselectedLabelColor: Colors.black,
+              labelColor: Colors.green,
+              controller: tabController.controller,
+              tabs: const [
+                Tab(text: "Pending PP"),
+                Tab(text: "Approved PP"),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: tabController.controller,
+                children: const [
+                  Center(child: Text("Pending PP Content")),
+                  Center(child: Text("Approved PP Content")),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
