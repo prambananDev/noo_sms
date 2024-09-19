@@ -1,6 +1,6 @@
 // views/main_dashboard.dart
 import 'package:flutter/material.dart';
-import 'package:noo_sms/controllers/dashboard/dashboard_controller.dart';
+import 'package:noo_sms/controllers/dashboard/dashboard_sms_controller.dart';
 import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
 import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
@@ -39,7 +39,12 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: const Text('Main Dashboard'),
+        title: const Text(
+          'Main Dashboard',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -61,7 +66,7 @@ class _DashboardPageState extends State<DashboardPage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.discount_outlined),
-            label: 'Program Promotion',
+            label: 'Program Promotioon',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.approval_outlined),

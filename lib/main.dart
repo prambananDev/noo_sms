@@ -2,9 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/dashboard/dashboard_view.dart';
+import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:noo_sms/view/login/login_view.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -109,6 +110,16 @@ class _MainAppState extends State<MainApp> {
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
+        theme: ThemeData(
+          fontFamily: GoogleFonts.poppins().fontFamily,
+          dialogTheme: DialogTheme(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: const BorderSide(
+                    color: Color.fromRGBO(215, 250, 255, 1),
+                  ))),
+        ),
         home:
             const LoginView(), // LoginView will now have access to LoginProvider
         builder: (context, widget) {

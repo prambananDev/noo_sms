@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/dashboard/dashboard_view.dart';
+import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginProvider with ChangeNotifier {

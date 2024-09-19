@@ -39,7 +39,9 @@ class _MainDashboardState extends State<MainDashboard> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: const Text('Main Dashboard'),
+        title: const Text(
+          'Main Dashboarsd',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),

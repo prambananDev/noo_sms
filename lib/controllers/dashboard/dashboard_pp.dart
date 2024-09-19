@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 class DashboardPPTabController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final int initialIndex;
+  int initialIndex;
   late TabController controller;
 
   DashboardPPTabController({this.initialIndex = 0});

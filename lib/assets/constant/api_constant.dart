@@ -14,4 +14,5 @@ class ApiConstant {
   }
 }
 
+var apiCons = "http://119.18.157.236:8869/";
 var baseURLDevelopment = "http://noo.prb.co.id:8893/api/";
