@@ -59,174 +59,135 @@ class _InputPageNewState extends State<InputPagePP> {
               const SizedBox(
                 height: 20,
               ),
-              // DropdownButtonFormField<String>(
-              //   isExpanded: true,
-              //   isDense: true,
-              //   value: promotionProgramInputState.customerGroupInputPageDropdownState.selectedChoice,
-              //   hint: Text(
-              //     "Customer/Cust Group",
-              //     style: TextStyle(fontSize: 12),
-              //   ),
-              //   items: promotionProgramInputState.customerGroupInputPageDropdownState.choiceList.map((item) {
-              //     return DropdownMenuItem(
-              //       child: Text(
-              //         item,
-              //         style: TextStyle(fontSize: 12),
-              //         overflow: TextOverflow.fade,
-              //       ),
-              //       value: item,
-              //     );
-              //   }).toList(),
-              //   onChanged: (value) => inputPagePresenter.changeCustomerGroup(index, value)
-              // ),
-              // SizedBox(
-              //   height: 20,
-              // ),
-              // SearchChoices.single(
-              //   items: promotionProgramInputState.customerNameOrDiscountGroupInputPageDropdownState.choiceList.map((item) {
-              //     return DropdownMenuItem(
-              //       child: Text(
-              //         item.value,
-              //         style: TextStyle(fontSize: 12),
-              //         overflow: TextOverflow.fade,
-              //       ),
-              //       value: item,
-              //     );
-              //   }).toList(),
-              //   value: promotionProgramInputState.customerNameOrDiscountGroupInputPageDropdownState.selectedChoice,
-              //   hint: Builder(
-              //     builder: (context) {
-              //       String text = (promotionProgramInputState.customerGroupInputPageDropdownState.selectedChoice ?? "").toLowerCase() == "Customer"
-              //           ? "Customer Name" : "Discount Group Name";
-              //       return Text(
-              //         promotionProgramInputState.customerGroupInputPageDropdownState.selectedChoice=="Customer"?"Select Customer": "Select Discount Group",
-              //         style: TextStyle(fontSize: 12),
-              //       );
-              //     }
-              //   ),
-              //   onChanged: (value) => inputPagePresenter.changeCustomerNameOrDiscountGroup(index, value),
-              //   isExpanded: true,
-              // ),
-              // SizedBox(height: 10,),
-              //ite, group
-              Stack(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text("Item/Item Group",
-                        style: TextStyle(fontSize: 10, color: Colors.black54)),
+              DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  isDense: true,
+                  value: promotionProgramInputState
+                      .customerGroupInputPageDropdownState!.selectedChoice,
+                  hint: const Text(
+                    "Customer/Cust Group",
+                    style: TextStyle(fontSize: 12),
                   ),
-                  SearchChoices.single(
-                    isExpanded: true,
-                    value: promotionProgramInputState
-                        .itemGroupInputPageDropdownState?.selectedChoice,
-                    hint: const Text(
-                      "Item/Item Group",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    items: promotionProgramInputState
-                        .itemGroupInputPageDropdownState?.choiceList
-                        ?.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: Text(
-                          item,
-                          style: const TextStyle(fontSize: 12),
-                          overflow: TextOverflow.fade,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) =>
-                        inputPagePresenter.changeItemGroup(index, value),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              Stack(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text("Item Product",
-                        style: TextStyle(fontSize: 10, color: Colors.black54)),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                      top: promotionProgramInputState
-                                  .selectProductPageDropdownState
-                                  ?.selectedChoice !=
-                              null
-                          ? 10
-                          : 0,
-                    ),
-                    child: SearchChoices.single(
-                        isExpanded: true,
-                        value: promotionProgramInputState
-                            .selectProductPageDropdownState?.selectedChoice,
-                        items: promotionProgramInputState
-                            .selectProductPageDropdownState?.choiceList
-                            ?.map((item) {
-                          return DropdownMenuItem(
-                              value: item, child: Text(item.value));
-                        }).toList(),
-                        hint: Text(
-                          promotionProgramInputState
-                                      .itemGroupInputPageDropdownState
-                                      ?.selectedChoice ==
-                                  "Item"
-                              ? "Select Product"
-                              : "Select Product",
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        onChanged: (value) =>
-                            inputPagePresenter.changeProduct(index, value)
-                        // isExpanded: true,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              //warehouse qyt
-              Stack(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text("Warehouse",
-                        style: TextStyle(fontSize: 10, color: Colors.black54)),
-                  ),
-                  Container(
-                    child: SearchChoices.single(
-                      isExpanded: true,
-                      value: promotionProgramInputState
-                              .wareHousePageDropdownState
-                              ?.selectedChoiceWrapper
-                              ?.value ??
-                          "WHS - Tunas - Buffer",
-                      hint: const Text(
-                        "WHS - Tunas - Buffer",
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
+                  items: promotionProgramInputState
+                      .customerGroupInputPageDropdownState!.choiceList!
+                      .map((item) {
+                    return DropdownMenuItem(
+                      value: item,
+                      child: Text(
+                        item,
+                        style: const TextStyle(fontSize: 12),
+                        overflow: TextOverflow.fade,
                       ),
-                      items: promotionProgramInputState
-                          .wareHousePageDropdownState?.choiceListWrapper?.value
-                          ?.map((item) {
-                        return DropdownMenuItem(
-                          value: item,
-                          child: Text(
-                            item.value,
-                            style: const TextStyle(fontSize: 12),
-                            overflow: TextOverflow.fade,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) =>
-                          inputPagePresenter.changeWarehouse(index, value),
-                    ),
+                    );
+                  }).toList(),
+                  onChanged: (value) =>
+                      inputPagePresenter.changeCustomerGroup(index, value)),
+              const SizedBox(
+                height: 20,
+              ),
+              Obx(
+                () => SearchChoices.single(
+                  isExpanded: true,
+                  padding: const EdgeInsets.only(top: 8),
+                  value: inputPagePresenter
+                      .custNameHeaderValueDropdownStateRx.value.selectedChoice,
+                  items: inputPagePresenter
+                      .custNameHeaderValueDropdownStateRx.value.choiceList
+                      ?.map((item) {
+                    return DropdownMenuItem(
+                      value: item,
+                      child: Text(item.value,
+                          style: const TextStyle(fontSize: 12)),
+                    );
+                  }).toList(),
+                  hint: const Text(
+                    "Select Customer",
+                    style: TextStyle(fontSize: 12),
                   ),
-                ],
+                  onChanged: (value) {
+                    setState(() {
+                      inputPagePresenter
+                          .changeCustomerNameOrDiscountGroupHeader(value);
+                    });
+                  },
+                ),
+              ),
+
+              //ite, group
+              DropdownButton<String>(
+                hint: const Text(
+                  "Select Item Group",
+                  style: TextStyle(fontSize: 12),
+                ),
+                isExpanded: true,
+                value: promotionProgramInputState
+                    .itemGroupInputPageDropdownState?.selectedChoice,
+                items: promotionProgramInputState
+                    .itemGroupInputPageDropdownState!.choiceList!
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    inputPagePresenter.changeItemGroup(index, newValue!);
+                  });
+                },
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              const Text("Item Product",
+                  style: TextStyle(fontSize: 10, color: Colors.black54)),
+              SearchChoices.single(
+                  isExpanded: true,
+                  value: promotionProgramInputState
+                      .selectProductPageDropdownState?.selectedChoice,
+                  items: promotionProgramInputState
+                      .selectProductPageDropdownState?.choiceList
+                      ?.map((item) {
+                    return DropdownMenuItem(
+                        value: item, child: Text(item.value));
+                  }).toList(),
+                  hint: const Text(
+                    "Select Product",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  onChanged: (value) =>
+                      inputPagePresenter.changeProduct(index, value)
+                  // isExpanded: true,
+                  ),
+
+              //warehouse qyt
+              const Text("Warehouse",
+                  style: TextStyle(fontSize: 10, color: Colors.black54)),
+              Container(
+                child: SearchChoices.single(
+                  isExpanded: true,
+                  value: promotionProgramInputState.wareHousePageDropdownState
+                          ?.selectedChoiceWrapper?.value ??
+                      "WHS - Tunas - Buffer",
+                  hint: const Text(
+                    "WHS - Tunas - Buffer",
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                  items: promotionProgramInputState
+                      .wareHousePageDropdownState?.choiceListWrapper?.value
+                      ?.map((item) {
+                    return DropdownMenuItem(
+                      value: item,
+                      child: Text(
+                        item.value,
+                        style: const TextStyle(fontSize: 12),
+                        overflow: TextOverflow.fade,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) =>
+                      inputPagePresenter.changeWarehouse(index, value),
+                ),
               ),
 
               //unit multiply
@@ -1030,94 +991,79 @@ class _InputPageNewState extends State<InputPagePP> {
                                   });
                                 }),
                           )),
-                      SizedBox(
-                        width: Get.width,
-                        child: Obx(
-                          () => SearchChoices.single(
-                            items: inputPagePresenter
-                                .custNameHeaderValueDropdownStateRx
-                                .value
-                                .choiceList
-                                ?.map((item) {
-                              return DropdownMenuItem(
-                                value: item,
-                                child: Text(item.value,
-                                    style: const TextStyle(fontSize: 12)),
-                              );
-                            }).toList(),
-                            value: inputPagePresenter
-                                .custNameHeaderValueDropdownStateRx
-                                .value
-                                .selectedChoice,
-                            hint: Text(
-                              inputPagePresenter
-                                          .customerGroupInputPageDropdownState
-                                          .value
-                                          .selectedChoice ==
-                                      "Customer"
-                                  ? "Select Customer"
-                                  : "Select Customer",
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                inputPagePresenter
-                                    .changeCustomerNameOrDiscountGroupHeader(
-                                        value);
-                              });
-                            },
-                            isExpanded: true,
+                      // Obx(
+                      //   () => SearchChoices.single(
+                      //     isExpanded: true,
+                      //     padding: const EdgeInsets.only(top: 8),
+                      //     value: inputPagePresenter
+                      //         .custNameHeaderValueDropdownStateRx
+                      //         .value
+                      //         .selectedChoice,
+                      //     items: inputPagePresenter
+                      //         .custNameHeaderValueDropdownStateRx
+                      //         .value
+                      //         .choiceList
+                      //         ?.map((item) {
+                      //       return DropdownMenuItem(
+                      //         value: item,
+                      //         child: Text(item.value,
+                      //             style: const TextStyle(fontSize: 12)),
+                      //       );
+                      //     }).toList(),
+                      //     hint: const Text(
+                      //       "Select Customer",
+                      //       style: TextStyle(fontSize: 12),
+                      //     ),
+                      //     onChanged: (value) {
+                      //       setState(() {
+                      //         inputPagePresenter
+                      //             .changeCustomerNameOrDiscountGroupHeader(
+                      //                 value);
+                      //       });
+                      //     },
+                      //   ),
+                      // ),
+                      Obx(
+                        () => SearchChoices.single(
+                          clearSearchIcon: const Icon(Icons.clear_all),
+                          padding: const EdgeInsets.only(top: 8),
+                          isExpanded: true,
+                          value: inputPagePresenter
+                                  .selectedDataPrincipal.isNotEmpty
+                              ? inputPagePresenter.listDataPrincipal[
+                                  inputPagePresenter.selectedDataPrincipal[0]]
+                              : null,
+                          hint: const Text(
+                            "Select Principal",
+                            style: TextStyle(fontSize: 12),
                           ),
+                          items:
+                              inputPagePresenter.listDataPrincipal.map((item) {
+                            return DropdownMenuItem<String>(
+                              value: item.toString(),
+                              child: Text(item.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (String? value) {
+                            // onChanged should expect a nullable String
+                            if (value != null) {
+                              print("value: $value");
+                              final index = inputPagePresenter.listDataPrincipal
+                                  .indexOf(value);
+                              inputPagePresenter.selectedDataPrincipal.clear();
+                              if (index >= 0) {
+                                inputPagePresenter.selectedDataPrincipal
+                                    .add(index);
+                              }
+                              final selectedItems = inputPagePresenter
+                                  .selectedDataPrincipal
+                                  .map((index) => inputPagePresenter
+                                      .listDataPrincipal[index])
+                                  .toList();
+                              print("Selected Principal: $selectedItems");
+                            }
+                          },
                         ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Obx(
-                              () => SearchChoices.single(
-                                // Assuming listDataPrincipal is a List of non-null items
-                                value: inputPagePresenter
-                                        .selectedDataPrincipal.isNotEmpty
-                                    ? inputPagePresenter.listDataPrincipal[
-                                        inputPagePresenter
-                                            .selectedDataPrincipal[0]]
-                                    : null,
-                                hint: const Text(
-                                  "Select Principal",
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                items: inputPagePresenter.listDataPrincipal
-                                    .map((item) {
-                                  return DropdownMenuItem<String>(
-                                    value: item.toString(),
-                                    child: Text(item.toString()),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  // onChanged should expect a nullable String
-                                  if (value != null) {
-                                    print("value: $value");
-                                    final index = inputPagePresenter
-                                        .listDataPrincipal
-                                        .indexOf(value);
-                                    inputPagePresenter.selectedDataPrincipal
-                                        .clear();
-                                    if (index >= 0) {
-                                      inputPagePresenter.selectedDataPrincipal
-                                          .add(index);
-                                    }
-                                    final selectedItems = inputPagePresenter
-                                        .selectedDataPrincipal
-                                        .map((index) => inputPagePresenter
-                                            .listDataPrincipal[index])
-                                        .toList();
-                                    print("Selected Principal: $selectedItems");
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                       Row(
                         children: [
@@ -1154,9 +1100,9 @@ class _InputPageNewState extends State<InputPagePP> {
                                 children: [
                                   CustomDatePickerField(
                                     controller: inputPagePresenter
-                                        .programFromDateTextEditingControllerRx
+                                        .programToDateTextEditingControllerRx
                                         .value,
-                                    labelText: 'From Date',
+                                    labelText: 'To Date',
                                     initialValue: DateTime.now(),
                                     firstDate: DateTime.now()
                                         .subtract(const Duration(days: 365)),

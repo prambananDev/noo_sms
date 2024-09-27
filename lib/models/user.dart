@@ -50,10 +50,13 @@ class User {
   String? name;
   @HiveField(17)
   String? role;
+  @HiveField(18)
+  String Username;
 
   User({
     this.id = 0,
     this.username = '',
+    this.Username = '',
     this.password,
     this.fullname = '',
     this.level = '',
@@ -75,8 +78,8 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,
-      username: json['Username'] ??
-          '', // Ensure correct field name as per API response
+      username: json['username'] ?? '',
+      Username: json['Username'] ?? '',
       password: json['password'],
       fullname: json['fullname'] ?? '',
       level: json['level'] ?? '',
@@ -89,11 +92,10 @@ class User {
       message: json['message'],
       code: json['code'],
       user: json['user'] != null ? User.fromJson(json['user']) : null,
-      so: json['SO'], // Ensure field names match the JSON structure
+      so: json['SO'],
       bu: json['BU'],
       name: json['Name'],
-      role: json[
-          'Role'], // Ensure this correctly captures the role field as a string
+      role: json['Role'],
     );
   }
 
@@ -102,43 +104,32 @@ class User {
     String username,
     String password,
   ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? idDevice = prefs.getString("idDevice") ?? await getDeviceId();
     final url =
-        "${baseURLDevelopment}Login?username=$username&password=${password.replaceAll("#", "%23")}&playerId=";
+        "${baseURLDevelopment}Login?username=$username&password=${password.replaceAll("#", "%23")}&playerId=$idDevice";
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
     );
-    debugPrint("API Login URL: $url");
-    debugPrint("API Responses: ${response.statusCode}\n${response.body}");
     if (response.body.isEmpty) {
-      debugPrint("kosong");
       return null;
     }
     return User.fromJson(jsonDecode(response.body));
   }
 
-  // Saves user data to shared preferences
   Future<void> saveUserToPrefs(
       User user, String username, String password, bool rememberMe) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt("iduser", user.id);
-    prefs.setString("username", username);
-    prefs.setString("password", password);
-    prefs.setString("name", user.name ?? '');
-    prefs.setString("so", user.so?.toString() ?? '');
-    prefs.setString("bu", user.bu ?? '');
-    prefs.setString("role", user.role ?? '');
-
-    if (rememberMe) {
-      prefs.setString("savedUsername", username);
-      prefs.setString("savedPassword", password);
-    } else {
-      prefs.remove("savedUsername");
-      prefs.remove("savedPassword");
-    }
+    await prefs.setString("username", user.Username);
+    await prefs.setString("username", user.username);
+    await prefs.setInt("iduser", user.id);
+    await prefs.setString("name", user.name ?? '');
+    await prefs.setString("so", user.so?.toString() ?? '');
+    await prefs.setString("bu", user.bu ?? '');
+    await prefs.setString("role", user.role ?? '');
   }
 
-  // Retrieves the Player ID from Shared Preferences or OneSignal
   static Future<String?> getDeviceId() async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -154,12 +145,10 @@ class User {
         throw Exception("Failed to retrieve Device ID from OneSignal");
       }
     } catch (error) {
-      debugPrint("Error getting Device ID: $error");
       return null;
     }
   }
 
-  // Fetches user data from the API
   Future<User> getUsers(String username, String password, int code) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -170,8 +159,7 @@ class User {
         throw Exception("Device ID not found. Ensure it is stored properly.");
       }
 
-      String url = "${ApiConstant(code).urlApi}api/LoginSMS?playerId=$idDevice";
-      debugPrint("API Login URL: $url");
+      String url = "$apiCons/api/LoginSMS?playerId=$idDevice";
       dynamic dataLogin = {"username": username, "password": password};
 
       final response = await http.post(
@@ -182,7 +170,6 @@ class User {
         body: jsonEncode(dataLogin),
       );
 
-      debugPrint("API Response: ${response.statusCode}\n${response.body}");
       // login(username, password, idDevice);
       if (response.statusCode == 200) {
         return _handleSuccessfulLogin(response, prefs);
@@ -190,30 +177,18 @@ class User {
         throw Exception('Failed to login: ${response.statusCode}');
       }
     } catch (error) {
-      debugPrint("Error during login: $error");
       throw Exception("Failed to login: $error");
     }
   }
 
-  // Handles successful login response and saves data
   static User _handleSuccessfulLogin(
       http.Response response, SharedPreferences prefs) {
     dynamic jsonObject = json.decode(response.body);
     User user = User.fromJson(jsonObject);
-
     prefs.setString("username", user.username);
     prefs.setString("token", user.token ?? '');
     prefs.setInt("userid", user.id);
     prefs.setString("so", user.so.toString());
-
-    debugPrint("Login successful for user: ${user.username}");
     return user;
-  }
-
-  // Retrieves the current play store version from the API
-  Future<Map<String, dynamic>> getPlayStoreVersion() async {
-    var response =
-        await http.get(Uri.parse("${baseURLDevelopment}PlaystoreVersions"));
-    return jsonDecode(response.body)[0];
   }
 }

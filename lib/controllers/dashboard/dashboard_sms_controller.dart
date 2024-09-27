@@ -27,38 +27,21 @@ class DashboardController {
       "naviGateTo": const DashboardOrderTaking(initialIndex: 0),
     },
   ];
+  Future<bool> logout() async {
+    var dir = await getApplicationDocumentsDirectory();
+    Hive.init(dir.path);
+    Box userBox = await Hive.openBox('user');
 
-  Future<void> logOut() async {
+    await userBox.clear();
+    await userBox.deleteFromDisk();
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
 
-    // Check if "Remember Me" is enabled
-    bool rememberMe = prefs.getBool('rememberMe') ?? false;
-    debugPrint("rem$rememberMe");
-
-    String? savedUsername = prefs.getString('savedUsername');
-    debugPrint("rem$savedUsername");
-    String? savedPassword = prefs.getString('savedPassword');
-    debugPrint("rem$savedPassword");
-
-    // Clear all preferences
-
-    // If "Remember Me" was enabled, re-save the credentials
-    if (rememberMe) {
-      await prefs.setBool('rememberMe', true);
-      if (savedUsername != null && savedPassword != null) {
-        await prefs.setString('savedUsername', savedUsername);
-        await prefs.setString('savedPassword', savedPassword);
-      }
-    }
-
-    // Navigate back to the login screen
     Get.offAll(const LoginView());
-  }
 
-  // void onBackPress() { d51e7b74-eebc-48e9-8af6-a2d1cbd58e33
-  //   deleteBoxUser();
-  //   Get.offAll(() => const LoginView()); // Navigate back to the login screen
-  // }
+    return Future.value(false);
+  }
 
   Future<void> deleteBoxUser() async {
     var dir = await getApplicationDocumentsDirectory();

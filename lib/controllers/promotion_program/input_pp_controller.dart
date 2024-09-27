@@ -52,9 +52,15 @@ class InputPageController extends GetxController {
     "Customer",
   ], loadingState: 2)
           .obs;
+
   Rx<InputPageDropdownState<IdAndValue<String>>>
       custNameHeaderValueDropdownStateRx =
       InputPageDropdownState<IdAndValue<String>>().obs;
+
+  Rx<InputPageDropdownState<IdAndValue<String>>>
+      customerNameInputPageDropdownStateRx =
+      InputPageDropdownState<IdAndValue<String>>().obs;
+
   final InputPageDropdownState<String> _itemGroupInputPageDropdownState =
       InputPageDropdownState<String>(
           choiceList: <String>["Item", "Disc Group"], loadingState: 0);
@@ -120,6 +126,7 @@ class InputPageController extends GetxController {
     _loadVendor();
     _loadWarehouse();
     _loadPrincipal();
+    _loadCustomerOrGroupHeader();
   }
 
   void _loadLocation() async {
@@ -190,9 +197,10 @@ class InputPageController extends GetxController {
     InputPageDropdownState<String>? unitPageDropdownState =
         promotionProgramInputState.unitPageDropdownState;
     unitPageDropdownState?.loadingState = 1;
+    debugPrint("datt ${selectProductPageDropdownState!.selectedChoice!.id}");
     _updateState();
     var urlGetUnit =
-        "$apiCons/api/Unit?item=${selectProductPageDropdownState?.selectedChoice?.id}";
+        "$apiCons2/api/Unit?item=${selectProductPageDropdownState.selectedChoice?.id}";
     final response = await get(Uri.parse(urlGetUnit));
     var listData = jsonDecode(response.body);
     unitPageDropdownState?.loadingState = 2;
@@ -207,77 +215,94 @@ class InputPageController extends GetxController {
   }
 
   void _loadProduct(int index) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? username = preferences.getString("username");
+
     PromotionProgramInputState? promotionProgramInputState =
         promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    InputPageDropdownState<IdAndValue<String>>?
-        customerNameOrDiscountGroupInputPageDropdownState =
-        promotionProgramInputState
-            .customerNameOrDiscountGroupInputPageDropdownState;
+
     InputPageDropdownState<String>? itemGroupInputPageDropdownState =
         promotionProgramInputState.itemGroupInputPageDropdownState;
+
     InputPageDropdownState<IdAndValue<String>>? selectProductPageDropdownState =
         promotionProgramInputState.selectProductPageDropdownState;
-    String? selectedChoice = itemGroupInputPageDropdownState?.selectedChoice;
-    final selectedItems =
-        selectedDataPrincipal.map((index) => listDataPrincipal[index]).toList();
 
-    String selectedItemsJson =
-        jsonEncode(selectedItems); // Convert selectedItems to a JSON string
+    String? selectedChoice = itemGroupInputPageDropdownState?.selectedChoice;
+
+    if (selectedChoice == null ||
+        itemGroupInputPageDropdownState?.choiceList == null) {
+      return;
+    }
 
     if (selectedChoice == itemGroupInputPageDropdownState!.choiceList?[0]) {
       var urlGetProduct =
-          "http://api-scs.prb.co.id/api/AllProduct?ID=rp004&idSales=Sample";
-      final response = await post(Uri.parse(urlGetProduct),
+          "http://api-scs.prb.co.id/api/AllProduct?ID=$username&idSales=Sample";
+
+      try {
+        final response = await get(
+          Uri.parse(urlGetProduct),
           headers: {
             'Content-Type': 'application/json',
           },
-          body: selectedItemsJson);
-      var listData = jsonDecode(response.body);
-      selectProductPageDropdownState?.loadingState = 2;
-      selectProductPageDropdownState?.choiceList = listData
-          .map<IdAndValue<String>>((element) => IdAndValue<String>(
-              id: element["itemId"].toString(), value: element["itemName"]))
-          .toList();
-      _updateState();
+        );
+
+        if (response.statusCode == 200) {
+          var listData = jsonDecode(response.body);
+
+          selectProductPageDropdownState?.loadingState = 2;
+          selectProductPageDropdownState?.choiceList = listData
+              .map<IdAndValue<String>>((element) => IdAndValue<String>(
+                  id: element["itemId"].toString(), value: element["itemName"]))
+              .toList();
+          _updateState();
+        } else {
+          debugPrint(
+              "Failed to load product data, status code: ${response.statusCode}");
+        }
+      } catch (e) {}
     } else if (selectedChoice ==
         itemGroupInputPageDropdownState.choiceList?[1]) {
       var urlGetDiscGroup = "$apiCons/api/ItemGroup";
-      final response = await get(Uri.parse(urlGetDiscGroup));
-      var listData = jsonDecode(response.body);
-      selectProductPageDropdownState?.loadingState = 2;
-      selectProductPageDropdownState?.choiceList = listData
-          .map<IdAndValue<String>>((element) => IdAndValue<String>(
-              id: element["GROUPID"].toString(), value: element["NAME"]))
-          .toList();
-      _updateState();
+
+      try {
+        final response = await get(Uri.parse(urlGetDiscGroup));
+
+        if (response.statusCode == 200) {
+          var listData = jsonDecode(response.body);
+
+          selectProductPageDropdownState?.loadingState = 2;
+          selectProductPageDropdownState?.choiceList = listData
+              .map<IdAndValue<String>>((element) => IdAndValue<String>(
+                  id: element["GROUPID"].toString(), value: element["NAME"]))
+              .toList();
+          _updateState();
+        } else {
+          debugPrint(
+              "Failed to load discount group data, status code: ${response.statusCode}");
+        }
+      } catch (e) {}
     }
   }
 
   void _loadSupplyItem(int index) async {
-    // xx
-    final selectedItems =
-        selectedDataPrincipal.map((index) => listDataPrincipal[index]).toList();
-
-    String selectedItemsJson = jsonEncode(selectedItems);
     PromotionProgramInputState? promotionProgramInputState =
         promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    InputPageDropdownState<IdAndValue<String>>?
-        customerNameOrDiscountGroupInputPageDropdownState =
-        promotionProgramInputState
-            .customerNameOrDiscountGroupInputPageDropdownState;
+    // InputPageDropdownState<IdAndValue<String>>?
+    //     customerNameOrDiscountGroupInputPageDropdownState =
+    //     promotionProgramInputState
+    //         .customerNameOrDiscountGroupInputPageDropdownState;
     InputPageDropdownState<IdAndValue<String>>? supplyItemPageDropdownState =
         promotionProgramInputState.supplyItem;
     var urlGetSupplyItem = "$apiCons/api/PrbItemTables";
 
-    final response = await post(Uri.parse(urlGetSupplyItem),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: selectedItemsJson);
+    final response = await get(
+      Uri.parse(urlGetSupplyItem),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
     var listData = jsonDecode(response.body);
-
     supplyItemPageDropdownState?.loadingState = 2;
-    // selectProductPageDropdownState.choiceList = listData.map<IdAndValue<String>>((element) => IdAndValue<String>(id: element["ITEMID"], value: "${element["ITEMID"]}-${element["PK_BRAND"]}-${element["ITEMNAME"]}-${element["PK_PACKING"]}")).toList();
     supplyItemPageDropdownState?.choiceList = listData
         .map<IdAndValue<String>>((element) => IdAndValue<String>(
             id: element["ITEMID"],
@@ -298,10 +323,9 @@ class InputPageController extends GetxController {
     unitSupplyItemInputPageDropdownState?.loadingState = 1;
     _updateState();
     var urlGetUnit =
-        "$apiCons/api/Unit?item=${supplyItemInputPageDropdownState?.selectedChoice?.id}";
+        "$apiCons2/api/Unit?item=${supplyItemInputPageDropdownState?.selectedChoice?.id}";
     final response = await get(Uri.parse(urlGetUnit));
     var listData = jsonDecode(response.body);
-
     unitSupplyItemInputPageDropdownState?.loadingState = 2;
     unitSupplyItemInputPageDropdownState?.choiceList =
         listData.map<String>((element) {
@@ -376,7 +400,7 @@ class InputPageController extends GetxController {
     _updateState();
   }
 
-  void changeCustomerGroup(int index, String selectedChoice) {
+  void changeCustomerGroup(int index, String? selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
         .customerGroupInputPageDropdownState?.selectedChoice = selectedChoice;
     _updateState();
@@ -385,28 +409,34 @@ class InputPageController extends GetxController {
 
   void changeCustomerGroupHeader(String selectedChoice) {
     customerGroupInputPageDropdownState.value.selectedChoice = selectedChoice;
-    _loadCustomerOrGroupHeader();
+
     _updateState();
   }
 
   void _loadCustomerOrGroupHeader() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? username = prefs.getString("username");
-    var urlGetCustomerChoice =
-        "http://api-scs.prb.co.id/api/AllCustomer?username=$username&sample=false";
-    final response = await get(Uri.parse(urlGetCustomerChoice));
-    var listData = jsonDecode(response.body);
-    debugPrint("customer ${response.body}");
-    custNameHeaderValueDropdownStateRx.value.loadingState = 2;
-    custNameHeaderValueDropdownStateRx.value.choiceList = listData
-        .map<IdAndValue<String>>((element) => IdAndValue<String>(
-            id: element["codeCust"], value: "${element["nameCust"]}"))
-        .toList();
-    List<IdAndValue<String>> customers = listData
-        .map<IdAndValue<String>>((element) => IdAndValue<String>(
-            id: element["codeCust"], value: element["nameCust"]))
-        .toList();
+    custNameHeaderValueDropdownStateRx.value.loadingState = 1;
     _updateState();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+    try {
+      var urlGetCustomer =
+          "http://api-scs.prb.co.id/api/AllCustomer?username=$username";
+      print("url get customer :$urlGetCustomer ");
+
+      final response = await get(Uri.parse(urlGetCustomer));
+      var listData = jsonDecode(response.body);
+
+      print("status getCustomer : ${response.statusCode}");
+      custNameHeaderValueDropdownStateRx.value.loadingState = 2;
+      custNameHeaderValueDropdownStateRx.value.choiceList = listData
+          .map<IdAndValue<String>>((element) => IdAndValue<String>(
+              id: element["codeCust"], value: element["nameCust"]))
+          .toList();
+      _updateState();
+    } catch (e) {
+      custNameHeaderValueDropdownStateRx.value.loadingState = -1;
+      _updateState();
+    }
   }
 
   void changeCustomerNameOrDiscountGroup(
@@ -420,13 +450,11 @@ class InputPageController extends GetxController {
     customerNameOrDiscountGroupInputPageDropdownState?.selectedChoice =
         selectedChoice;
     _updateState();
-    _loadSupplyItem(index);
+    // _loadSupplyItem(index);
   }
 
   void changeCustomerNameOrDiscountGroupHeader(
       IdAndValue<String> selectedChoice) {
-    // PromotionProgramInputState promotionProgramInputState = promotionProgramInputStateRx.value.promotionProgramInputState[index];
-
     custNameHeaderValueDropdownStateRx.value.selectedChoice = selectedChoice;
     _updateState();
   }
@@ -434,6 +462,7 @@ class InputPageController extends GetxController {
   void changeItemGroup(int index, String selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
         .itemGroupInputPageDropdownState?.selectedChoice = selectedChoice;
+
     _updateState();
     _loadProduct(index);
     // _loadProductByOrderSample(index);
@@ -442,8 +471,6 @@ class InputPageController extends GetxController {
   void changeProduct(int index, IdAndValue<String> selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
         .selectProductPageDropdownState?.selectedChoice = selectedChoice;
-    promotionProgramInputStateRx
-        .value.promotionProgramInputState[index].qtyFrom?.text = "1";
     _loadUnit(index);
     _loadSupplyItem(index);
     _updateState();
@@ -707,19 +734,19 @@ class InputPageController extends GetxController {
 
     final tabController = Get.put(DashboardPPTabController());
     Future.delayed(const Duration(seconds: 2), () {
-      if (response.statusCode == 201) {
-        Future.delayed(const Duration(seconds: 2), () {
-          tabController.initialIndex = 1;
-          onTap.value = true;
-          Get.offAll(
-            const DashboardPage(),
-          );
-          Get.to(const DashboardPP(
-            initialIndex: 1,
-          ));
-          update();
-          // Get.offAll(HistoryNomorPP());
-        });
+      if (response.statusCode == 200) {
+        // Future.delayed(const Duration(seconds: 2), () {
+        //   tabController.initialIndex = 1;
+        //   onTap.value = true;
+        //   Get.offAll(
+        //     const DashboardPage(),
+        //   );
+        //   Get.to(const DashboardPP(
+        //     initialIndex: 1,
+        //   ));
+        //   update();
+        //   // Get.offAll(HistoryNomorPP());
+        // });
         Get.dialog(
             const SimpleDialog(
               title: Text("Success"),

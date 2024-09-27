@@ -7,3 +7,4 @@ Color colorError = Colors.redAccent[400]!;
 Color colorWarning = Colors.yellow[300]!;
 Color colorBlack = Colors.black;
 Color colorNetral = Colors.white;
+Color colorGray = const Color.fromRGBO(170, 170, 170, 0.7);

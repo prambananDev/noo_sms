@@ -1,5 +1,6 @@
 // views/main_dashboard.dart
 import 'package:flutter/material.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_sms_controller.dart';
 import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
@@ -39,17 +40,19 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: const Text(
+        title: Text(
           'Main Dashboard',
           style: TextStyle(
             fontWeight: FontWeight.w800,
+            color: colorNetral,
           ),
         ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () {
-              _controller.logOut();
+              _controller.logout();
             },
           ),
         ],

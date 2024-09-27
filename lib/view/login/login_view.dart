@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:noo_sms/controllers/login/login_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,31 +20,12 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    _loadSavedCredentials();
+    _controller.loadRememberMeStatus();
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  Future<void> _loadSavedCredentials() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool rememberMeValue = prefs.getBool('rememberMe') ?? false;
-
-    if (rememberMeValue) {
-      String? savedUsername = prefs.getString('savedUsername');
-      String? savedPassword = prefs.getString('savedPassword');
-
-      if (savedUsername != null) {
-        _controller.usernameController.text = savedUsername;
-      }
-
-      if (savedPassword != null) {
-        _controller.passwordController.text = savedPassword;
-      }
-      _controller.rememberMe.value = true;
-    }
   }
 
   void _fieldFocusChange(
@@ -195,14 +177,16 @@ class _LoginViewState extends State<LoginView> {
                         onPressed: () {
                           if (_controller.formKey.currentState!.validate()) {
                             if (_controller.rememberMe.value) {
-                              _controller.saveCredentials(
+                              _controller.saveRememberMe(
+                                _controller.rememberMe.value,
                                 _controller.usernameController.text,
                                 _controller.passwordController.text,
                               );
                             } else {
-                              _controller.clearCredentials();
+                              _controller.clearRememberMe();
                             }
                             _controller.login(
+                                _controller.rememberMe.value,
                                 _controller.usernameController.text,
                                 _controller.passwordController.text,
                                 context);
