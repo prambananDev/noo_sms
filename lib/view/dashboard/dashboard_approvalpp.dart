@@ -1,7 +1,9 @@
 // views/dashboard/dashboard_approvalpp.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:noo_sms/controllers/dashboard/dashboard_approvalpp_controller.dart'; // Ensure the import path is correct
+import 'package:noo_sms/controllers/dashboard/dashboard_approvalpp_controller.dart';
+import 'package:noo_sms/view/promotion_program/approval_pending_pp.dart';
+import 'package:noo_sms/view/promotion_program/approved_pp.dart'; // Ensure the import path is correct
 
 class DashboardApprovalPP extends StatefulWidget {
   final int initialIndex;
@@ -53,8 +55,12 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
               child: TabBarView(
                 controller: tabController.controller,
                 children: const [
-                  Center(child: Text("Pending PP Content")),
-                  Center(child: Text("Approved PP Content")),
+                  Center(
+                    child: PendingPP(),
+                  ),
+                  Center(
+                    child: ApprovedPP(),
+                  ),
                 ],
               ),
             ),

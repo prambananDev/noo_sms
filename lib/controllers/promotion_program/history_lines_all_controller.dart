@@ -121,15 +121,4 @@ class HistoryLinesController extends GetxController {
     }
     return success; // Return the outcome of the operation
   }
-
-  Future<bool> onBackPressLines() async {
-    // Get.off(DashboardPP(
-    //   initialIndex: 1,
-    // ));
-    // return Navigator.pushReplacement(context,
-    //     MaterialPageRoute(builder: (context) {
-    //   return HistoryNomorPP();
-    // }));
-    return Future.value(true);
-  }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:noo_sms/assets/constant/money_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
@@ -8,6 +9,8 @@ import 'package:noo_sms/controllers/promotion_program/history_lines_all_controll
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
+import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
+import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -177,8 +180,12 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
   }
 
   Future<bool> onBackPressLines() async {
-    Navigator.of(context).pop();
-    return Future.value(true);
+    Get.off(const DashboardPage());
+    return true;
+// return Navigator.pushReplacement(context,
+    //     MaterialPageRoute(builder: (context) {
+    //   return HistoryNomorPP();
+    // }));
   }
 
   Container CardLinesAdapter(String namePP, Promotion promotion, int index) {

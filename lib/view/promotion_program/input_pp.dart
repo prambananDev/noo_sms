@@ -1212,57 +1212,56 @@ class _InputPageNewState extends State<InputPagePP> {
                                               visible: !inputPagePresenter
                                                   .onTap.value,
                                               child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.green,
-                                                  ),
-                                                  child: const Text("Submit"),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      bool isInvalid = false;
-                                                      for (int i = 0;
-                                                          i <
-                                                              promotionProgramInputStateList
-                                                                  .length;
-                                                          i++) {
-                                                        PromotionProgramInputState
-                                                            element =
-                                                            promotionProgramInputStateList[
-                                                                i];
-                                                        if (element.selectProductPageDropdownState
-                                                                    ?.selectedChoice ==
-                                                                null ||
-                                                            element.qtyFrom!
-                                                                .text.isEmpty ||
-                                                            /*element.qtyTo.text.isEmpty ||*/
-                                                            element.unitPageDropdownState
-                                                                    ?.selectedChoice ==
-                                                                null) {
-                                                          isInvalid = true;
-                                                          break;
-                                                        }
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.green,
+                                                ),
+                                                child: const Text("Submit"),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    bool isInvalid = false;
+                                                    for (int i = 0;
+                                                        i <
+                                                            promotionProgramInputStateList
+                                                                .length;
+                                                        i++) {
+                                                      PromotionProgramInputState
+                                                          element =
+                                                          promotionProgramInputStateList[
+                                                              i];
+                                                      if (element.selectProductPageDropdownState
+                                                                  ?.selectedChoice ==
+                                                              null ||
+                                                          element.qtyFrom!.text
+                                                              .isEmpty ||
+                                                          /*element.qtyTo.text.isEmpty ||*/
+                                                          element.unitPageDropdownState
+                                                                  ?.selectedChoice ==
+                                                              null) {
+                                                        isInvalid = true;
+                                                        break;
                                                       }
+                                                    }
 
-                                                      if (isInvalid) {
-                                                        // Handle empty fields in promotionProgramInputList
-                                                        inputPagePresenter.onTap
-                                                            .value = false;
-                                                        Get.snackbar("Error",
-                                                            "Found empty fields in Lines",
-                                                            backgroundColor:
-                                                                Colors.red,
-                                                            icon: const Icon(
-                                                                Icons.error));
-                                                      } else {
-                                                        inputPagePresenter
-                                                            .onTap.value = true;
-                                                        inputPagePresenter
-                                                            .submitPromotionProgram();
-                                                      }
-                                                      // inputPagePresenter.submitPromotionProgram();
-                                                    });
-                                                  }),
+                                                    if (isInvalid) {
+                                                      // Handle empty fields in promotionProgramInputList
+                                                      inputPagePresenter
+                                                          .onTap.value = false;
+                                                      Get.snackbar("Error",
+                                                          "Found empty fields in Lines",
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                          icon: const Icon(
+                                                              Icons.error));
+                                                    } else {
+                                                      inputPagePresenter
+                                                          .onTap.value = true;
+                                                      inputPagePresenter
+                                                          .submitPromotionProgram();
+                                                    }
+                                                    // inputPagePresenter.submitPromotionProgram();
+                                                  });
+                                                },
+                                              ),
                                             ),
                                             Visibility(
                                               visible: inputPagePresenter

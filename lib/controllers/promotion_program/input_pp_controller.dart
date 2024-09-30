@@ -788,6 +788,7 @@ class InputPageController extends GetxController {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     String? token = preferences.getString("token");
+    debugPrint("token $token");
     int ppTypeConvert = int.parse(
         promotionTypeInputPageDropdownStateRx.value.selectedChoice!.id);
     final isiBody = jsonEncode(<String, dynamic>{
@@ -852,7 +853,7 @@ class InputPageController extends GetxController {
         };
       }).toList(),
     });
-
+    debugPrint("zz $isiBody");
     final response =
         await put(Uri.parse('$apiCons/api/activity?username=$username'),
             headers: {
