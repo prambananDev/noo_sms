@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
@@ -127,6 +128,53 @@ class InputPageController extends GetxController {
     _loadWarehouse();
     _loadPrincipal();
     _loadCustomerOrGroupHeader();
+  }
+
+  Future<void> loadProgramData(String programNumber) async {
+    var url = '$apiCons/api/activity/$programNumber';
+    final response = await get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+
+      programNoteTextEditingControllerRx.value.text = data['note'] ?? '';
+      programNameTextEditingControllerRx.value.text = data['number'] ?? '';
+
+      if (data['fromDate'] != null) {
+        programFromDateTextEditingControllerRx.value.text =
+            DateFormat('dd-MM-yyyy').format(DateTime.parse(data['fromDate']));
+      }
+
+      if (data['toDate'] != null) {
+        programToDateTextEditingControllerRx.value.text =
+            DateFormat('dd-MM-yyyy').format(DateTime.parse(data['toDate']));
+      }
+
+      // Handling dropdowns, selected principal, etc.
+      if (data['vendor'] != null) {
+        int index = listDataPrincipal.indexOf(data['vendor']);
+        if (index != -1) {
+          selectedDataPrincipal.add(index);
+        }
+      }
+
+      // If there are any lines or items to be prefilled for editing
+      promotionProgramInputStateRx.value.promotionProgramInputState =
+          data['activityLinesEdit'].map<PromotionProgramInputState>((line) {
+        return PromotionProgramInputState(
+          qtyFrom: TextEditingController(text: line['qtyFrom'].toString()),
+          qtyTo: TextEditingController(text: line['qtyTo'].toString()),
+          salesPrice:
+              TextEditingController(text: line['salesPrice'].toString()),
+          // Populate other form elements if needed
+        );
+      }).toList();
+
+      update(); // Call update to refresh the UI
+    } else {
+      // Handle error scenario
+      debugPrint('Failed to load program data');
+    }
   }
 
   void _loadLocation() async {
@@ -593,7 +641,10 @@ class InputPageController extends GetxController {
     } catch (e) {}
 
     double countPriceToCustomerValue = salesPrice - (value1 + value2);
+    promotionProgramInputState.priceToCustomer?.text =
+        countPriceToCustomerValue.toString();
 
+    debugPrint("test$countPriceToCustomerValue");
     update();
   }
 
@@ -731,10 +782,11 @@ class InputPageController extends GetxController {
               'Authorization': '$token',
             },
             body: isiBody);
-
+    debugPrint(response.statusCode.toString());
+    debugPrint(isiBody);
     final tabController = Get.put(DashboardPPTabController());
     Future.delayed(const Duration(seconds: 2), () {
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 & 201) {
         // Future.delayed(const Duration(seconds: 2), () {
         //   tabController.initialIndex = 1;
         //   onTap.value = true;

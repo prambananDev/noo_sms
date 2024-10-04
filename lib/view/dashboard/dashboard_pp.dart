@@ -1,6 +1,7 @@
 // views/dashboard/dashboard_pp.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/view/promotion_program/history_pp.dart';
 import 'package:noo_sms/view/promotion_program/input_pp.dart';
@@ -40,7 +41,7 @@ class _DashboardPPState extends State<DashboardPP>
               children: [
                 TabBar(
                   unselectedLabelColor: Colors.black,
-                  labelColor: Colors.green,
+                  labelColor: colorAccent,
                   controller: tabController.controller,
                   tabs: const [
                     Tab(text: "Create PP"),

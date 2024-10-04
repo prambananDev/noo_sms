@@ -1,7 +1,9 @@
 // views/dashboard/dashboard_ordertaking.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_ordertaking.dart';
+import 'package:noo_sms/view/test.dart';
 
 class DashboardOrderTaking extends StatefulWidget {
   final int initialIndex;
@@ -42,7 +44,7 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
           children: [
             TabBar(
               unselectedLabelColor: Colors.black,
-              labelColor: Colors.green,
+              labelColor: colorAccent,
               controller: tabController.controller,
               tabs: const [
                 Tab(text: "Create Order Taking"),
@@ -52,9 +54,18 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
             Expanded(
               child: TabBarView(
                 controller: tabController.controller,
-                children: const [
-                  Center(child: Text("Create Order Taking Content")),
-                  Center(child: Text("History Order Taking Content")),
+                children: [
+                  Center(
+                      child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SearchObat()),
+                      );
+                    },
+                    child: const Text('test'),
+                  )),
+                  const Center(child: Text("History Order Taking Content")),
                 ],
               ),
             ),

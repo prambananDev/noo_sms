@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/constant/date_time_formatter.dart';
 import 'package:noo_sms/assets/constant/money_formatter.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_controller.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -9,13 +10,32 @@ import 'package:noo_sms/models/state_management/promotion_program/input_pp_state
 import 'package:search_choices/search_choices.dart';
 
 class InputPagePP extends StatefulWidget {
-  const InputPagePP({Key? key}) : super(key: key);
+  final bool isEdit;
+  final String? programNumber;
+  const InputPagePP({Key? key, this.isEdit = false, this.programNumber})
+      : super(key: key);
 
   @override
   State<InputPagePP> createState() => _InputPageNewState();
 }
 
 class _InputPageNewState extends State<InputPagePP> {
+  final InputPageController inputPagePresenter = Get.put(InputPageController());
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isEdit) {
+      _loadEditData();
+    }
+  }
+
+  Future<void> _loadEditData() async {
+    if (widget.programNumber != null) {
+      await inputPagePresenter.loadProgramData(widget.programNumber!);
+    }
+  }
+
   Widget customCard(int index, InputPageController inputPagePresenter) {
     PromotionProgramInputState promotionProgramInputState = inputPagePresenter
         .promotionProgramInputStateRx.value.promotionProgramInputState[index];
@@ -1047,7 +1067,6 @@ class _InputPageNewState extends State<InputPagePP> {
                           onChanged: (String? value) {
                             // onChanged should expect a nullable String
                             if (value != null) {
-                              print("value: $value");
                               final index = inputPagePresenter.listDataPrincipal
                                   .indexOf(value);
                               inputPagePresenter.selectedDataPrincipal.clear();
@@ -1060,7 +1079,6 @@ class _InputPageNewState extends State<InputPagePP> {
                                   .map((index) => inputPagePresenter
                                       .listDataPrincipal[index])
                                   .toList();
-                              print("Selected Principal: $selectedItems");
                             }
                           },
                         ),
@@ -1090,7 +1108,6 @@ class _InputPageNewState extends State<InputPagePP> {
                               ),
                             ),
                           ),
-                          const Spacer(),
                           SizedBox(
                             width: 150,
                             child: Padding(
@@ -1175,15 +1192,22 @@ class _InputPageNewState extends State<InputPagePP> {
                   ? Container(
                       margin: const EdgeInsets.only(bottom: 100),
                       child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorAccent,
+                        ),
+                        onPressed: isAddItem
+                            ? () {
+                                inputPagePresenter.addItem();
+                              }
+                            : null,
+                        child: Text(
+                          "Add Lines",
+                          style: TextStyle(
+                            color: colorNetral,
+                            fontSize: 12,
                           ),
-                          onPressed: isAddItem
-                              ? () {
-                                  inputPagePresenter.addItem();
-                                }
-                              : null,
-                          child: const Text("Add Lines")),
+                        ),
+                      ),
                     )
                   : ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -1213,9 +1237,15 @@ class _InputPageNewState extends State<InputPagePP> {
                                                   .onTap.value,
                                               child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.green,
+                                                  backgroundColor: colorAccent,
                                                 ),
-                                                child: const Text("Submit"),
+                                                child: Text(
+                                                  "Submit",
+                                                  style: TextStyle(
+                                                    color: colorNetral,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
                                                 onPressed: () {
                                                   setState(() {
                                                     bool isInvalid = false;

@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/assets/constant/date_time_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_controller.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
@@ -12,10 +13,11 @@ import 'package:noo_sms/models/activity_edit.dart';
 import 'package:noo_sms/models/id_valaue.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/view/promotion_program/custom_card_history_all_edit.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:noo_sms/view/promotion_program/input_pp.dart';
+import 'package:search_choices/search_choices.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 class HistoryLinesAllEdit extends StatefulWidget {
   final String? numberPP;
@@ -31,289 +33,93 @@ class HistoryLinesAllEdit extends StatefulWidget {
 class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   late User _user;
   late int code;
-  late List _listHistorySO;
   bool startApp = false;
+  List idLines = [];
   final inputPagePresenter = Get.put(InputPageController());
   ActivityEdit activityEditModel = ActivityEdit();
-  List idLines = [];
 
   @override
   void initState() {
     super.initState();
-    getSharedPreference();
-    getDataActivity();
-    initData();
+    _initializeData();
   }
 
-  void getSharedPreference() async {
+  Future<void> _initializeData() async {
+    await _getSharedPreference();
+    await _getDataActivity();
+    _populateFormFields();
+  }
+
+  Future<void> _getSharedPreference() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
     Box userBox = await Hive.openBox('users');
-    List<User> listUser = userBox.values.map((e) => e as User).toList();
     SharedPreferences pref = await SharedPreferences.getInstance();
     setState(() {
-      _user = listUser[0];
-      code = pref.getInt("code")!;
+      _user = userBox.get(0);
+      code = pref.getInt("code") ?? 0;
     });
   }
 
-  initData() {
-    Future.delayed(const Duration(seconds: 2), () {
-      startApp = true;
-
-      // Safely assigning values to the text fields
-      inputPagePresenter.programNoteTextEditingControllerRx.value.text =
-          activityEditModel.note ??
-              ''; // Provide a default empty string if null
-      inputPagePresenter.programNameTextEditingControllerRx.value.text =
-          activityEditModel.number ??
-              ''; // Provide a default empty string if null
-
-      IdAndValue<String> type = IdAndValue<String>(
-        id: activityEditModel.type ?? '1', // Provide default '1' if null
-        value: activityEditModel.type == "1"
-            ? "Discount"
-            : activityEditModel.type == "2"
-                ? "Bonus"
-                : "Discount & Bonus",
-      );
-
-      inputPagePresenter
-          .promotionTypeInputPageDropdownStateRx.value.selectedChoice = type;
-      inputPagePresenter.customerGroupInputPageDropdownState.value
-          .selectedChoice = "Customer";
-      inputPagePresenter.changeCustomerGroupHeader(inputPagePresenter
-          .customerGroupInputPageDropdownState.value.selectedChoice!);
-
-      IdAndValue<String> custHeader = IdAndValue<String>(
-          id: activityEditModel.customerId ?? '',
-          value: activityEditModel.customerId ?? '');
-
-      inputPagePresenter
-          .custNameHeaderValueDropdownStateRx.value.selectedChoice = custHeader;
-
-      // Safely handling fromDate and toDate
-      if (activityEditModel.fromDate != null) {
-        inputPagePresenter.programFromDateTextEditingControllerRx.value.text =
-            DateFormat('dd-MM-yyyy')
-                .format(DateTime.parse(activityEditModel.fromDate));
-      }
-
-      if (activityEditModel.toDate != null) {
-        inputPagePresenter.programToDateTextEditingControllerRx.value.text =
-            DateFormat('dd-MM-yyyy')
-                .format(DateTime.parse(activityEditModel.toDate));
-      }
-
-      // Handle vendor
-      if (activityEditModel.vendor != null) {
-        final index = inputPagePresenter.listDataPrincipal
-            .indexOf(activityEditModel.vendor);
-        if (index >= 0) {
-          inputPagePresenter.selectedDataPrincipal.add(index);
-        }
-      }
-
-      for (int i = 0; i < activityEditModel.activityLinesEdit!.length; i++) {
-        inputPagePresenter.addItem();
-        Future.delayed(const Duration(seconds: 2), () {
-          setState(() {});
-        });
-
-        IdAndValue<String> percent =
-            IdAndValue<String>(id: "1", value: "Percent");
-
-        PromotionProgramInputState promotionProgramInputState =
-            inputPagePresenter.promotionProgramInputStateRx.value
-                .promotionProgramInputState[i];
-
-        IdAndValue<String> itemProduct = IdAndValue<String>(
-          id: activityEditModel.activityLinesEdit![i].item ?? '',
-          value: activityEditModel.activityLinesEdit![i].item ?? '',
-        );
-
-        IdAndValue<String> suppItemProduct = IdAndValue<String>(
-          id: activityEditModel.activityLinesEdit![i].suppItemId ?? '',
-          value: activityEditModel.activityLinesEdit![i].suppItemId ?? '',
-        );
-
-        promotionProgramInputState
-            .itemGroupInputPageDropdownState!.selectedChoice = 'Item';
-        inputPagePresenter.changeItemGroup(
-            i,
-            promotionProgramInputState
-                .itemGroupInputPageDropdownState!.selectedChoice!);
-
-        promotionProgramInputState
-            .selectProductPageDropdownState!.selectedChoice = itemProduct;
-        promotionProgramInputState.supplyItem!.selectedChoice = suppItemProduct;
-
-        inputPagePresenter.changeProduct(
-            i,
-            promotionProgramInputState
-                .selectProductPageDropdownState!.selectedChoice!);
-        inputPagePresenter.changeSupplyItem(
-            i, promotionProgramInputState.supplyItem!.selectedChoice!);
-
-        promotionProgramInputState.qtyFrom!.text = activityEditModel
-                .activityLinesEdit![i].qtyFrom
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        promotionProgramInputState.qtyTo!.text = activityEditModel
-                .activityLinesEdit![i].qtyTo
-                ?.toString()
-                .split(".")[0] ??
-            '';
-
-        promotionProgramInputState.unitSupplyItem?.selectedChoice =
-            activityEditModel.activityLinesEdit![i].supplementaryUnitId ?? '';
-        promotionProgramInputState.salesPrice!.text = activityEditModel
-                .activityLinesEdit![i].salesPrice
-                ?.toString()
-                .replaceAll("Rp", '') ??
-            '';
-
-        promotionProgramInputState
-            .percentValueInputPageDropdownState?.selectedChoice = percent;
-        promotionProgramInputState.qtyItem!.text = activityEditModel
-                .activityLinesEdit![i].suppItemQty
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        promotionProgramInputState.percent1!.text = activityEditModel
-                .activityLinesEdit![i].percent1
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        inputPagePresenter.getPriceToCustomer(i);
-
-        promotionProgramInputState.percent2!.text = activityEditModel
-                .activityLinesEdit![i].percent2
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        inputPagePresenter.getPriceToCustomer(i);
-
-        promotionProgramInputState.percent3!.text = activityEditModel
-                .activityLinesEdit![i].percent3
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        inputPagePresenter.getPriceToCustomer(i);
-
-        promotionProgramInputState.percent4!.text = activityEditModel
-                .activityLinesEdit![i].percent4
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        inputPagePresenter.getPriceToCustomer(i);
-
-        promotionProgramInputState.value1!.text = activityEditModel
-                .activityLinesEdit![i].value1
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        inputPagePresenter.getPriceToCustomer(i);
-
-        promotionProgramInputState.value2!.text = activityEditModel
-                .activityLinesEdit![i].value2
-                ?.toString()
-                .split(".")[0] ??
-            '';
-        inputPagePresenter.getPriceToCustomer(i);
-      }
-
-      idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
-    });
-  }
-
-  Future<void> getDataActivity() async {
+  Future<void> _getDataActivity() async {
     final url = '$apiCons/api/activity/${widget.numberPP}';
-    print("Fetching activity data from: $url");
-
     try {
       final response = await get(Uri.parse(url));
-      debugPrint(response.body);
-
       if (response.statusCode == 200) {
-        final decodedData = jsonDecode(response.body);
-
-        if (decodedData is Map<String, dynamic>) {
-          setState(() {
-            activityEditModel = ActivityEdit.fromJson(decodedData);
-
-            // Now safely set the fields, check if they are not null
-            inputPagePresenter.programNoteTextEditingControllerRx.value.text =
-                activityEditModel.note ?? '';
-            inputPagePresenter.programNameTextEditingControllerRx.value.text =
-                activityEditModel.number ?? '';
-
-            IdAndValue<String> type = IdAndValue<String>(
-              id: activityEditModel.type ?? '',
-              value: activityEditModel.type == "1"
-                  ? "Discount"
-                  : activityEditModel.type == "2"
-                      ? "Bonus"
-                      : "Discount & Bonus",
-            );
-            inputPagePresenter.promotionTypeInputPageDropdownStateRx.value
-                .selectedChoice = type;
-
-            inputPagePresenter.customerGroupInputPageDropdownState.value
-                .selectedChoice = "Customer";
-            inputPagePresenter.changeCustomerGroupHeader(inputPagePresenter
-                .customerGroupInputPageDropdownState.value.selectedChoice!);
-
-            IdAndValue<String> custHeader = IdAndValue<String>(
-                id: activityEditModel.customerId ?? '',
-                value: activityEditModel.customerId ?? '');
-            inputPagePresenter.custNameHeaderValueDropdownStateRx.value
-                .selectedChoice = custHeader;
-
-            // Handle the date fields safely
-            if (activityEditModel.fromDate != null) {
-              inputPagePresenter
-                      .programFromDateTextEditingControllerRx.value.text =
-                  DateFormat('dd-MM-yyyy')
-                      .format(DateTime.parse(activityEditModel.fromDate!));
-            }
-
-            if (activityEditModel.toDate != null) {
-              inputPagePresenter
-                      .programToDateTextEditingControllerRx.value.text =
-                  DateFormat('dd-MM-yyyy')
-                      .format(DateTime.parse(activityEditModel.toDate!));
-            }
-
-            // Further handling of vendor or other fields
-            if (activityEditModel.vendor != null) {
-              final index = inputPagePresenter.listDataPrincipal
-                  .indexOf(activityEditModel.vendor);
-              if (index >= 0) {
-                inputPagePresenter.selectedDataPrincipal.add(index);
-              }
-            }
-
-            // Handle activity lines safely
-            for (int i = 0;
-                i < activityEditModel.activityLinesEdit!.length;
-                i++) {
-              inputPagePresenter.addItem();
-              // Populate data for each item here
-            }
-          });
-        }
+        setState(() {
+          activityEditModel = ActivityEdit.fromJson(jsonDecode(response.body));
+        });
       } else {
-        print(
-            "Failed to load activity data, status code: ${response.statusCode}");
+        print("Failed to load activity data");
       }
     } catch (e) {
       print("Error fetching activity data: $e");
     }
   }
 
-  Future<bool> onBackPressLines() {
+  void _populateFormFields() {
+    inputPagePresenter.programNoteTextEditingControllerRx.value.text =
+        activityEditModel.note ?? '';
+    inputPagePresenter.programNameTextEditingControllerRx.value.text =
+        activityEditModel.number ?? '';
+
+    IdAndValue<String> type = IdAndValue<String>(
+      id: activityEditModel.type ?? '1',
+      value: _getPromotionTypeLabel(activityEditModel.type),
+    );
+    inputPagePresenter
+        .promotionTypeInputPageDropdownStateRx.value.selectedChoice = type;
+
+    if (activityEditModel.fromDate != null) {
+      inputPagePresenter.programFromDateTextEditingControllerRx.value.text =
+          _formatDate(activityEditModel.fromDate!);
+    }
+    if (activityEditModel.toDate != null) {
+      inputPagePresenter.programToDateTextEditingControllerRx.value.text =
+          _formatDate(activityEditModel.toDate!);
+    }
+
+    idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
+    startApp = true;
+    setState(() {});
+  }
+
+  String _getPromotionTypeLabel(String? type) {
+    switch (type) {
+      case '1':
+        return 'Discount';
+      case '2':
+        return 'Bonus';
+      default:
+        return 'Discount & Bonus';
+    }
+  }
+
+  String _formatDate(String date) {
+    return DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
+  }
+
+  Future<bool> _onBackPressLines() {
     Navigator.of(context).pop();
     return Future.value(true);
   }
@@ -321,36 +127,32 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: onBackPressLines,
+      onWillPop: _onBackPressLines,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.green,
-          title: Text("Edit",
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: colorNetral,
-              )),
+          backgroundColor: colorAccent,
+          title: Text(
+            "Edit",
+            style: TextStyle(fontWeight: FontWeight.w800, color: colorNetral),
+          ),
           centerTitle: true,
           leading: IconButton(
-            icon: Icon(
-              Icons.chevron_left,
-              color: colorNetral,
-              size: 35,
-            ),
-            onPressed: () => onBackPressLines(),
+            icon: Icon(Icons.chevron_left, color: colorNetral, size: 35),
+            onPressed: _onBackPressLines,
           ),
         ),
         body: startApp == false
             ? const Center(child: CircularProgressIndicator())
             : SafeArea(
                 child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildMainForm(),
-                    _buildListView(),
-                  ],
+                  child: Column(
+                    children: [
+                      _buildMainForm(),
+                      _buildListView(),
+                    ],
+                  ),
                 ),
-              )),
+              ),
       ),
     );
   }
@@ -362,7 +164,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
         elevation: 20,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -372,7 +174,9 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
                   inputPagePresenter.programNameTextEditingControllerRx.value),
               const SizedBox(height: 10),
               _buildDropdown(),
-              // Add any other widgets here...
+              _buildCustomerGroupDropdown(),
+              _buildPrincipalDropdown(),
+              _buildDatePickers(),
             ],
           ),
         ),
@@ -394,14 +198,92 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
             .promotionTypeInputPageDropdownStateRx.value.selectedChoice,
         items: inputPagePresenter
             .promotionTypeInputPageDropdownStateRx.value.choiceList!
-            .map((item) {
-          return DropdownMenuItem<IdAndValue<String>>(
-            value: item,
-            child: Text(item.value),
-          );
-        }).toList(),
-        onChanged: (value) => inputPagePresenter.changePromotionType(value),
+            .map((item) => DropdownMenuItem<IdAndValue<String>>(
+                value: item, child: Text(item.value)))
+            .toList(),
+        onChanged: inputPagePresenter.changePromotionType,
       ),
+    );
+  }
+
+  Widget _buildCustomerGroupDropdown() {
+    return Obx(
+      () => DropdownButtonFormField<String>(
+        value: inputPagePresenter
+            .customerGroupInputPageDropdownState.value.selectedChoice,
+        items: inputPagePresenter
+            .customerGroupInputPageDropdownState.value.choiceList!
+            .map((item) => DropdownMenuItem(
+                value: item,
+                child: Text(item, style: const TextStyle(fontSize: 12))))
+            .toList(),
+        onChanged: (value) => setState(
+            () => inputPagePresenter.changeCustomerGroupHeader(value!)),
+        hint: const Text("Customer/Cust Group", style: TextStyle(fontSize: 12)),
+        isExpanded: true,
+        isDense: true,
+      ),
+    );
+  }
+
+  Widget _buildPrincipalDropdown() {
+    return Obx(
+      () => SearchChoices.single(
+        items: inputPagePresenter.listDataPrincipal
+            .map((item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ))
+            .toList(),
+        value: inputPagePresenter.selectedDataPrincipal.isNotEmpty
+            ? inputPagePresenter
+                .listDataPrincipal[inputPagePresenter.selectedDataPrincipal[0]]
+            : null,
+        hint: const Text(
+          "Select Principal",
+          style: TextStyle(fontSize: 12),
+        ),
+        onChanged: (String? value) {
+          if (value != null) {
+            final index = inputPagePresenter.listDataPrincipal.indexOf(value);
+            inputPagePresenter.selectedDataPrincipal.clear();
+            if (index >= 0) {
+              inputPagePresenter.selectedDataPrincipal.add(index);
+            }
+          }
+        },
+        isExpanded: true, // Ensures that the dropdown fills the available space
+      ),
+    );
+  }
+
+  Widget _buildDatePickers() {
+    return Row(
+      children: [
+        Expanded(
+          child: CustomDatePickerField(
+            controller:
+                inputPagePresenter.programFromDateTextEditingControllerRx.value,
+            labelText: "From Date",
+            initialValue: DateTime.now(),
+            firstDate: DateTime.now().subtract(const Duration(days: 365)),
+            lastDate: DateTime.now().add(const Duration(days: 180)),
+          ),
+        ),
+        Expanded(
+          child: CustomDatePickerField(
+            controller:
+                inputPagePresenter.programToDateTextEditingControllerRx.value,
+            labelText: "To Date",
+            initialValue: DateTime.now(),
+            firstDate: DateTime.now().subtract(const Duration(days: 365)),
+            lastDate: DateTime.now().add(const Duration(days: 180)),
+          ),
+        ),
+      ],
     );
   }
 
@@ -412,21 +294,110 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
       List<PromotionProgramInputState>? promotionProgramInputStateList =
           inputPageWrapper.promotionProgramInputState;
       bool? isAddItem = inputPageWrapper.isAddItem;
-      if (promotionProgramInputStateList.isEmpty) {
-        return ElevatedButton(
-          onPressed: isAddItem ? () => inputPagePresenter.addItem() : null,
-          child: const Text("Add Lines"),
-        );
-      } else {
-        return ListView.builder(
-          shrinkWrap: true,
-          itemCount: promotionProgramInputStateList.length,
-          itemBuilder: (context, index) {
-            return customCard(
-                index, inputPagePresenter); // Using the custom card
-          },
-        );
-      }
+
+      return promotionProgramInputStateList.isEmpty
+          ? Container(
+              margin: const EdgeInsets.only(bottom: 100),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorAccent,
+                ),
+                onPressed:
+                    isAddItem ? () => inputPagePresenter.addItem() : null,
+                child: Text(
+                  "Add Lines",
+                  style: TextStyle(color: colorNetral),
+                ),
+              ),
+            )
+          : ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: promotionProgramInputStateList.length,
+              itemBuilder: (context, index) => GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: Column(
+                  children: [
+                    // Call customCard here
+                    customCard(index, inputPagePresenter),
+                    const SizedBox(
+                      height: 10,
+                    ),
+
+                    index == promotionProgramInputStateList.length - 1
+                        ? Padding(
+                            padding: const EdgeInsets.only(bottom: 500),
+                            child: Column(
+                              children: [
+                                Visibility(
+                                  visible: !inputPagePresenter.onTap.value,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: colorAccent,
+                                    ),
+                                    child: Text(
+                                      "Submit",
+                                      style: TextStyle(
+                                        color: colorNetral,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        bool isInvalid = false;
+                                        for (int i = 0;
+                                            i <
+                                                promotionProgramInputStateList
+                                                    .length;
+                                            i++) {
+                                          PromotionProgramInputState element =
+                                              promotionProgramInputStateList[i];
+                                          if (element.selectProductPageDropdownState
+                                                      ?.selectedChoice ==
+                                                  null ||
+                                              element.qtyFrom!.text.isEmpty ||
+                                              element.unitPageDropdownState
+                                                      ?.selectedChoice ==
+                                                  null) {
+                                            isInvalid = true;
+                                            break;
+                                          }
+                                        }
+
+                                        // If fields are invalid, show an error message
+                                        if (isInvalid) {
+                                          inputPagePresenter.onTap.value =
+                                              false;
+                                          Get.snackbar("Error",
+                                              "Found empty fields in Lines",
+                                              backgroundColor: Colors.red,
+                                              icon: const Icon(Icons.error));
+                                        } else {
+                                          inputPagePresenter.onTap.value = true;
+                                          inputPagePresenter
+                                              .submitPromotionProgram();
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Visibility(
+                                  visible:
+                                      inputPagePresenter.onTap.value == true,
+                                  child: const Center(
+                                      child: CircularProgressIndicator()),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox(),
+                  ],
+                ),
+              ),
+            );
     });
   }
 }

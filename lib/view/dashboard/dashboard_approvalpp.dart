@@ -1,6 +1,7 @@
 // views/dashboard/dashboard_approvalpp.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_approvalpp_controller.dart';
 import 'package:noo_sms/view/promotion_program/approval_pending_pp.dart';
 import 'package:noo_sms/view/promotion_program/approved_pp.dart'; // Ensure the import path is correct
@@ -44,7 +45,7 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
           children: [
             TabBar(
               unselectedLabelColor: Colors.black,
-              labelColor: Colors.green,
+              labelColor: colorAccent,
               controller: tabController.controller,
               tabs: const [
                 Tab(text: "Pending PP"),

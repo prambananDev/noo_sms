@@ -39,34 +39,35 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  String? value;
-  int? flag;
   String? onesignalUserID;
 
   @override
   void initState() {
     super.initState();
-    getOneSignal();
-    registeredAdapter();
-    deleteBoxUser();
-    checkAutoLogin();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await registeredAdapter();
+    await checkAutoLogin();
+    await getOneSignal();
   }
 
   Future<void> checkAutoLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('userToken');
     if (token != null) {
-      Get.offAll(
-          () => const DashboardPage()); // Use Get.offAll with a route function
+      // Navigate to dashboard if token exists
+      Get.offAll(() => const DashboardPage());
     }
   }
 
   Future<void> getOneSignal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     OneSignal.shared.setAppId("ffad8398-fdf5-4aef-a16b-a33696f48630");
+
     OneSignal.shared.getDeviceState().then((value) async {
       onesignalUserID = value?.userId ?? "";
-
       prefs.setString("idDevice", onesignalUserID!);
     });
 
@@ -82,7 +83,7 @@ class _MainAppState extends State<MainApp> {
         .setSubscriptionObserver((OSSubscriptionStateChanges changes) {});
   }
 
-  void registeredAdapter() async {
+  Future<void> registeredAdapter() async {
     if (!Hive.isBoxOpen('users')) {
       if (!Hive.isAdapterRegistered(UserAdapter().typeId)) {
         Hive.registerAdapter(UserAdapter());
@@ -91,19 +92,12 @@ class _MainAppState extends State<MainApp> {
     }
   }
 
-  void deleteBoxUser() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    await userBox.clear();
-  }
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => LoginProvider(), // Initialize LoginProvider here
+          create: (_) => LoginProvider(),
         ),
         // Add other providers here if needed
       ],
@@ -113,15 +107,16 @@ class _MainAppState extends State<MainApp> {
         theme: ThemeData(
           fontFamily: GoogleFonts.poppins().fontFamily,
           dialogTheme: DialogTheme(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: const BorderSide(
-                    color: Color.fromRGBO(215, 250, 255, 1),
-                  ))),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(
+                color: Color.fromRGBO(215, 250, 255, 1),
+              ),
+            ),
+          ),
         ),
-        home:
-            const LoginView(), // LoginView will now have access to LoginProvider
+        home: const LoginView(),
         builder: (context, widget) {
           return MediaQuery(
             data: MediaQuery.of(context)
@@ -129,21 +124,6 @@ class _MainAppState extends State<MainApp> {
             child: widget!,
           );
         },
-        // Optional theme setup
-        // theme: ThemeData(
-        //   fontFamily: 'Poppins',
-        //   primaryColorDark: Colors.deepPurple,
-        //   primaryColor: Colors.purpleAccent,
-        //   colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.amber),
-        //   errorColor: Colors.red,
-        //   dialogTheme: DialogTheme(
-        //     backgroundColor: Colors.white,
-        //     shape: RoundedRectangleBorder(
-        //       borderRadius: BorderRadius.circular(20),
-        //       side: const BorderSide(color: Colors.amber),
-        //     ),
-        //   ),
-        // ),
       ),
     );
   }

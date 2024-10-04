@@ -39,7 +39,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: colorAccent,
         title: Text(
           'Main Dashboard',
           style: TextStyle(

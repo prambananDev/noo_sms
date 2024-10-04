@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_controller.dart';
 import 'package:noo_sms/models/id_valaue.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
-import 'package:search_choices/search_choices.dart'; // Add the correct import for SearchChoices
+import 'package:search_choices/search_choices.dart';
 
 Widget customCard(
   int index,
@@ -44,14 +44,30 @@ Widget customCard(
               ],
             ),
             const SizedBox(height: 20),
-            // _buildSearchChoices<IdAndValue<String>>(
-            //   "Item/Item Group",
-            //   promotionProgramInputState
-            //       .itemGroupInputPageDropdownState?.selectedChoice,
-            //   promotionProgramInputState
-            //       .itemGroupInputPageDropdownState?.choiceList,
-            //   (value) => inputPagePresenter.changeItemGroup(index, value),
-            // ),
+            SearchChoices.single(
+              isExpanded: true,
+              value: promotionProgramInputState
+                  .itemGroupInputPageDropdownState?.selectedChoice,
+              hint: const Text(
+                "Item/Item Group",
+                style: TextStyle(fontSize: 12),
+              ),
+              items: promotionProgramInputState
+                  .itemGroupInputPageDropdownState?.choiceList
+                  ?.map((item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: const TextStyle(fontSize: 12),
+                    overflow: TextOverflow.fade,
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) =>
+                  inputPagePresenter.changeItemGroup(index, value),
+            ),
+
             const SizedBox(height: 8),
             _buildSearchChoices<IdAndValue<String>>(
               "Item Product",

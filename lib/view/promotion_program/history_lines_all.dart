@@ -93,7 +93,7 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
         theme: Theme.of(context),
         home: Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.green,
+            backgroundColor: colorAccent,
             title: Text(
               'List Lines',
               style: TextStyle(
