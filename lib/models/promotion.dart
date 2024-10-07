@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/lines.dart';
@@ -215,21 +216,28 @@ class Promotion {
 
   static Future<List<Promotion>> getAllListPromotion(
       int id, int code, String token, String username) async {
-    // String url = ApiConstant(code).urlApi + "api/PromotionHeader/" + id.toString() + "?username=" + username;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url =
         "$apiCons/api/Promosi?username=$username&userId=${prefs.getInt('userid')}";
+    Map<String, String> headers = {
+      'Authorization': token,
+      'Content-Type': 'application/json',
+    };
 
-    var dio = Dio();
-    dio.options.headers['Authorization'] = token;
-    Response response = await dio.get(url);
-    var jsonObject = response.data;
-    List<Promotion> models = [];
-    for (var promotion in jsonObject) {
-      var objects = Promotion.fromJson(promotion as Map<String, dynamic>);
-      models.add(objects);
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      var jsonObject = jsonDecode(response.body);
+      List<Promotion> models = [];
+
+      for (var promotion in jsonObject) {
+        var objects = Promotion.fromJson(promotion as Map<String, dynamic>);
+        models.add(objects);
+      }
+      return models;
+    } else {
+      throw Exception(
+          "Failed to load promotions. Status code: ${response.statusCode}");
     }
-    return models;
   }
 
   static Future<List<Promotion>> getListLines(

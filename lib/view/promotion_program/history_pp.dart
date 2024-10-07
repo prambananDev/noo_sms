@@ -33,12 +33,13 @@ class _HistoryAllState extends State<HistoryAll> {
   bool _isLoading = true;
 
   Future<void> listHistory() async {
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 1));
     Promotion.getAllListPromotion(
             0, code, _user.token ?? "token kosong", _user.username)
         .then((value) {
       setState(() {
         listHistoryReal = value;
+        debugPrint("tez $value");
         _listHistory = listHistoryReal;
       });
     });
@@ -61,19 +62,21 @@ class _HistoryAllState extends State<HistoryAll> {
         children: <Widget>[
           TextResultCard(
             title: "No. PP",
-            value: promotion.nomorPP!,
+            value: promotion.nomorPP ?? "No data",
           ),
           TextResultCard(
             title: "Date",
-            value: promotion.date,
+            value: promotion.date ?? "No data",
           ),
           TextResultCard(
             title: "Type",
-            value: promotion.customer!,
+            value: promotion.customer ?? "No data",
           ),
           TextResultCard(
             title: "AXStatus",
-            value: promotion.axStatus == "" ? "-" : promotion.axStatus!,
+            value: promotion.axStatus == ""
+                ? "-"
+                : promotion.axStatus ?? "No data",
           ),
           const SizedBox(height: 4), // Simple space without ScreenUtil
           Row(
@@ -93,14 +96,8 @@ class _HistoryAllState extends State<HistoryAll> {
                     backgroundColor: colorAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      // side: BorderSide(
-                      //   color: Theme.of(context).primaryColor,
-                      //   style: BorderStyle.solid,
-                      //   width: 2,
-                      // ),
                     ),
-                    padding:
-                        const EdgeInsets.all(7), // Padding without ScreenUtil
+                    padding: const EdgeInsets.all(7),
                   ),
                   child: Center(
                     child: Text(
@@ -257,7 +254,7 @@ class _HistoryAllState extends State<HistoryAll> {
     setState(() {
       _user = listUser[0];
       code = pref.getInt("code")!;
-      _isLoading = false; // Set _isLoading to false once code is initialized
+      _isLoading = false;
     });
   }
 
