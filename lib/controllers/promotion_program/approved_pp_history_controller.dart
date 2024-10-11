@@ -24,7 +24,7 @@ class HistoryController {
   }
 
   Future<List<Promotion>> getPromotions(String numberPP) async {
-    return await Promotion.getListLines(numberPP, code, token, username);
+    return await Promotion.getListLines(numberPP, token, username);
   }
 
   Future<void> approveOrReject(int status, List<int> ids) async {

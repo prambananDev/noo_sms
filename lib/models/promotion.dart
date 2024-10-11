@@ -241,7 +241,7 @@ class Promotion {
   }
 
   static Future<List<Promotion>> getListLines(
-      String nomorPP, int code, String token, String username) async {
+      String nomorPP, String token, String username) async {
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username';
 
     final dio = Dio()..options.headers['Authorization'] = token;
@@ -259,12 +259,12 @@ class Promotion {
   }
 
   static Future<List<Promotion>> getListLinesPending(
-      String nomorPP, int code, String token, String username) async {
+      String nomorPP, String token, String username) async {
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username&type=1';
-
+    debugPrint("Z$nomorPP");
     final dio = Dio()..options.headers['Authorization'] = token;
     final response = await dio.get(url);
-
+    debugPrint("list pending ${response.data}");
     if (response.statusCode != 200) {
       throw Exception('Failed to get list of lines');
     }
@@ -278,7 +278,7 @@ class Promotion {
   }
 
   static Future<List<Promotion>> getListActivity(
-      String nomorPP, int code, String token, String username) async {
+      String nomorPP, String token, String username) async {
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username';
 
     final dio = Dio()..options.headers['Authorization'] = token;
@@ -298,7 +298,7 @@ class Promotion {
 
   // api/SalesOrder?idProduct={idProduct}&idCustomer={idCustomer}
   static Future<List<Promotion>> getListSalesOrder(String idProduct,
-      String idCustomer, int code, String token, String username) async {
+      String idCustomer, String token, String username) async {
     String url =
         "$apiCons/api/SalesOrder?idProduct=$idProduct&idCustomer=$idCustomer&username=$username";
 

@@ -7,7 +7,8 @@ import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
 import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  final int initialIndex;
+  const DashboardPage({Key? key, required this.initialIndex}) : super(key: key);
 
   @override
   _DashboardPageState createState() => _DashboardPageState();
@@ -41,7 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         backgroundColor: colorAccent,
         title: Text(
-          'Main Dashboard',
+          'Dashboard SMS',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: colorNetral,

@@ -183,31 +183,29 @@ class _InputPageNewState extends State<InputPagePP> {
               //warehouse qyt
               const Text("Warehouse",
                   style: TextStyle(fontSize: 10, color: Colors.black54)),
-              Container(
-                child: SearchChoices.single(
-                  isExpanded: true,
-                  value: promotionProgramInputState.wareHousePageDropdownState
-                          ?.selectedChoiceWrapper?.value ??
-                      "WHS - Tunas - Buffer",
-                  hint: const Text(
+              SearchChoices.single(
+                isExpanded: true,
+                value: promotionProgramInputState.wareHousePageDropdownState
+                        ?.selectedChoiceWrapper?.value ??
                     "WHS - Tunas - Buffer",
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                  ),
-                  items: promotionProgramInputState
-                      .wareHousePageDropdownState?.choiceListWrapper?.value
-                      ?.map((item) {
-                    return DropdownMenuItem(
-                      value: item,
-                      child: Text(
-                        item.value,
-                        style: const TextStyle(fontSize: 12),
-                        overflow: TextOverflow.fade,
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) =>
-                      inputPagePresenter.changeWarehouse(index, value),
+                hint: const Text(
+                  "WHS - Tunas - Buffer",
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                 ),
+                items: promotionProgramInputState
+                    .wareHousePageDropdownState?.choiceListWrapper?.value
+                    ?.map((item) {
+                  return DropdownMenuItem(
+                    value: item,
+                    child: Text(
+                      item.value,
+                      style: const TextStyle(fontSize: 12),
+                      overflow: TextOverflow.fade,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) =>
+                    inputPagePresenter.changeWarehouse(index, value),
               ),
 
               //unit multiply

@@ -17,10 +17,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HistoryLinesAll extends StatefulWidget {
   @override
   _HistoryLinesAllState createState() => _HistoryLinesAllState();
-  String? numberPP;
-  int? idEmp;
+  final String numberPP;
+  final int idEmp;
 
-  HistoryLinesAll({super.key, this.numberPP, this.idEmp});
+  const HistoryLinesAll(
+      {super.key, required this.numberPP, required this.idEmp});
 }
 
 class _HistoryLinesAllState extends State<HistoryLinesAll> {
@@ -59,7 +60,6 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
     try {
       final value = await Promotion.getListLines(
         widget.numberPP ?? '0',
-        code ?? 0,
         _user?.token ?? '',
         _user?.username ?? '',
       );
@@ -117,7 +117,6 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
               child: FutureBuilder<List<Promotion>>(
                 future: Promotion.getListLines(
                   widget.numberPP ?? '',
-                  code ?? 0,
                   _user?.token ?? '',
                   _user?.username ?? '',
                 ),
@@ -160,7 +159,7 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    return CardLinesAdapter(
+                                    return cardLinesAdapter(
                                         widget.numberPP ?? '',
                                         _listHistorySO![index],
                                         index);
@@ -180,15 +179,13 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
   }
 
   Future<bool> onBackPressLines() async {
-    Get.off(const DashboardPage());
+    Get.off(const DashboardPage(
+      initialIndex: 1,
+    ));
     return true;
-// return Navigator.pushReplacement(context,
-    //     MaterialPageRoute(builder: (context) {
-    //   return HistoryNomorPP();
-    // }));
   }
 
-  Container CardLinesAdapter(String namePP, Promotion promotion, int index) {
+  Container cardLinesAdapter(String namePP, Promotion promotion, int index) {
     double price = double.parse(
         promotion.price!.replaceAll(RegExp("Rp"), "").replaceAll(".", ""));
     double disc1 = double.parse(promotion.disc1 ?? '0');

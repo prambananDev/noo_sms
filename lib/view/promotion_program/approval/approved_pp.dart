@@ -5,7 +5,7 @@ import 'package:noo_sms/assets/widgets/debounce.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/promotion_program/approved_pp_history.dart';
+import 'package:noo_sms/view/promotion_program/approval/approved_pp_lines.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,7 +38,7 @@ class _ApprovedPPState extends State<ApprovedPP> {
     });
   }
 
-  Widget CardAdapter(Promotion promosi) {
+  Widget cardAdapter(Promotion promosi) {
     return Container(
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(5),
@@ -208,7 +208,7 @@ class _ApprovedPPState extends State<ApprovedPP> {
                       return ListView.builder(
                           itemCount: _listHistory?.length,
                           itemBuilder: (BuildContext context, int index) =>
-                              CardAdapter(_listHistory[index]));
+                              cardAdapter(_listHistory[index]));
                     } else {
                       print(snapshot.error.toString());
                     }

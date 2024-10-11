@@ -57,7 +57,6 @@ class HistoryLinesController extends GetxController {
     final response = await put(
       Uri.parse(url),
       headers: <String, String>{
-        // 'authorization': basicAuth,
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: isiBody,

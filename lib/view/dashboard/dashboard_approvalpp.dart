@@ -1,10 +1,9 @@
-// views/dashboard/dashboard_approvalpp.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_approvalpp_controller.dart';
-import 'package:noo_sms/view/promotion_program/approval_pending_pp.dart';
-import 'package:noo_sms/view/promotion_program/approved_pp.dart'; // Ensure the import path is correct
+import 'package:noo_sms/view/promotion_program/approval/approval_pending_pp.dart';
+import 'package:noo_sms/view/promotion_program/approval/approved_pp.dart';
 
 class DashboardApprovalPP extends StatefulWidget {
   final int initialIndex;
@@ -23,7 +22,6 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
   @override
   void initState() {
     super.initState();
-    // Properly initialize the controller with GetX
     tabController = Get.put(
         DashboardApprovalPPTabController(initialIndex: widget.initialIndex));
     tabController.initController(this); // Pass `this` as the TickerProvider
@@ -38,36 +36,39 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<DashboardApprovalPPTabController>(
-      builder: (_) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TabBar(
-              unselectedLabelColor: Colors.black,
-              labelColor: colorAccent,
-              controller: tabController.controller,
-              tabs: const [
-                Tab(text: "Pending PP"),
-                Tab(text: "Approved PP"),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
+    return Scaffold(
+      // Add Scaffold here
+      body: GetBuilder<DashboardApprovalPPTabController>(
+        builder: (_) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TabBar(
+                unselectedLabelColor: Colors.black,
+                labelColor: colorAccent,
                 controller: tabController.controller,
-                children: const [
-                  Center(
-                    child: PendingPP(),
-                  ),
-                  Center(
-                    child: ApprovedPP(),
-                  ),
+                tabs: const [
+                  Tab(text: "Pending PPs"),
+                  Tab(text: "Approved PP"),
                 ],
               ),
-            ),
-          ],
-        );
-      },
+              Expanded(
+                child: TabBarView(
+                  controller: tabController.controller,
+                  children: const [
+                    Center(
+                      child: PendingPP(),
+                    ),
+                    Center(
+                      child: ApprovedPP(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

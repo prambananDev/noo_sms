@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/debounce.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
+import 'package:noo_sms/controllers/promotion_program/approval_pending_line_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
+import 'package:noo_sms/view/promotion_program/approval/approval_pending_line.dart';
 import 'package:noo_sms/view/promotion_program/history_lines_all.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +31,7 @@ class _HistoryPendingState extends State<PendingPP> {
   @override
   void initState() {
     super.initState();
-    getSharedPreference(); // Call to load the user and code
+    getSharedPreference();
   }
 
   Future<void> getSharedPreference() async {
@@ -37,8 +40,6 @@ class _HistoryPendingState extends State<PendingPP> {
     Box userBox = await Hive.openBox('users');
     List<User> listUser = userBox.values.map((e) => e as User).toList();
     SharedPreferences pref = await SharedPreferences.getInstance();
-
-    // Delay to ensure preferences are loaded
     await Future.delayed(const Duration(milliseconds: 20));
 
     setState(() {
@@ -63,7 +64,7 @@ class _HistoryPendingState extends State<PendingPP> {
     return;
   }
 
-  Container CardAdapter(Promotion promosi) {
+  Container cardAdapter(Promotion promotion) {
     return Container(
         margin: const EdgeInsets.all(10), // Adjusted margin
         padding: const EdgeInsets.all(5),
@@ -77,31 +78,32 @@ class _HistoryPendingState extends State<PendingPP> {
           children: <Widget>[
             TextResultCard(
               title: "No. PP",
-              value: promosi.nomorPP ?? '',
+              value: promotion.nomorPP ?? '',
             ),
             TextResultCard(
               title: "Date",
-              value: promosi.date,
+              value: promotion.date,
             ),
             TextResultCard(
               title: "Type",
-              value: promosi.customer ?? '',
+              value: promotion.customer ?? '',
             ),
             TextResultCard(
               title: "Salesman",
-              value: promosi.salesman,
+              value: promotion.salesman,
             ),
             TextResultCard(
               title: "Sales Office",
-              value: promosi.salesOffice ?? '',
+              value: promotion.salesOffice ?? '',
             ),
             TextButton(
               onPressed: () {
+                Get.delete<HistoryLinesPendingController>();
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) {
-                  return HistoryLinesAll(
-                    numberPP: promosi.namePP,
-                    idEmp: _user!.id, // Use _user safely
+                  return HistoryLines(
+                    numberPP: promotion.namePP,
+                    idEmp: _user!.id,
                   );
                 }));
               },
@@ -223,7 +225,7 @@ class _HistoryPendingState extends State<PendingPP> {
                       return ListView.builder(
                           itemCount: _listHistory.length,
                           itemBuilder: (BuildContext context, int index) =>
-                              CardAdapter(
+                              cardAdapter(
                                 _listHistory[index],
                               ));
                     } else {

@@ -58,7 +58,9 @@ class _MainAppState extends State<MainApp> {
     String? token = prefs.getString('userToken');
     if (token != null) {
       // Navigate to dashboard if token exists
-      Get.offAll(() => const DashboardPage());
+      Get.offAll(() => const DashboardPage(
+            initialIndex: 0,
+          ));
     }
   }
 

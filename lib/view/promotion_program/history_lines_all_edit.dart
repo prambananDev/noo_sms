@@ -14,7 +14,6 @@ import 'package:noo_sms/models/id_valaue.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/promotion_program/custom_card_history_all_edit.dart';
-import 'package:noo_sms/view/promotion_program/input_pp.dart';
 import 'package:search_choices/search_choices.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,16 +40,13 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
+    getSharedPreference();
+    getDataActivity().then((_) {
+      _initializeData(); // Now called only after data is loaded
+    });
   }
 
-  Future<void> _initializeData() async {
-    await _getSharedPreference();
-    await _getDataActivity();
-    _populateFormFields();
-  }
-
-  Future<void> _getSharedPreference() async {
+  Future<void> getSharedPreference() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
     Box userBox = await Hive.openBox('users');
@@ -61,7 +57,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
     });
   }
 
-  Future<void> _getDataActivity() async {
+  Future<void> getDataActivity() async {
     final url = '$apiCons/api/activity/${widget.numberPP}';
     try {
       final response = await get(Uri.parse(url));
@@ -104,6 +100,43 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
     setState(() {});
   }
 
+  void _initializeData() {
+    _setProgramDetails();
+    _setPromotionType();
+    _setCustomerGroup();
+    _setDates();
+    _setVendor();
+    populateFormFields();
+    _initializeActivityLines();
+  }
+
+  void populateFormFields() {
+    inputPagePresenter.programNoteTextEditingControllerRx.value.text =
+        activityEditModel.note ?? '';
+    inputPagePresenter.programNameTextEditingControllerRx.value.text =
+        activityEditModel.number ?? '';
+
+    IdAndValue<String> type = IdAndValue<String>(
+      id: activityEditModel.type ?? '1',
+      value: _getPromotionTypeLabel(activityEditModel.type),
+    );
+    inputPagePresenter
+        .promotionTypeInputPageDropdownStateRx.value.selectedChoice = type;
+
+    if (activityEditModel.fromDate != null) {
+      inputPagePresenter.programFromDateTextEditingControllerRx.value.text =
+          _formatDate(activityEditModel.fromDate!);
+    }
+    if (activityEditModel.toDate != null) {
+      inputPagePresenter.programToDateTextEditingControllerRx.value.text =
+          _formatDate(activityEditModel.toDate!);
+    }
+
+    idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
+    startApp = true;
+    setState(() {});
+  }
+
   String _getPromotionTypeLabel(String? type) {
     switch (type) {
       case '1':
@@ -115,12 +148,180 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
     }
   }
 
+  void _setProgramDetails() {
+    inputPagePresenter.programNoteTextEditingControllerRx.value.text =
+        activityEditModel.note ?? '';
+    inputPagePresenter.programNameTextEditingControllerRx.value.text =
+        activityEditModel.number ?? '';
+  }
+
+  void _setPromotionType() {
+    if (activityEditModel.type != null) {
+      String? typeValue = _getPromotionTypeLabel(activityEditModel.type);
+      IdAndValue<String> type = IdAndValue<String>(
+        id: activityEditModel.type!,
+        value: typeValue ?? "Unknown",
+      );
+      inputPagePresenter
+          .promotionTypeInputPageDropdownStateRx.value.selectedChoice = type;
+    } else {
+      print("activityEditModel.type is null");
+    }
+  }
+
+  String? getPromotionTypeLabel(String? type) {
+    switch (type) {
+      case '1':
+        return 'Discount';
+      case '2':
+        return 'Bonus';
+      default:
+        return 'Discount & Bonus';
+    }
+  }
+
+  void _setCustomerGroup() {
+    if (activityEditModel.customerId != null) {
+      inputPagePresenter.customerGroupInputPageDropdownState.value
+          .selectedChoice = "Customer";
+      inputPagePresenter.changeCustomerGroupHeader(inputPagePresenter
+          .customerGroupInputPageDropdownState.value.selectedChoice!);
+
+      IdAndValue<String> custHeader = IdAndValue<String>(
+        id: activityEditModel.customerId!,
+        value: activityEditModel.customerId!,
+      );
+      inputPagePresenter
+          .custNameHeaderValueDropdownStateRx.value.selectedChoice = custHeader;
+    } else {
+      print("activityEditModel.customerId is null");
+    }
+  }
+
+  void _setDates() {
+    if (activityEditModel.fromDate != null) {
+      inputPagePresenter.programFromDateTextEditingControllerRx.value.text =
+          _formatDate(activityEditModel.fromDate!);
+    }
+
+    if (activityEditModel.toDate != null) {
+      inputPagePresenter.programToDateTextEditingControllerRx.value.text =
+          _formatDate(activityEditModel.toDate!);
+    }
+  }
+
   String _formatDate(String date) {
     return DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
   }
 
+  void _setVendor() {
+    if (activityEditModel.vendor != null) {
+      final index = inputPagePresenter.listDataPrincipal
+          .indexOf(activityEditModel.vendor);
+      if (index >= 0) {
+        inputPagePresenter.selectedDataPrincipal.add(index);
+      }
+    }
+  }
+
+  void _initializeActivityLines() {
+    if (activityEditModel.activityLinesEdit != null) {
+      for (int i = 0; i < activityEditModel.activityLinesEdit!.length; i++) {
+        inputPagePresenter.addItem();
+        Future.delayed(const Duration(seconds: 2), () {
+          _initializeSingleLine(i);
+          setState(() {});
+        });
+      }
+      idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
+    }
+  }
+
+  void _initializeSingleLine(int i) {
+    IdAndValue<String> percent = IdAndValue<String>(id: "1", value: "Percent");
+    PromotionProgramInputState promotionProgramInputState = inputPagePresenter
+        .promotionProgramInputStateRx.value.promotionProgramInputState[i];
+
+    _setItemProduct(i, promotionProgramInputState);
+    _setSupplyItem(i, promotionProgramInputState);
+    _setQuantities(i, promotionProgramInputState);
+    _setSupplementaryUnit(i, promotionProgramInputState);
+    _setSalesPrice(i, promotionProgramInputState);
+    _setDiscountValues(i, promotionProgramInputState, percent);
+    inputPagePresenter.getPriceToCustomer(i);
+  }
+
+  void _setItemProduct(int i, PromotionProgramInputState state) {
+    IdAndValue<String> itemProduct = IdAndValue<String>(
+      id: activityEditModel.activityLinesEdit![i].item!,
+      value: activityEditModel.activityLinesEdit![i].item!,
+    );
+    state.itemGroupInputPageDropdownState!.selectedChoice = 'Item';
+    inputPagePresenter.changeItemGroup(
+        i, state.itemGroupInputPageDropdownState!.selectedChoice!);
+    state.selectProductPageDropdownState!.selectedChoice = itemProduct;
+    inputPagePresenter.changeProduct(
+        i, state.selectProductPageDropdownState!.selectedChoice!);
+  }
+
+  void _setSupplyItem(int i, PromotionProgramInputState state) {
+    IdAndValue<String> suppItemProduct = IdAndValue<String>(
+      id: activityEditModel.activityLinesEdit![i].suppItemId!,
+      value: activityEditModel.activityLinesEdit![i].suppItemId!,
+    );
+    state.supplyItem!.selectedChoice = suppItemProduct;
+    inputPagePresenter.changeSupplyItem(i, state.supplyItem!.selectedChoice!);
+  }
+
+  void _setQuantities(int i, PromotionProgramInputState state) {
+    state.qtyFrom!.text = activityEditModel.activityLinesEdit![i].qtyFrom
+        .toString()
+        .split(".")[0];
+    state.qtyTo!.text =
+        activityEditModel.activityLinesEdit![i].qtyTo.toString().split(".")[0];
+  }
+
+  void _setSupplementaryUnit(int i, PromotionProgramInputState state) {
+    if (activityEditModel.activityLinesEdit![i].supplementaryUnitId != null) {
+      state.unitSupplyItem?.selectedChoice =
+          activityEditModel.activityLinesEdit![i].supplementaryUnitId;
+    } else {
+      print("Supplementary Unit ID is null for activity line $i");
+    }
+  }
+
+  void _setSalesPrice(int i, PromotionProgramInputState state) {
+    state.salesPrice!.text = activityEditModel.activityLinesEdit![i].salesPrice
+        .toString()
+        .replaceAll("Rp", "");
+  }
+
+  void _setDiscountValues(
+      int i, PromotionProgramInputState state, IdAndValue<String> percent) {
+    state.percentValueInputPageDropdownState?.selectedChoice = percent;
+    state.qtyItem!.text = activityEditModel.activityLinesEdit![i].suppItemQty
+        .toString()
+        .split(".")[0];
+    state.percent1!.text = activityEditModel.activityLinesEdit![i].percent1
+        .toString()
+        .split(".")[0];
+    state.percent2!.text = activityEditModel.activityLinesEdit![i].percent2
+        .toString()
+        .split(".")[0];
+    state.percent3!.text = activityEditModel.activityLinesEdit![i].percent3
+        .toString()
+        .split(".")[0];
+    state.percent4!.text = activityEditModel.activityLinesEdit![i].percent4
+        .toString()
+        .split(".")[0];
+    state.value1!.text =
+        activityEditModel.activityLinesEdit![i].value1.toString().split(".")[0];
+    state.value2!.text =
+        activityEditModel.activityLinesEdit![i].value2.toString().split(".")[0];
+  }
+
   Future<bool> _onBackPressLines() {
-    Navigator.of(context).pop();
+    Navigator.pop(context);
     return Future.value(true);
   }
 
@@ -132,7 +333,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
         appBar: AppBar(
           backgroundColor: colorAccent,
           title: Text(
-            "Edit",
+            "Edit Lines",
             style: TextStyle(fontWeight: FontWeight.w800, color: colorNetral),
           ),
           centerTitle: true,
@@ -255,7 +456,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
             }
           }
         },
-        isExpanded: true, // Ensures that the dropdown fills the available space
+        isExpanded: true,
       ),
     );
   }

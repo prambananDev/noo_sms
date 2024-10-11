@@ -922,7 +922,9 @@ class InputPageController extends GetxController {
           tabController.initialIndex = 1;
           Get.delete<InputPageController>();
           Get.offAll(
-            const DashboardPage(),
+            const DashboardPage(
+              initialIndex: 2,
+            ),
           );
           Get.to(const DashboardPP(
             initialIndex: 1,

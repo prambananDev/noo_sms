@@ -45,7 +45,7 @@ class _HistoryAllState extends State<HistoryAll> {
     });
   }
 
-  Container CardAdapter(Promotion promotion) {
+  Container cardAdapter(Promotion promotion) {
     return Container(
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(5),
@@ -390,7 +390,7 @@ class _HistoryAllState extends State<HistoryAll> {
                       return ListView.builder(
                         itemCount: _listHistory.length,
                         itemBuilder: (BuildContext context, int index) =>
-                            CardAdapter(_listHistory[index]),
+                            cardAdapter(_listHistory[index]),
                       );
                     } else {
                       print(snapshot.error.toString());

@@ -26,7 +26,9 @@ class LoginProvider with ChangeNotifier {
         Navigator.pop(context);
       } else {
         setBoxLogin(value, code);
-        Get.offAll(const DashboardPage());
+        Get.offAll(const DashboardPage(
+          initialIndex: 0,
+        ));
       }
     }).catchError((onError) {
       _message = onError.toString();
