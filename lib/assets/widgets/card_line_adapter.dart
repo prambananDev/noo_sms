@@ -16,9 +16,7 @@ class CardLinesAdapter extends StatefulWidget {
   final bool valueSelectAll;
   final bool statusDisable;
   final bool showSalesHistory;
-  final List<TextEditingController> qtyFromController;
-  final List<TextEditingController> qtyToController;
-  final List<TextEditingController> disc1Controller;
+  List<TextEditingController>? disc1Controller;
   final List<TextEditingController> disc2Controller;
   final List<TextEditingController> disc3Controller;
   final List<TextEditingController> disc4Controller;
@@ -37,7 +35,7 @@ class CardLinesAdapter extends StatefulWidget {
   // Function(String itemId) getSupplyUnit;
   // Function(String itemId) getWarehouse;
 
-  const CardLinesAdapter({
+  CardLinesAdapter({
     Key? key,
     required this.namePP,
     required this.idEmp,
@@ -47,9 +45,9 @@ class CardLinesAdapter extends StatefulWidget {
     required this.valueSelectAll,
     required this.statusDisable,
     required this.showSalesHistory,
-    required this.qtyFromController,
-    required this.qtyToController,
-    required this.disc1Controller,
+    // required this.qtyFromController,
+    // required this.qtyToController,
+    this.disc1Controller,
     required this.disc2Controller,
     required this.disc3Controller,
     required this.disc4Controller,
@@ -74,6 +72,26 @@ class CardLinesAdapter extends StatefulWidget {
 }
 
 class _CardLinesAdapterState extends State<CardLinesAdapter> {
+  late TextEditingController qtyFromcontroller;
+  late TextEditingController qtyTocontroller;
+
+  @override
+  void initState() {
+    super.initState();
+    qtyFromcontroller =
+        TextEditingController(text: widget.promotion.qty.toString());
+    qtyTocontroller =
+        TextEditingController(text: widget.promotion.qtyTo.toString());
+  }
+
+  @override
+  void dispose() {
+    // Dispose controllers when the widget is disposed
+    qtyFromcontroller.dispose();
+    qtyTocontroller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double price = double.parse(widget.promotion.price
@@ -120,12 +138,11 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
             title: "Product",
             value: widget.promotion.product!,
           ),
-          buildQtyRow(
-              context, widget.qtyFromController, widget.qtyToController),
+          buildQtyRow(context, qtyFromcontroller, qtyTocontroller),
           // buildUnitField(context, widget.index),
           TextResultCard(
             title: "Unit",
-            value: widget.promotion.unitId!,
+            value: widget.promotion.unitId.toString(),
           ),
           TextResultCard(
             title: "Price",
@@ -146,8 +163,8 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
   // Helper method to build Qty fields
   Widget buildQtyRow(
       BuildContext context,
-      List<TextEditingController> qtyFromController,
-      List<TextEditingController> qtyToController) {
+      TextEditingController qtyFromController,
+      TextEditingController qtyToController) {
     return Row(
       children: [
         buildQtyField(context, "Qty From", qtyFromController),
@@ -156,29 +173,18 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
     );
   }
 
-  Widget buildQtyField(BuildContext context, String title,
-      List<TextEditingController> controller) {
+  Widget buildQtyField(
+      BuildContext context, String title, TextEditingController controller) {
     return SizedBox(
-      width: 150,
-      child: InkWell(
-        onTap: () {
-          Get.defaultDialog(
-            barrierDismissible: false,
-            content: TextFormField(controller: controller[widget.index]),
-            onConfirm: () {
-              Get.back();
-            },
-          );
-        },
-        child: TextResultCard(
-          title: title,
-          value: controller[widget.index].text,
-        ),
+      width: 80,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(
+            decimal: true), // Allows decimal input
       ),
     );
   }
 
-  // Helper method to build Unit field
   Widget buildUnitField(BuildContext context, int index) {
     if (index >= widget.unitController.length) {
       return const Text("No Unit Available");
@@ -267,7 +273,7 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
   Widget buildDiscountFields(BuildContext context, double totalPriceDiscOnly) {
     return Column(
       children: <Widget>[
-        buildDiscountRow(context, "Disc1(%) PRB", widget.disc1Controller),
+        buildDiscountRow(context, "Disc1(%) PRB", widget.disc1Controller!),
         buildDiscountRow(context, "Disc2(%) COD", widget.disc2Controller),
         buildDiscountRow(
             context, "Disc3(%) Principal1", widget.disc3Controller),

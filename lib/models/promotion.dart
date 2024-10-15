@@ -261,10 +261,10 @@ class Promotion {
   static Future<List<Promotion>> getListLinesPending(
       String nomorPP, String token, String username) async {
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username&type=1';
-    debugPrint("Z$nomorPP");
+
     final dio = Dio()..options.headers['Authorization'] = token;
     final response = await dio.get(url);
-    debugPrint("list pending ${response.data}");
+    debugPrint("list ${response.data}");
     if (response.statusCode != 200) {
       throw Exception('Failed to get list of lines');
     }

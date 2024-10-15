@@ -7,6 +7,7 @@ import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/debounce.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
+import 'package:noo_sms/controllers/promotion_program/input_pp_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/login/login_view.dart';
@@ -39,7 +40,7 @@ class _HistoryAllState extends State<HistoryAll> {
         .then((value) {
       setState(() {
         listHistoryReal = value;
-        debugPrint("tez $value");
+
         _listHistory = listHistoryReal;
       });
     });
@@ -120,12 +121,12 @@ class _HistoryAllState extends State<HistoryAll> {
                         await SharedPreferences.getInstance();
                     var url =
                         "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&NoPP=${promotion.namePP}";
-                    debugPrint("user ${_user.token!}");
+
                     final response = await get(Uri.parse(url),
                         headers: <String, String>{
                           'authorization': _user.token!
                         });
-                    debugPrint("cus $url");
+
                     final listData = jsonDecode(response.body);
                     if (listData != null && response.statusCode == 200) {
                       Get.defaultDialog(
@@ -205,6 +206,10 @@ class _HistoryAllState extends State<HistoryAll> {
               Expanded(
                 child: TextButton(
                   onPressed: () {
+                    if (!Get.isRegistered<InputPageController>()) {
+                      Get.put(InputPageController());
+                    }
+
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
                       return HistoryLinesAllEdit(

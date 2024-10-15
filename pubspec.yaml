@@ -25,6 +25,8 @@ dependencies:
   search_choices: ^2.2.3
   dropdown_search: ^5.0.6
   dio: ^5.4.0
+  money_formatter: ^0.0.6
+  flutter_screenutil: ^5.9.3
 
 
 dev_dependencies:

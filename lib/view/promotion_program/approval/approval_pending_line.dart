@@ -132,7 +132,7 @@ class _HistoryLinesState extends State<HistoryLines> {
                 ],
               ),
         appBar: AppBar(
-          backgroundColor: Theme.of(context).primaryColorDark,
+          backgroundColor: colorAccent,
           automaticallyImplyLeading: false,
           leading: IconButton(
             icon: Icon(
@@ -221,7 +221,7 @@ class _HistoryLinesState extends State<HistoryLines> {
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     itemBuilder: (BuildContext context, int index) {
-                      debugPrint(_controller.disc1Controller.toString());
+                      debugPrint("zz${_controller.disc1Controller}");
                       // return Text(_controller.dataHeader["qty"].toString());
                       return CardLinesAdapter(
                         namePP: widget.numberPP,
@@ -232,8 +232,8 @@ class _HistoryLinesState extends State<HistoryLines> {
                         valueSelectAll: false,
                         statusDisable: false,
                         showSalesHistory: true,
-                        qtyFromController: _controller.qtyFromController,
-                        qtyToController: _controller.qtyToController,
+                        // qtyFromController: _controller.qtyFromController,
+                        // qtyToController: _controller.qtyToController,
                         disc1Controller: _controller.disc1Controller,
                         disc2Controller: _controller.disc2Controller,
                         disc3Controller: _controller.disc3Controller,

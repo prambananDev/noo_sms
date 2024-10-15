@@ -33,7 +33,8 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   late User _user;
   late int code;
   bool startApp = false;
-  List idLines = [];
+  bool linesInitialized = false;
+  List<int> idLines = [];
   final inputPagePresenter = Get.put(InputPageController());
   ActivityEdit activityEditModel = ActivityEdit();
 
@@ -41,9 +42,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   void initState() {
     super.initState();
     getSharedPreference();
-    getDataActivity().then((_) {
-      _initializeData(); // Now called only after data is loaded
-    });
+    getDataActivity();
   }
 
   Future<void> getSharedPreference() async {
@@ -64,12 +63,22 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
       if (response.statusCode == 200) {
         setState(() {
           activityEditModel = ActivityEdit.fromJson(jsonDecode(response.body));
+          _initializeData();
         });
       } else {
         print("Failed to load activity data");
       }
     } catch (e) {
       print("Error fetching activity data: $e");
+    }
+  }
+
+  void _initializeData() {
+    _populateFormFields();
+
+    if (!linesInitialized) {
+      _initializeActivityLines();
+      linesInitialized = true;
     }
   }
 
@@ -95,145 +104,20 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           _formatDate(activityEditModel.toDate!);
     }
 
-    idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
-    startApp = true;
-    setState(() {});
-  }
-
-  void _initializeData() {
-    _setProgramDetails();
-    _setPromotionType();
-    _setCustomerGroup();
-    _setDates();
-    _setVendor();
-    populateFormFields();
-    _initializeActivityLines();
-  }
-
-  void populateFormFields() {
-    inputPagePresenter.programNoteTextEditingControllerRx.value.text =
-        activityEditModel.note ?? '';
-    inputPagePresenter.programNameTextEditingControllerRx.value.text =
-        activityEditModel.number ?? '';
-
-    IdAndValue<String> type = IdAndValue<String>(
-      id: activityEditModel.type ?? '1',
-      value: _getPromotionTypeLabel(activityEditModel.type),
-    );
-    inputPagePresenter
-        .promotionTypeInputPageDropdownStateRx.value.selectedChoice = type;
-
-    if (activityEditModel.fromDate != null) {
-      inputPagePresenter.programFromDateTextEditingControllerRx.value.text =
-          _formatDate(activityEditModel.fromDate!);
-    }
-    if (activityEditModel.toDate != null) {
-      inputPagePresenter.programToDateTextEditingControllerRx.value.text =
-          _formatDate(activityEditModel.toDate!);
-    }
-
-    idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
-    startApp = true;
-    setState(() {});
-  }
-
-  String _getPromotionTypeLabel(String? type) {
-    switch (type) {
-      case '1':
-        return 'Discount';
-      case '2':
-        return 'Bonus';
-      default:
-        return 'Discount & Bonus';
-    }
-  }
-
-  void _setProgramDetails() {
-    inputPagePresenter.programNoteTextEditingControllerRx.value.text =
-        activityEditModel.note ?? '';
-    inputPagePresenter.programNameTextEditingControllerRx.value.text =
-        activityEditModel.number ?? '';
-  }
-
-  void _setPromotionType() {
-    if (activityEditModel.type != null) {
-      String? typeValue = _getPromotionTypeLabel(activityEditModel.type);
-      IdAndValue<String> type = IdAndValue<String>(
-        id: activityEditModel.type!,
-        value: typeValue ?? "Unknown",
-      );
-      inputPagePresenter
-          .promotionTypeInputPageDropdownStateRx.value.selectedChoice = type;
-    } else {
-      print("activityEditModel.type is null");
-    }
-  }
-
-  String? getPromotionTypeLabel(String? type) {
-    switch (type) {
-      case '1':
-        return 'Discount';
-      case '2':
-        return 'Bonus';
-      default:
-        return 'Discount & Bonus';
-    }
-  }
-
-  void _setCustomerGroup() {
-    if (activityEditModel.customerId != null) {
-      inputPagePresenter.customerGroupInputPageDropdownState.value
-          .selectedChoice = "Customer";
-      inputPagePresenter.changeCustomerGroupHeader(inputPagePresenter
-          .customerGroupInputPageDropdownState.value.selectedChoice!);
-
-      IdAndValue<String> custHeader = IdAndValue<String>(
-        id: activityEditModel.customerId!,
-        value: activityEditModel.customerId!,
-      );
-      inputPagePresenter
-          .custNameHeaderValueDropdownStateRx.value.selectedChoice = custHeader;
-    } else {
-      print("activityEditModel.customerId is null");
-    }
-  }
-
-  void _setDates() {
-    if (activityEditModel.fromDate != null) {
-      inputPagePresenter.programFromDateTextEditingControllerRx.value.text =
-          _formatDate(activityEditModel.fromDate!);
-    }
-
-    if (activityEditModel.toDate != null) {
-      inputPagePresenter.programToDateTextEditingControllerRx.value.text =
-          _formatDate(activityEditModel.toDate!);
-    }
-  }
-
-  String _formatDate(String date) {
-    return DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
-  }
-
-  void _setVendor() {
-    if (activityEditModel.vendor != null) {
-      final index = inputPagePresenter.listDataPrincipal
-          .indexOf(activityEditModel.vendor);
-      if (index >= 0) {
-        inputPagePresenter.selectedDataPrincipal.add(index);
-      }
-    }
+    idLines =
+        activityEditModel.activityLinesEdit!.map((e) => e.id ?? -1).toList();
+    setState(() {
+      startApp = true;
+    });
   }
 
   void _initializeActivityLines() {
     if (activityEditModel.activityLinesEdit != null) {
       for (int i = 0; i < activityEditModel.activityLinesEdit!.length; i++) {
-        inputPagePresenter.addItem();
-        Future.delayed(const Duration(seconds: 2), () {
-          _initializeSingleLine(i);
-          setState(() {});
-        });
+        // Add line only once
+        // inputPagePresenter.addItem();
+        _initializeSingleLine(i);
       }
-      idLines = activityEditModel.activityLinesEdit!.map((e) => e.id).toList();
     }
   }
 
@@ -252,10 +136,10 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   }
 
   void _setItemProduct(int i, PromotionProgramInputState state) {
-    IdAndValue<String> itemProduct = IdAndValue<String>(
-      id: activityEditModel.activityLinesEdit![i].item!,
-      value: activityEditModel.activityLinesEdit![i].item!,
-    );
+    String itemId = activityEditModel.activityLinesEdit![i].item ?? 'Default';
+    IdAndValue<String> itemProduct =
+        IdAndValue<String>(id: itemId, value: itemId);
+
     state.itemGroupInputPageDropdownState!.selectedChoice = 'Item';
     inputPagePresenter.changeItemGroup(
         i, state.itemGroupInputPageDropdownState!.selectedChoice!);
@@ -285,8 +169,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
     if (activityEditModel.activityLinesEdit![i].supplementaryUnitId != null) {
       state.unitSupplyItem?.selectedChoice =
           activityEditModel.activityLinesEdit![i].supplementaryUnitId;
-    } else {
-      print("Supplementary Unit ID is null for activity line $i");
     }
   }
 
@@ -320,6 +202,21 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
         activityEditModel.activityLinesEdit![i].value2.toString().split(".")[0];
   }
 
+  String _getPromotionTypeLabel(String? type) {
+    switch (type) {
+      case '1':
+        return 'Discount';
+      case '2':
+        return 'Bonus';
+      default:
+        return 'Discount & Bonus';
+    }
+  }
+
+  String _formatDate(String date) {
+    return DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
+  }
+
   Future<bool> _onBackPressLines() {
     Navigator.pop(context);
     return Future.value(true);
@@ -332,10 +229,9 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: colorAccent,
-          title: Text(
-            "Edit Lines",
-            style: TextStyle(fontWeight: FontWeight.w800, color: colorNetral),
-          ),
+          title: Text("Edit Lines",
+              style:
+                  TextStyle(fontWeight: FontWeight.w800, color: colorNetral)),
           centerTitle: true,
           leading: IconButton(
             icon: Icon(Icons.chevron_left, color: colorNetral, size: 35),
@@ -432,21 +328,14 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
       () => SearchChoices.single(
         items: inputPagePresenter.listDataPrincipal
             .map((item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ))
+                value: item,
+                child: Text(item, style: const TextStyle(fontSize: 12))))
             .toList(),
         value: inputPagePresenter.selectedDataPrincipal.isNotEmpty
             ? inputPagePresenter
                 .listDataPrincipal[inputPagePresenter.selectedDataPrincipal[0]]
             : null,
-        hint: const Text(
-          "Select Principal",
-          style: TextStyle(fontSize: 12),
-        ),
+        hint: const Text("Select Principal", style: TextStyle(fontSize: 12)),
         onChanged: (String? value) {
           if (value != null) {
             final index = inputPagePresenter.listDataPrincipal.indexOf(value);
@@ -500,103 +389,80 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           ? Container(
               margin: const EdgeInsets.only(bottom: 100),
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorAccent,
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: colorAccent),
                 onPressed:
                     isAddItem ? () => inputPagePresenter.addItem() : null,
-                child: Text(
-                  "Add Lines",
-                  style: TextStyle(color: colorNetral),
-                ),
+                child: Text("Add Lines", style: TextStyle(color: colorNetral)),
               ),
             )
           : ListView.builder(
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: promotionProgramInputStateList.length,
-              itemBuilder: (context, index) => GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                },
-                child: Column(
-                  children: [
-                    // Call customCard here
-                    customCard(index, inputPagePresenter),
-                    const SizedBox(
-                      height: 10,
-                    ),
-
-                    index == promotionProgramInputStateList.length - 1
-                        ? Padding(
-                            padding: const EdgeInsets.only(bottom: 500),
-                            child: Column(
-                              children: [
-                                Visibility(
-                                  visible: !inputPagePresenter.onTap.value,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: colorAccent,
-                                    ),
-                                    child: Text(
-                                      "Submit",
+              itemBuilder: (context, index) => Column(
+                children: [
+                  customCard(index, inputPagePresenter),
+                  const SizedBox(height: 10),
+                  index == promotionProgramInputStateList.length - 1
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 500),
+                          child: Column(
+                            children: [
+                              Visibility(
+                                visible: !inputPagePresenter.onTap.value,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: colorAccent),
+                                  child: Text("Submit",
                                       style: TextStyle(
-                                        color: colorNetral,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        bool isInvalid = false;
-                                        for (int i = 0;
-                                            i <
-                                                promotionProgramInputStateList
-                                                    .length;
-                                            i++) {
-                                          PromotionProgramInputState element =
-                                              promotionProgramInputStateList[i];
-                                          if (element.selectProductPageDropdownState
-                                                      ?.selectedChoice ==
-                                                  null ||
-                                              element.qtyFrom!.text.isEmpty ||
-                                              element.unitPageDropdownState
-                                                      ?.selectedChoice ==
-                                                  null) {
-                                            isInvalid = true;
-                                            break;
-                                          }
+                                          color: colorNetral, fontSize: 12)),
+                                  onPressed: () {
+                                    setState(() {
+                                      bool isInvalid = false;
+                                      for (int i = 0;
+                                          i <
+                                              promotionProgramInputStateList
+                                                  .length;
+                                          i++) {
+                                        PromotionProgramInputState element =
+                                            promotionProgramInputStateList[i];
+                                        if (element.selectProductPageDropdownState
+                                                    ?.selectedChoice ==
+                                                null ||
+                                            element.qtyFrom!.text.isEmpty ||
+                                            element.unitPageDropdownState
+                                                    ?.selectedChoice ==
+                                                null) {
+                                          isInvalid = true;
+                                          break;
                                         }
+                                      }
 
-                                        // If fields are invalid, show an error message
-                                        if (isInvalid) {
-                                          inputPagePresenter.onTap.value =
-                                              false;
-                                          Get.snackbar("Error",
-                                              "Found empty fields in Lines",
-                                              backgroundColor: Colors.red,
-                                              icon: const Icon(Icons.error));
-                                        } else {
-                                          inputPagePresenter.onTap.value = true;
-                                          inputPagePresenter
-                                              .submitPromotionProgram();
-                                        }
-                                      });
-                                    },
-                                  ),
+                                      if (isInvalid) {
+                                        inputPagePresenter.onTap.value = false;
+                                        Get.snackbar("Error",
+                                            "Found empty fields in Lines",
+                                            backgroundColor: Colors.red,
+                                            icon: const Icon(Icons.error));
+                                      } else {
+                                        inputPagePresenter.onTap.value = true;
+                                        inputPagePresenter
+                                            .submitPromotionProgram();
+                                      }
+                                    });
+                                  },
                                 ),
-                                Visibility(
-                                  visible:
-                                      inputPagePresenter.onTap.value == true,
-                                  child: const Center(
-                                      child: CircularProgressIndicator()),
-                                ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox(),
-                  ],
-                ),
+                              ),
+                              Visibility(
+                                visible: inputPagePresenter.onTap.value == true,
+                                child: const Center(
+                                    child: CircularProgressIndicator()),
+                              ),
+                            ],
+                          ),
+                        )
+                      : const SizedBox(),
+                ],
               ),
             );
     });

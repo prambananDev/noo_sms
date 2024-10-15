@@ -36,8 +36,8 @@ class HistoryLinesPendingController extends GetxController {
   List<TextEditingController> value1Controller = [];
   List<TextEditingController> value2Controller = [];
   List<TextEditingController> suppQtyController = [];
-  List<TextEditingController> qtyToController = [];
-  List<TextEditingController> qtyFromController = [];
+  TextEditingController qtyToController = TextEditingController();
+  TextEditingController qtyFromController = TextEditingController();
   TextEditingController fromDateHeaderController = TextEditingController();
   TextEditingController toDateHeaderController = TextEditingController();
 
@@ -67,10 +67,10 @@ class HistoryLinesPendingController extends GetxController {
     List<double?> qtyFrom = extractData(data, (e) => e.qty);
     List<double?> qtyTo = extractData(data, (e) => e.qtyTo);
 
-    initializeTextControllers(
-        qtyFromController, qtyFrom.map((e) => e?.toString() ?? '').toList());
-    initializeTextControllers(
-        qtyToController, qtyTo.map((e) => e?.toString() ?? '').toList());
+    // initializeTextControllers(
+    //     qtyFromController, qtyFrom.map((e) => e?.toString() ?? '').toList());
+    // initializeTextControllers(
+    //     qtyToController, qtyTo.map((e) => e?.toString() ?? '').toList());
   }
 
   void initializeTextControllers(
@@ -93,6 +93,7 @@ class HistoryLinesPendingController extends GetxController {
         user.value.token ?? '',
         user.value.username ?? '',
       );
+
       listHistorySO.assignAll(value);
       listHistorySOEncode = jsonEncode(listHistorySO);
       if (listHistorySO.isNotEmpty) {
@@ -182,12 +183,12 @@ class HistoryLinesPendingController extends GetxController {
     for (int i = 0; i < data.length; i++) {
       lines.add({
         "id": data[i].id,
-        "qtyFrom": qtyFromController[i].text.isEmpty
+        "qtyFrom": qtyFromController.text.isEmpty
             ? data[i].qty
-            : double.parse(qtyFromController[i].text),
-        "qtyTo": qtyToController[i].text.isEmpty
+            : double.parse(qtyFromController.text),
+        "qtyTo": qtyToController.text.isEmpty
             ? data[i].qtyTo
-            : double.parse(qtyToController[i].text),
+            : double.parse(qtyToController.text),
         "unit": unitController[i] ?? data[i].unitId,
         "disc1": disc1Controller[i].text.isEmpty
             ? data[i].disc1

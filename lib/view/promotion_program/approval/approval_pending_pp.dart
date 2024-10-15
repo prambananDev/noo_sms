@@ -82,7 +82,7 @@ class _HistoryPendingState extends State<PendingPP> {
             ),
             TextResultCard(
               title: "Date",
-              value: promotion.date,
+              value: promotion.date ?? '',
             ),
             TextResultCard(
               title: "Type",

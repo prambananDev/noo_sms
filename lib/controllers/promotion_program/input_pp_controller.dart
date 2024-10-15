@@ -170,9 +170,8 @@ class InputPageController extends GetxController {
         );
       }).toList();
 
-      update(); // Call update to refresh the UI
+      update();
     } else {
-      // Handle error scenario
       debugPrint('Failed to load program data');
     }
   }
@@ -245,10 +244,10 @@ class InputPageController extends GetxController {
     InputPageDropdownState<String>? unitPageDropdownState =
         promotionProgramInputState.unitPageDropdownState;
     unitPageDropdownState?.loadingState = 1;
-    debugPrint("datt ${selectProductPageDropdownState!.selectedChoice!.id}");
     _updateState();
     var urlGetUnit =
-        "$apiCons2/api/Unit?item=${selectProductPageDropdownState.selectedChoice?.id}";
+        "$apiCons2/api/Unit?item=${selectProductPageDropdownState!.selectedChoice!.id}";
+    debugPrint("zz${selectProductPageDropdownState.selectedChoice!.id}");
     final response = await get(Uri.parse(urlGetUnit));
     var listData = jsonDecode(response.body);
     unitPageDropdownState?.loadingState = 2;
@@ -469,12 +468,8 @@ class InputPageController extends GetxController {
     try {
       var urlGetCustomer =
           "http://api-scs.prb.co.id/api/AllCustomer?username=$username";
-      print("url get customer :$urlGetCustomer ");
-
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
-
-      print("status getCustomer : ${response.statusCode}");
       custNameHeaderValueDropdownStateRx.value.loadingState = 2;
       custNameHeaderValueDropdownStateRx.value.choiceList = listData
           .map<IdAndValue<String>>((element) => IdAndValue<String>(
@@ -643,8 +638,6 @@ class InputPageController extends GetxController {
     double countPriceToCustomerValue = salesPrice - (value1 + value2);
     promotionProgramInputState.priceToCustomer?.text =
         countPriceToCustomerValue.toString();
-
-    debugPrint("test$countPriceToCustomerValue");
     update();
   }
 
@@ -782,8 +775,6 @@ class InputPageController extends GetxController {
               'Authorization': '$token',
             },
             body: isiBody);
-    debugPrint(response.statusCode.toString());
-    debugPrint(isiBody);
     final tabController = Get.put(DashboardPPTabController());
     Future.delayed(const Duration(seconds: 2), () {
       if (response.statusCode == 200 & 201) {
