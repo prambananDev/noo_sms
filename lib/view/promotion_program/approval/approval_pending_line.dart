@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/constant/date_time_formatter.dart';
+import 'package:noo_sms/assets/constant/money_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/card_line_adapter.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
@@ -13,8 +14,10 @@ import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 class HistoryLines extends StatefulWidget {
   final String numberPP;
   final int idEmp;
+  final Promotion? promotion;
 
-  const HistoryLines({super.key, required this.numberPP, required this.idEmp});
+  const HistoryLines(
+      {super.key, required this.numberPP, required this.idEmp, this.promotion});
 
   @override
   _HistoryLinesState createState() => _HistoryLinesState();
@@ -22,7 +25,6 @@ class HistoryLines extends StatefulWidget {
 
 class _HistoryLinesState extends State<HistoryLines> {
   late HistoryLinesPendingController _controller;
-  Promotion promotion = Promotion();
 
   @override
   void initState() {
@@ -30,6 +32,7 @@ class _HistoryLinesState extends State<HistoryLines> {
     _controller = Get.put(
         HistoryLinesPendingController(numberPP: widget.numberPP),
         tag: widget.numberPP);
+    // debugPrint("tezz ${_controller.promotion.value.customer}");
     _controller.getSharedPreference();
     _controller.listHistoryPendingSO();
   }
@@ -59,76 +62,6 @@ class _HistoryLinesState extends State<HistoryLines> {
                   const SizedBox(
                     height: 30,
                   ),
-                  _controller.startApp == false
-                      ? Container() // Widget kosong ketika startApp adalah false
-                      : Padding(
-                          padding: const EdgeInsets.only(left: 60, right: 20),
-                          child: SizedBox(
-                            width: screenWidth,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      padding:
-                                          EdgeInsets.all(screenWidth * 0.03),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                    child: Text(
-                                      'Reject',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: screenWidth * 0.05,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      if (_controller.addToLines.isEmpty) {
-                                        Get.snackbar(
-                                            "Error", "Checklist for reject!!",
-                                            backgroundColor: Colors.red,
-                                            icon: const Icon(Icons.error));
-                                      } else {
-                                        _controller.approveNew("Reject");
-                                      }
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      padding:
-                                          EdgeInsets.all(screenWidth * 0.03),
-                                      backgroundColor:
-                                          Theme.of(context).primaryColorDark,
-                                    ),
-                                    child: Text(
-                                      'Approve',
-                                      style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary,
-                                        fontSize: screenWidth * 0.05,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      if (_controller.addToLines.isEmpty) {
-                                        Get.snackbar(
-                                            "Error", "Checklist for approve!!",
-                                            backgroundColor: Colors.red,
-                                            icon: const Icon(Icons.error));
-                                      } else {
-                                        _controller.approveNew("Approve");
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                 ],
               ),
         appBar: AppBar(
@@ -215,13 +148,13 @@ class _HistoryLinesState extends State<HistoryLines> {
                       ],
                     ),
                   ),
+
                   // Text(_controller.qtyFromController.toString()),
                   ListView.builder(
                     itemCount: _controller.listHistorySO.length,
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     itemBuilder: (BuildContext context, int index) {
-                      debugPrint("zz${_controller.disc1Controller}");
                       // return Text(_controller.dataHeader["qty"].toString());
                       return CardLinesAdapter(
                         namePP: widget.numberPP,
@@ -232,35 +165,79 @@ class _HistoryLinesState extends State<HistoryLines> {
                         valueSelectAll: false,
                         statusDisable: false,
                         showSalesHistory: true,
-                        // qtyFromController: _controller.qtyFromController,
-                        // qtyToController: _controller.qtyToController,
-                        disc1Controller: _controller.disc1Controller,
-                        disc2Controller: _controller.disc2Controller,
-                        disc3Controller: _controller.disc3Controller,
-                        disc4Controller: _controller.disc4Controller,
-                        // value1Controller: _controller.value1Controller,
-                        // value2Controller: _controller.value2Controller,
-                        unitController: _controller.unitController,
-                        // suppItemController: _controller.suppItemController,
-                        // suppUnitController: _controller.suppUnitController,
-                        // warehouseController: _controller.warehouseController,
-                        // addToLines: _controller.addToLines,
-                        dataUnit: _controller.unitController,
-                        // dataSupplyUnit: _controller.dataSupplyItem,
-                        // dataWarehouse: _controller.warehouseController,
-                        // dataSupplyItem: _controller.dataSupplyItem,
-                        getUnit: (String itemId) {
-                          _controller.getUnit(itemId);
-                        },
-                        // getSupplyUnit: (String itemId) {
-                        //   _controller.getSupplyUnit(itemId);
-                        // },
-                        // getWarehouse: (String itemId) {
-                        //   _controller.getWarehouse();
-                        // },
                       );
                     },
                   ),
+                  _controller.startApp == false
+                      ? Container() // Widget kosong ketika startApp adalah false
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
+                          child: SizedBox(
+                            width: screenWidth,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      padding:
+                                          EdgeInsets.all(screenWidth * 0.03),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                    child: Text(
+                                      'Reject',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenWidth * 0.05,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      if (_controller.addToLines.isEmpty) {
+                                        Get.snackbar(
+                                            "Error", "Checklist for reject!!",
+                                            backgroundColor: Colors.red,
+                                            icon: const Icon(Icons.error));
+                                      } else {
+                                        _controller.approveNew("Reject");
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      padding:
+                                          EdgeInsets.all(screenWidth * 0.03),
+                                      backgroundColor: colorAccent,
+                                    ),
+                                    child: Text(
+                                      'Approve',
+                                      style: TextStyle(
+                                        color: colorNetral,
+                                        fontSize: screenWidth * 0.05,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      if (_controller.addToLines.isEmpty) {
+                                        Get.snackbar(
+                                            "Error", "Checklist for approve!!",
+                                            backgroundColor: Colors.red,
+                                            icon: const Icon(Icons.error));
+                                      } else {
+                                        _controller.approveNew("Approve");
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                 ],
               ),
             );

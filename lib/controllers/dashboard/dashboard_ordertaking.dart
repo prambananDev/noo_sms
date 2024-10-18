@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 class DashboadOrderTakingTabController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final int initialIndex;
+  int initialIndex;
   late TabController controller;
 
   DashboadOrderTakingTabController({this.initialIndex = 0});

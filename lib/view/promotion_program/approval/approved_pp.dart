@@ -29,7 +29,7 @@ class _ApprovedPPState extends State<ApprovedPP> {
   Future<void> listHistory() async {
     await Future.delayed(const Duration(seconds: 5));
     Promotion.getListPromotionApproved(
-            0, code, _user.token ?? "token kosong", _user.username)
+            _user.token ?? "token kosong", _user.username)
         .then((value) {
       setState(() {
         listHistoryReal = value;
@@ -190,7 +190,7 @@ class _ApprovedPPState extends State<ApprovedPP> {
               onRefresh: listHistory,
               child: FutureBuilder(
                 future: Promotion.getListPromotionApproved(
-                    0, code, _user.token ?? "", _user.username ?? ""),
+                    _user.token ?? "", _user.username ?? ""),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (!snapshot.hasError) {

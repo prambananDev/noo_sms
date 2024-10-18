@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
@@ -15,7 +16,7 @@ class HistoryLinesPendingController extends GetxController {
   final String numberPP;
   HistoryLinesPendingController({required this.numberPP});
 
-  final listHistorySO = <Promotion>[].obs;
+  List listHistorySO = <Promotion>[].obs;
   dynamic listHistorySOEncode;
   final RxMap<dynamic, dynamic> dataHeader = <dynamic, dynamic>{}.obs;
   GlobalKey<RefreshIndicatorState> refreshKey =
@@ -27,6 +28,7 @@ class HistoryLinesPendingController extends GetxController {
   bool startApp = false;
   var addToLines = <Map<String, dynamic>>[].obs;
   int? code;
+  Rx<Promotion> dataApprovalDetails = Promotion().obs;
 
   // TextEditingControllers for inputs
   List<TextEditingController> disc1Controller = [];
@@ -42,10 +44,11 @@ class HistoryLinesPendingController extends GetxController {
   TextEditingController toDateHeaderController = TextEditingController();
 
   List dataSupplyItem = [];
-  List<dynamic> unitController = [];
+  List unitController = [];
   List suppItemController = [];
   List suppUnitController = [];
   List warehouseController = [];
+  var promotion = Promotion().obs;
 
   @override
   void onInit() {
@@ -55,6 +58,7 @@ class HistoryLinesPendingController extends GetxController {
     getSupplyItem();
     // listHistoryPendingSO();
     // initializeDataAndControllers();
+
     Future.delayed(const Duration(seconds: 2), () {
       startApp = true;
       listHistoryPendingSO();
@@ -85,6 +89,7 @@ class HistoryLinesPendingController extends GetxController {
     return data.map(extractor).toList();
   }
 
+  final dataLines = <Lines>[].obs;
   Future<void> listHistoryPendingSO() async {
     isLoading.value = true;
     try {
@@ -96,29 +101,11 @@ class HistoryLinesPendingController extends GetxController {
 
       listHistorySO.assignAll(value);
       listHistorySOEncode = jsonEncode(listHistorySO);
+      debugPrint("idemp$dataHeader");
+
       if (listHistorySO.isNotEmpty) {
         dataHeader.assignAll(listHistorySO[0].toJson());
       }
-
-      // qtyFromController =
-      //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // qtyToController =
-      //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // disc1Controller =
-      // //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // disc2Controller =
-      // //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // disc3Controller =
-      // //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // disc4Controller =
-      // //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // value1Controller =
-      // //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // value2Controller =
-      // //     List.generate(listHistorySO.length, (_) => TextEditingController());
-      // // unitController = List.generate(listHistorySO.length, (_) => '');
-
-      debugPrint('Successfully fetched data: ${dataHeader.toString()}');
     } catch (error) {
       print('Error fetching history: $error');
     } finally {
@@ -145,11 +132,13 @@ class HistoryLinesPendingController extends GetxController {
     }
   }
 
-  Future<void> getUnit(String itemId) async {
-    var url = "$apiCons/api/Unit?item=$itemId";
+  Future<void> getUnit(String? itemId) async {
+    var url = "$apiCons2/api/Unit?item=$itemId";
     final response = await get(Uri.parse(url));
+    debugPrint("test ${response.body}");
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
+
       unitController.assignAll(listData);
     }
   }

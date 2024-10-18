@@ -8,7 +8,6 @@ import 'package:noo_sms/controllers/promotion_program/approval_pending_line_cont
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/promotion_program/approval/approval_pending_line.dart';
-import 'package:noo_sms/view/promotion_program/history_lines_all.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,7 +52,7 @@ class _HistoryPendingState extends State<PendingPP> {
     await Future.delayed(const Duration(seconds: 5));
     if (_user != null && code != null) {
       Promotion.getListPromotion(
-              0, code!, _user!.token ?? "token kosong", _user!.username)
+              _user!.token ?? "token kosong", _user!.username)
           .then((value) {
         setState(() {
           listHistoryReal = value;
@@ -104,6 +103,7 @@ class _HistoryPendingState extends State<PendingPP> {
                   return HistoryLines(
                     numberPP: promotion.namePP,
                     idEmp: _user!.id,
+                    promotion: promotion,
                   );
                 }));
               },
@@ -206,7 +206,7 @@ class _HistoryPendingState extends State<PendingPP> {
             child: RefreshIndicator(
               onRefresh: listHistory,
               child: FutureBuilder(
-                future: Promotion.getListPromotion(0, code!, _user!.token ?? "",
+                future: Promotion.getListPromotion(_user!.token ?? "",
                     _user!.username ?? ""), // Ensure safe access
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {

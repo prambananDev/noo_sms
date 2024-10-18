@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/controllers/promotion_program/approval_pending_line_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart'; // Assuming TextResultCard is a custom widget
 import 'package:noo_sms/view/promotion_program/approval/history_so.dart';
@@ -8,63 +10,65 @@ import 'package:noo_sms/controllers/provider/lines_provider.dart';
 import 'package:search_choices/search_choices.dart';
 
 class CardLinesAdapter extends StatefulWidget {
-  final String namePP;
-  final int idEmp;
-  final Promotion promotion;
-  final int index;
-  final bool startApp;
-  final bool valueSelectAll;
-  final bool statusDisable;
-  final bool showSalesHistory;
-  List<TextEditingController>? disc1Controller;
-  final List<TextEditingController> disc2Controller;
-  final List<TextEditingController> disc3Controller;
-  final List<TextEditingController> disc4Controller;
-  // List<TextEditingController> value1Controller;
-  // List<TextEditingController> value2Controller;
-  final List<dynamic> unitController;
-  // List<String> suppItemController;
-  // List<String> suppUnitController;
-  // List<dynamic> warehouseController;
-  // List<Map<String, dynamic>> addToLines;
-  final List<dynamic> dataUnit;
-  // List<dynamic> dataSupplyUnit;
-  // List<dynamic> dataWarehouse;
-  // List<dynamic> dataSupplyItem;
-  final Function(String itemId) getUnit;
-  // Function(String itemId) getSupplyUnit;
-  // Function(String itemId) getWarehouse;
+  final String? namePP;
+  final int? idEmp;
+  final Promotion? promotion;
+  final int? index;
+  final bool? startApp;
+  final bool? valueSelectAll;
+  final bool? statusDisable;
+  final bool? showSalesHistory;
+  final List<TextEditingController>? qtyFromController;
+  final List<TextEditingController>? qtyToController;
+  final List<TextEditingController>? disc1Controller;
+  final List<TextEditingController>? disc2Controller;
+  final List<TextEditingController>? disc3Controller;
+  final List<TextEditingController>? disc4Controller;
+  final List<TextEditingController>? value1Controller;
+  final List<TextEditingController>? value2Controller;
+  final List<dynamic>? unitController;
+  final List<String>? suppItemController;
+  final List<String>? suppUnitController;
+  final List<dynamic>? warehouseController;
+  final List<Map<String, dynamic>>? addToLines;
+  final List<dynamic>? dataUnit;
+  final List<dynamic>? dataSupplyUnit;
+  final List<dynamic>? dataWarehouse;
+  final List<dynamic>? dataSupplyItem;
+  final Function(String itemId)? getUnit;
+  Function(String itemId)? getSupplyUnit;
+  Function(String itemId)? getWarehouse;
 
   CardLinesAdapter({
     Key? key,
-    required this.namePP,
-    required this.idEmp,
-    required this.promotion,
-    required this.index,
-    required this.startApp,
-    required this.valueSelectAll,
-    required this.statusDisable,
-    required this.showSalesHistory,
-    // required this.qtyFromController,
-    // required this.qtyToController,
+    this.namePP,
+    this.idEmp,
+    this.promotion,
+    this.index,
+    this.startApp,
+    this.valueSelectAll,
+    this.statusDisable,
+    this.showSalesHistory,
+    this.qtyFromController,
+    this.qtyToController,
     this.disc1Controller,
-    required this.disc2Controller,
-    required this.disc3Controller,
-    required this.disc4Controller,
-    // required this.value1Controller,
-    // required this.value2Controller,
-    required this.unitController,
-    // required this.suppItemController,
-    // required this.suppUnitController,
-    // required this.warehouseController,
-    // required this.addToLines,
-    required this.dataUnit,
-    // required this.dataSupplyUnit,
-    // required this.dataWarehouse,
-    // required this.dataSupplyItem,
-    required this.getUnit,
-    // required this.getSupplyUnit,
-    // required this.getWarehouse,
+    this.disc2Controller,
+    this.disc3Controller,
+    this.disc4Controller,
+    this.value1Controller,
+    this.value2Controller,
+    this.unitController,
+    this.suppItemController,
+    this.suppUnitController,
+    this.warehouseController,
+    this.addToLines,
+    this.dataUnit,
+    this.dataSupplyUnit,
+    this.dataWarehouse,
+    this.dataSupplyItem,
+    this.getUnit,
+    this.getSupplyUnit,
+    this.getWarehouse,
   }) : super(key: key);
 
   @override
@@ -74,19 +78,31 @@ class CardLinesAdapter extends StatefulWidget {
 class _CardLinesAdapterState extends State<CardLinesAdapter> {
   late TextEditingController qtyFromcontroller;
   late TextEditingController qtyTocontroller;
+  late TextEditingController disc1Controller;
+  late TextEditingController disc2Controller;
+  late TextEditingController disc3Controller;
+  late TextEditingController disc4Controller;
+  late HistoryLinesPendingController controller;
 
   @override
   void initState() {
     super.initState();
     qtyFromcontroller =
-        TextEditingController(text: widget.promotion.qty.toString());
+        TextEditingController(text: widget.promotion!.qty.toString());
     qtyTocontroller =
-        TextEditingController(text: widget.promotion.qtyTo.toString());
+        TextEditingController(text: widget.promotion!.qtyTo.toString());
+    disc1Controller =
+        TextEditingController(text: widget.promotion!.disc1.toString());
+    disc2Controller =
+        TextEditingController(text: widget.promotion!.disc2.toString());
+    disc3Controller =
+        TextEditingController(text: widget.promotion!.disc3.toString());
+    disc4Controller =
+        TextEditingController(text: widget.promotion!.disc4.toString());
   }
 
   @override
   void dispose() {
-    // Dispose controllers when the widget is disposed
     qtyFromcontroller.dispose();
     qtyTocontroller.dispose();
     super.dispose();
@@ -94,16 +110,16 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
 
   @override
   Widget build(BuildContext context) {
-    double price = double.parse(widget.promotion.price
+    double price = double.parse(widget.promotion!.price
             ?.replaceAll(RegExp("Rp"), "")
             .replaceAll(".", "") ??
         "0");
-    double disc1 = double.parse(widget.promotion.disc1 ?? "0");
-    double disc2 = double.parse(widget.promotion.disc2 ?? "0");
-    double disc3 = double.parse(widget.promotion.disc3 ?? "0");
-    double disc4 = double.parse(widget.promotion.disc4 ?? "0");
-    double discValue1 = double.parse(widget.promotion.value1 ?? "0");
-    double discValue2 = double.parse(widget.promotion.value2 ?? "0");
+    double disc1 = double.parse(widget.promotion!.disc1 ?? "0");
+    double disc2 = double.parse(widget.promotion!.disc2 ?? "0");
+    double disc3 = double.parse(widget.promotion!.disc3 ?? "0");
+    double disc4 = double.parse(widget.promotion!.disc4 ?? "0");
+    double discValue1 = double.parse(widget.promotion!.value1 ?? "0");
+    double discValue2 = double.parse(widget.promotion!.value2 ?? "0");
     double totalPriceDiscOnly =
         price - (price * ((disc1 + disc2 + disc3 + disc4) / 100));
     double totalPriceDiscValue = price - (discValue1 + discValue2);
@@ -120,13 +136,13 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
           Container(
             alignment: Alignment.topLeft,
             child: CheckboxListTile(
-              value: widget.valueSelectAll
+              value: widget.valueSelectAll!
                   ? widget.valueSelectAll
-                  : widget.promotion.status,
+                  : widget.promotion!.status,
               onChanged: (bool? value) {
                 if (value != null) {
                   setState(() {
-                    widget.promotion.status = value;
+                    widget.promotion!.status = value;
                   });
                 }
               },
@@ -136,25 +152,25 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
           ),
           TextResultCard(
             title: "Product",
-            value: widget.promotion.product!,
+            value: widget.promotion!.product!,
           ),
           buildQtyRow(context, qtyFromcontroller, qtyTocontroller),
-          // buildUnitField(context, widget.index),
+          // buildUnitField(context, widget.index!),
+
           TextResultCard(
             title: "Unit",
-            value: widget.promotion.unitId.toString(),
+            value: widget.promotion!.unitId!,
           ),
           TextResultCard(
             title: "Price",
-            value: widget.promotion.price!,
+            value: widget.promotion!.price!,
           ),
-          // if (widget.promotion.ppType != "Bonus")
-          //   buildDiscountFields(context, totalPriceDiscOnly),
-          // if (widget.promotion.ppType != "Diskon") buildBonusFields(context),
-          // buildNetPriceField(context, totalPriceDiscOnly, totalPriceDiscValue),
-          // if (widget.showSalesHistory)
-          //   buildSalesHistoryButton(
-          //       context), // Conditionally display the button
+          if (widget.promotion!.ppType != "Bonus")
+            buildDiscountFields(
+                context, totalPriceDiscOnly, totalPriceDiscValue, price),
+          if (widget.promotion!.ppType != "Diskon") buildBonusFields(context),
+          buildNetPriceField(context, totalPriceDiscOnly, totalPriceDiscValue),
+          if (widget.showSalesHistory!) buildSalesHistoryButton(context),
         ],
       ),
     );
@@ -176,31 +192,36 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
   Widget buildQtyField(
       BuildContext context, String title, TextEditingController controller) {
     return SizedBox(
-      width: 80,
-      child: TextFormField(
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(
-            decimal: true), // Allows decimal input
+      width: 150,
+      child: TextResultCard(
+        title: title,
+        value: controller.text,
       ),
+
+      // TextFormField(
+      //   controller: controller,
+      //   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      //   onChanged: (value) {},
+      // ),
     );
   }
 
   Widget buildUnitField(BuildContext context, int index) {
-    if (index >= widget.unitController.length) {
+    if (index >= widget.unitController!.length) {
       return const Text("No Unit Available");
     }
     return InkWell(
       onTap: () {
         //xx
-        String? itemId = widget.promotion.idProduct
+        String? itemId = widget.promotion!.idProduct
             ?.split("-")
             .first
             .toString()
             .split(" ")
             .first;
-        print("tol $itemId");
+
         setState(() {
-          widget.getUnit(itemId!);
+          widget.getUnit!(itemId!);
         });
         Future.delayed(const Duration(seconds: 1), () {
           Get.defaultDialog(
@@ -208,8 +229,8 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
               barrierDismissible: false,
               content: SearchChoices.single(
                 isExpanded: true,
-                value: widget.unitController[index],
-                items: widget.dataUnit.map((item) {
+                value: widget.unitController![index],
+                items: widget.dataUnit!.map((item) {
                   return DropdownMenuItem(
                     value: item,
                     child: Text(item),
@@ -217,7 +238,7 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    widget.unitController[index] = value;
+                    widget.unitController![index] = value;
                   });
                 },
               ),
@@ -228,7 +249,7 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
       },
       child: TextResultCard(
         title: 'Unit',
-        value: widget.unitController[index] ?? "Empty",
+        value: widget.unitController![index] ?? "Empty",
       ),
     );
     //   return InkWell(
@@ -269,22 +290,29 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
     //   );
   }
 
-  // // Helper method to build discount fields
-  Widget buildDiscountFields(BuildContext context, double totalPriceDiscOnly) {
+  Widget buildDiscountFields(BuildContext context, double totalPriceDiscOnly,
+      double totalPriceDiscValue, double price) {
     return Column(
       children: <Widget>[
-        buildDiscountRow(context, "Disc1(%) PRB", widget.disc1Controller!),
-        buildDiscountRow(context, "Disc2(%) COD", widget.disc2Controller),
-        buildDiscountRow(
-            context, "Disc3(%) Principal1", widget.disc3Controller),
-        buildDiscountRow(
-            context, "Disc4(%) Principal2", widget.disc4Controller),
+        buildDiscountRow(context, "Disc1(%) PRB", disc1Controller,
+            totalPriceDiscOnly, totalPriceDiscValue, price),
+        buildDiscountRow(context, "Disc2(%) COD", disc2Controller,
+            totalPriceDiscOnly, totalPriceDiscValue, price),
+        buildDiscountRow(context, "Disc3(%) Principal1", disc3Controller,
+            totalPriceDiscOnly, totalPriceDiscValue, price),
+        buildDiscountRow(context, "Disc4(%) Principal2", disc4Controller,
+            totalPriceDiscOnly, totalPriceDiscValue, price),
       ],
     );
   }
 
-  Widget buildDiscountRow(BuildContext context, String title,
-      List<TextEditingController> controller) {
+  Widget buildDiscountRow(
+      BuildContext context,
+      String title,
+      TextEditingController controller,
+      double totalPriceDiscOnly,
+      double totalPriceDiscValue,
+      double price) {
     return Row(
       children: <Widget>[
         Container(
@@ -300,73 +328,82 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
         ),
         Expanded(
           flex: 3,
-          child: Consumer<LinesProvider>(
-            builder: (context, linesProv, _) => TextFormField(
-              keyboardType: TextInputType.number,
-              readOnly: widget.statusDisable,
-              controller: controller[widget.index],
-              onChanged: (value) {
-                // Update discount logic
-              },
-            ),
+          child: TextFormField(
+            keyboardType: TextInputType.number,
+            readOnly: widget.statusDisable!,
+            controller: controller,
+            onChanged: (value) {
+              if (value.isEmpty) {
+                widget.promotion!.value1 = "0.0";
+                double discValue1 = double.parse(widget.promotion!.value1!);
+                double discValue2 = double.parse(widget.promotion!.value2!);
+                setState(() {
+                  totalPriceDiscValue = price - (discValue1 + discValue2);
+                });
+              } else {
+                widget.promotion!.value1 = value.replaceAll(".", "");
+                double discValue1 = double.parse(widget.promotion!.value1!);
+                double discValue2 = double.parse(widget.promotion!.value2!);
+                setState(() {
+                  totalPriceDiscValue = price - (discValue1 + discValue2);
+                });
+              }
+            },
           ),
         ),
       ],
     );
   }
 
-  // // Helper method to build bonus fields
-  // Widget buildBonusFields(BuildContext context) {
-  //   return Column(
-  //     children: <Widget>[
-  //       TextResultCard(
-  //         title: 'Bonus Item',
-  //         value: widget.promotion.suppItem!,
-  //       ),
-  //       TextResultCard(
-  //         title: 'Bonus Qty',
-  //         value: widget.promotion.suppQty!,
-  //       ),
-  //       TextResultCard(
-  //         title: 'Bonus Unit',
-  //         value: widget.promotion.suppUnit!,
-  //       ),
-  //     ],
-  //   );
-  // }
+  Widget buildBonusFields(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        TextResultCard(
+          title: 'Bonus Item',
+          value: widget.promotion!.suppItem!,
+        ),
+        TextResultCard(
+          title: 'Bonus Qty',
+          value: widget.promotion!.suppQty!,
+        ),
+        TextResultCard(
+          title: 'Bonus Unit',
+          value: widget.promotion!.suppUnit!,
+        ),
+      ],
+    );
+  }
 
   Widget buildNetPriceField(BuildContext context, double totalPriceDiscOnly,
       double totalPriceDiscValue) {
     return TextResultCard(
       title: "Net Price",
       value:
-          "Rp${(widget.promotion.disc1 == "0.00" && widget.promotion.disc2 == "0.00" && widget.promotion.disc3 == "0.00" && widget.promotion.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).toString()}",
+          "Rp${(widget.promotion!.disc1 == "0.00" && widget.promotion!.disc2 == "0.00" && widget.promotion!.disc3 == "0.00" && widget.promotion!.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).toString()}",
     );
   }
 
-  // Conditionally show or hide the "VIEW SALES HISTORY" button
   Widget buildSalesHistoryButton(BuildContext context) {
     return TextButton(
       onPressed: () {
+        debugPrint("tzt ${widget.namePP!}");
+        debugPrint("tzt ${widget.promotion!.idCustomer!}");
+        debugPrint("tzt ${widget.promotion!.idProduct!}");
+        debugPrint("tzt ${widget.idEmp!}");
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
           return HistorySO(
-            namePP: widget.namePP,
-            idCustomer: widget.promotion.idCustomer!,
-            idProduct: widget.promotion.idProduct!,
-            idEmp: widget.idEmp,
+            namePP: widget.namePP!,
+            idCustomer: widget.promotion!.idCustomer!,
+            idProduct: widget.promotion!.idProduct!,
+            idEmp: widget.idEmp!,
           );
         }));
       },
       style: TextButton.styleFrom(
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: colorAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: Theme.of(context).primaryColor,
-            style: BorderStyle.solid,
-            width: 2,
-          ),
         ),
         padding: const EdgeInsets.all(7),
       ),
@@ -376,10 +413,10 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
         padding: const EdgeInsets.all(5),
         child: Center(
           child: Text(
-            "VIEW SALES HISTORY",
+            "View Sales History",
             style: TextStyle(
-              color: Theme.of(context).primaryColorDark,
-              fontSize: 13,
+              color: colorNetral,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),

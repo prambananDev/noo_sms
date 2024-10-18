@@ -97,7 +97,9 @@ class HistoryLinesController extends GetxController {
       BuildContext context, List<Lines> listDisc, int idEmp, int code) async {
     bool success = false; // Default to false, indicating failure
     try {
-      await Promotion.approveSalesOrder(listDisc, code).then((value) {
+      await Promotion.approveSalesOrder(
+        listDisc,
+      ).then((value) {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
           return const DashboardPP(initialIndex: 1);

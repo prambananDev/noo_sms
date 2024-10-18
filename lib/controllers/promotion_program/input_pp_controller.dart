@@ -25,6 +25,10 @@ class InputPageController extends GetxController {
 
   Rx<InputPageWrapper> promotionProgramInputStateRx =
       InputPageWrapper(promotionProgramInputState: [], isAddItem: false).obs;
+  Rx<TextEditingController> transactionNumberTextEditingControllerRx =
+      TextEditingController().obs;
+  Rx<TextEditingController> transactionDateTextEditingControllerRx =
+      TextEditingController().obs;
   Rx<TextEditingController> programNumberTextEditingControllerRx =
       TextEditingController().obs;
   Rx<TextEditingController> programTestTextEditingControllerRx =
@@ -65,6 +69,14 @@ class InputPageController extends GetxController {
   final InputPageDropdownState<String> _itemGroupInputPageDropdownState =
       InputPageDropdownState<String>(
           choiceList: <String>["Item", "Disc Group"], loadingState: 0);
+
+  final WrappedInputPageDropdownState<IdAndValue<String>>
+      _productInputPageDropdownState =
+      WrappedInputPageDropdownState<IdAndValue<String>>(
+          choiceListWrapper: Wrapper(value: <IdAndValue<String>>[]),
+          loadingStateWrapper: Wrapper(value: 0),
+          selectedChoiceWrapper: Wrapper(value: null));
+
   final WrappedInputPageDropdownState<IdAndValue<String>>
       _warehouseInputPageDropdownState =
       WrappedInputPageDropdownState<IdAndValue<String>>(
@@ -128,6 +140,7 @@ class InputPageController extends GetxController {
     _loadWarehouse();
     _loadPrincipal();
     _loadCustomerOrGroupHeader();
+    _loadCustomerNameByUsername();
   }
 
   Future<void> loadProgramData(String programNumber) async {
@@ -359,6 +372,29 @@ class InputPageController extends GetxController {
     _updateState();
   }
 
+  void _loadCustomerNameByUsername() async {
+    customerNameInputPageDropdownStateRx.value.loadingState = 1;
+    _updateState();
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? username = preferences.getString("username");
+    try {
+      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
+
+      final response = await get(Uri.parse(urlGetCustomer));
+      var listData = jsonDecode(response.body);
+
+      customerNameInputPageDropdownStateRx.value.loadingState = 2;
+      customerNameInputPageDropdownStateRx.value.choiceList = listData
+          .map<IdAndValue<String>>((element) => IdAndValue<String>(
+              id: element["codeCust"], value: element["nameCust"]))
+          .toList();
+      _updateState();
+    } catch (e) {
+      customerNameInputPageDropdownStateRx.value.loadingState = -1;
+      _updateState();
+    }
+  }
+
   void _loadSupplyItemProductUnit(int index) async {
     PromotionProgramInputState? promotionProgramInputState =
         promotionProgramInputStateRx.value.promotionProgramInputState[index];
@@ -384,6 +420,18 @@ class InputPageController extends GetxController {
   void changePromotionType(IdAndValue<String>? selectedChoice) {
     promotionTypeInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
     checkAddItemStatus();
+  }
+
+  void changeSelectCustomer(IdAndValue<String> selectedChoice) {
+    customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
+
+    checkAddItemStatus();
+  }
+
+  void changeSelectCustomer2(IdAndValue<String> selectedChoice) {
+    customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
+
+    checkAddItemStatus2();
   }
 
   void changeVendor(IdAndValue<String> selectedChoice) {
@@ -444,6 +492,29 @@ class InputPageController extends GetxController {
       unitSupplyItem:
           InputPageDropdownState<String>(choiceList: [], loadingState: 0),
     ));
+    _updateState();
+  }
+
+  void addItem2() {
+    List<PromotionProgramInputState> promotionProgramInputState =
+        promotionProgramInputStateRx.value.promotionProgramInputState;
+    promotionProgramInputState.add(
+      PromotionProgramInputState(
+        productTransactionPageDropdownState:
+            _productInputPageDropdownState.copy(
+          choiceListWrapper: _productInputPageDropdownState.choiceListWrapper,
+          loadingStateWrapper:
+              _productInputPageDropdownState.loadingStateWrapper,
+          selectedChoiceWrapper: Wrapper<IdAndValue<String>>(value: null),
+        ),
+        priceTransaction: TextEditingController(),
+        discTransaction: TextEditingController(),
+        qtyTransaction: TextEditingController(),
+        totalTransaction: TextEditingController(),
+        unitPageDropdownState:
+            InputPageDropdownState<String>(choiceList: [], loadingState: 0),
+      ),
+    );
     _updateState();
   }
 
@@ -519,6 +590,18 @@ class InputPageController extends GetxController {
     _updateState();
   }
 
+  void changeProduct2(int index, IdAndValue<String> selectedChoice) {
+    promotionProgramInputStateRx
+        .value
+        .promotionProgramInputState[index]
+        .productTransactionPageDropdownState!
+        .selectedChoiceWrapper!
+        .value = selectedChoice;
+
+    _updateState();
+    _loadUnit(index);
+  }
+
   void changeWarehouse(int index, IdAndValue<String> selectedChoice) {
     promotionProgramInputStateRx
         .value
@@ -533,6 +616,60 @@ class InputPageController extends GetxController {
   void changeUnit(int index, String selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
         .unitPageDropdownState?.selectedChoice = selectedChoice;
+    _updateState();
+  }
+
+  void changeQty(int index, String qty) {
+    double price = promotionProgramInputStateRx.value
+            .promotionProgramInputState[index].priceTransaction!.text.isEmpty
+        ? 0
+        : double.parse(promotionProgramInputStateRx
+            .value.promotionProgramInputState[index].priceTransaction!.text
+            .replaceAll(RegExp(r"[.,]"), ""));
+    double disc = double.parse(promotionProgramInputStateRx
+        .value.promotionProgramInputState[index].discTransaction!.text);
+    if (qty.isEmpty) {
+      promotionProgramInputStateRx
+          .value.promotionProgramInputState[index].totalTransaction!.text = "0";
+    } else {
+      double discPrice = (int.parse(qty) * price) * (disc / 100);
+      double calculateTotalPrice = (int.parse(qty) * price) - discPrice;
+      promotionProgramInputStateRx
+          .value
+          .promotionProgramInputState[index]
+          .totalTransaction!
+          .text = calculateTotalPrice.toString().split(".").first;
+    }
+
+    _updateState();
+  }
+
+  void changeDisc(int index, String disc) {
+    int qty = promotionProgramInputStateRx.value
+            .promotionProgramInputState[index].qtyTransaction!.text.isEmpty
+        ? 0
+        : int.parse(promotionProgramInputStateRx
+            .value.promotionProgramInputState[index].qtyTransaction!.text);
+    double price = promotionProgramInputStateRx.value
+            .promotionProgramInputState[index].priceTransaction!.text.isEmpty
+        ? 0
+        : double.parse(promotionProgramInputStateRx
+            .value.promotionProgramInputState[index].priceTransaction!.text
+            .replaceAll(RegExp(r"[.,]"), ""));
+    dynamic calculateTotalPrice;
+    if (disc.isEmpty) {
+      calculateTotalPrice = (qty * price);
+      promotionProgramInputStateRx.value.promotionProgramInputState[index]
+          .totalTransaction!.text = calculateTotalPrice.toString();
+    } else {
+      double discPrice = (qty * price) * (double.parse(disc) / 100);
+      calculateTotalPrice = (qty * price) - discPrice;
+      promotionProgramInputStateRx
+          .value
+          .promotionProgramInputState[index]
+          .totalTransaction!
+          .text = calculateTotalPrice.toString().split(".").first;
+    }
     _updateState();
   }
 
@@ -971,6 +1108,13 @@ class InputPageController extends GetxController {
     // && vendorInputPageDropdownStateRx.value.selectedChoice != null;
     // && locationInputPageDropdownStateRx.value.selectedChoice != null
     // && statusTestingInputPageDropdownStateRx.value.selectedChoice != null;
+    _updateState();
+  }
+
+  void checkAddItemStatus2() {
+    promotionProgramInputStateRx.value.isAddItem =
+        customerNameInputPageDropdownStateRx.value.selectedChoice != null;
+
     _updateState();
   }
 

@@ -70,7 +70,7 @@ class _DashboardPageState extends State<DashboardPage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.discount_outlined),
-            label: 'Program Promotioon',
+            label: 'Program Promotion',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.approval_outlined),

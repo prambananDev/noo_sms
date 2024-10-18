@@ -177,41 +177,43 @@ class Promotion {
   }
 
   static Future<List<Promotion>> getListPromotion(
-      int id, int code, String token, String username) async {
-    // String url = ApiConstant(code).urlApi + "api/PromotionHeader/" + id.toString() + "?username=" + username;
+      String token, String username) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url =
-        "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt('userid')}";
+        "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
 
-    var dio = Dio();
-    dio.options.headers['Authorization'] = token;
-    Response response = await dio.get(url);
-    var jsonObject = response.data;
-    List<Promotion> models = [];
-    for (var promotion in jsonObject) {
-      var objects = Promotion.fromJson(promotion as Map<String, dynamic>);
-      models.add(objects);
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': token, 'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      List jsonResponse = jsonDecode(response.body);
+      return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Failed to load promotions. Status: ${response.statusCode}');
     }
-    return models;
   }
 
   static Future<List<Promotion>> getListPromotionApproved(
-      int id, int code, String token, String username) async {
-    // String url = ApiConstant(code).urlApi + "api/PromotionHeader/" + id.toString() + "?username=" + username;
+      String token, String username) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url =
-        "$apiCons/api/PromosiHeader?usernames=${prefs.getString("username")}&userIds=${prefs.getInt('userid')}";
+        "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
 
-    var dio = Dio();
-    dio.options.headers['Authorization'] = token;
-    Response response = await dio.get(url);
-    var jsonObject = response.data;
-    List<Promotion> models = [];
-    for (var promotion in jsonObject) {
-      var objects = Promotion.fromJson(promotion as Map<String, dynamic>);
-      models.add(objects);
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': token, 'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      List jsonResponse = jsonDecode(response.body);
+      return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Failed to load promotions. Status: ${response.statusCode}');
     }
-    return models;
   }
 
   static Future<List<Promotion>> getAllListPromotion(
@@ -244,37 +246,36 @@ class Promotion {
       String nomorPP, String token, String username) async {
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username';
 
-    final dio = Dio()..options.headers['Authorization'] = token;
-    final response = await dio.get(url);
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': token},
+    );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to get list of lines');
+    if (response.statusCode == 200) {
+      List jsonResponse = jsonDecode(response.body);
+      return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Failed to get list of lines. Status: ${response.statusCode}');
     }
-
-    final jsonObject = response.data;
-    final promotionList = List<Promotion>.from(
-        jsonObject.map((model) => Promotion.fromJson(model)));
-
-    return promotionList;
   }
 
   static Future<List<Promotion>> getListLinesPending(
       String nomorPP, String token, String username) async {
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username&type=1';
 
-    final dio = Dio()..options.headers['Authorization'] = token;
-    final response = await dio.get(url);
-    debugPrint("list ${response.data}");
-    if (response.statusCode != 200) {
-      throw Exception('Failed to get list of lines');
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': token},
+    );
+
+    if (response.statusCode == 200) {
+      List jsonResponse = jsonDecode(response.body);
+      return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Failed to get pending lines. Status: ${response.statusCode}');
     }
-
-    // Extract the JSON data from the response
-    final jsonObject = response.data;
-    final promotionList = List<Promotion>.from(
-        jsonObject.map((model) => Promotion.fromJson(model)));
-
-    return promotionList;
   }
 
   static Future<List<Promotion>> getListActivity(
@@ -296,44 +297,39 @@ class Promotion {
     return promotionList;
   }
 
-  // api/SalesOrder?idProduct={idProduct}&idCustomer={idCustomer}
   static Future<List<Promotion>> getListSalesOrder(String idProduct,
       String idCustomer, String token, String username) async {
     String url =
         "$apiCons/api/SalesOrder?idProduct=$idProduct&idCustomer=$idCustomer&username=$username";
 
-    var dio = Dio();
-    dio.options.headers['Authorization'] = token;
-    Response response = await dio.get(url);
-    var jsonObject = response.data;
-    List<Promotion> models = [];
-    for (var salesOrder in jsonObject) {
-      var objects = Promotion.fromJson(salesOrder as Map<String, dynamic>);
-      models.add(objects);
-    }
-    return models;
-  }
-
-  // static Future<Promotion> approveSalesOrder(String nomorPP, int code) async {
-  static Future<Promotion> approveSalesOrder(
-      List<Lines> listLines, int code) async {
-    String url = "$apiCons/api/PromosiHeader/";
-    var dio = Dio();
-    dio.options.headers['content-type'] = 'application/json';
-    var jsonData = jsonEncode(
-        {"listLines": listLines.map((f) => f.toJsonDisc()).toList()});
-
-    var apiResult = await http.post(
+    final response = await http.get(
       Uri.parse(url),
-      body: jsonData,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: {'Authorization': token},
     );
 
-    dynamic jsonObject = json.decode(apiResult.body);
-    var data = jsonObject as Map<String, dynamic>;
-    Promotion promotion = Promotion.fromJson(data);
-    return promotion;
+    if (response.statusCode == 200) {
+      List jsonResponse = jsonDecode(response.body);
+      return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Failed to get sales orders. Status: ${response.statusCode}');
+    }
+  }
+
+  static Future<Promotion> approveSalesOrder(List<Lines> listLines) async {
+    String url = "$apiCons/api/PromosiHeader/";
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(
+          {'listLines': listLines.map((line) => line.toJsonDisc()).toList()}),
+    );
+
+    if (response.statusCode == 200) {
+      return Promotion.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(
+          'Failed to approve sales order. Status: ${response.statusCode}');
+    }
   }
 }

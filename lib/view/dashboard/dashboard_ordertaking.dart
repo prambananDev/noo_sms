@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_ordertaking.dart';
+import 'package:noo_sms/view/promotion_program/order/create_order_taking.dart';
+import 'package:noo_sms/view/promotion_program/order/history_order_taking.dart';
 import 'package:noo_sms/view/test.dart';
 
 class DashboardOrderTaking extends StatefulWidget {
@@ -55,17 +57,8 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
               child: TabBarView(
                 controller: tabController.controller,
                 children: [
-                  Center(
-                      child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SearchObat()),
-                      );
-                    },
-                    child: const Text('test'),
-                  )),
-                  const Center(child: Text("History Order Taking Content")),
+                  TransactionPage(),
+                  const HistoryOrder(),
                 ],
               ),
             ),
