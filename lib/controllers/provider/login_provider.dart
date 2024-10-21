@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/models/user.dart';
+import 'package:noo_sms/view/dashboard/dashboard.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,9 +27,7 @@ class LoginProvider with ChangeNotifier {
         Navigator.pop(context);
       } else {
         setBoxLogin(value, code);
-        Get.offAll(const DashboardPage(
-          initialIndex: 0,
-        ));
+        Get.offAll(const DashboardMain());
       }
     }).catchError((onError) {
       _message = onError.toString();

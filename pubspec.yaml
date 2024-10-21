@@ -27,6 +27,8 @@ dependencies:
   dio: ^5.4.0
   money_formatter: ^0.0.6
   flutter_screenutil: ^5.9.3
+  image_picker: ^1.0.8
+  image: ^4.3.0
 
 
 dev_dependencies:

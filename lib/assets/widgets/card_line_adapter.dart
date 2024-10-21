@@ -3,10 +3,8 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/promotion_program/approval_pending_line_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
-import 'package:noo_sms/assets/widgets/text_result_card.dart'; // Assuming TextResultCard is a custom widget
+import 'package:noo_sms/assets/widgets/text_result_card.dart';
 import 'package:noo_sms/view/promotion_program/approval/history_so.dart';
-import 'package:provider/provider.dart';
-import 'package:noo_sms/controllers/provider/lines_provider.dart';
 import 'package:search_choices/search_choices.dart';
 
 class CardLinesAdapter extends StatefulWidget {

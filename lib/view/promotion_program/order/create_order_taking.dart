@@ -51,7 +51,7 @@ class _TransactionPageState extends State<TransactionPage> {
                   const Spacer(),
                   IconButton(
                       onPressed: () {
-                        inputPagePresenter.addItem2();
+                        inputPagePresenter.addItem();
                       },
                       icon: const Icon(Icons.add)),
                   IconButton(
@@ -69,12 +69,6 @@ class _TransactionPageState extends State<TransactionPage> {
                       )),
                 ],
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
               SearchChoices.single(
                 isExpanded: true,
                 value: promotionProgramInputState
@@ -87,7 +81,7 @@ class _TransactionPageState extends State<TransactionPage> {
                     ?.value
                     ?.map((item) {
                   return DropdownMenuItem(
-                    value: item.id,
+                    value: item,
                     child: Text(item.value),
                   );
                 }).toList(),
@@ -96,15 +90,9 @@ class _TransactionPageState extends State<TransactionPage> {
                   style: TextStyle(fontSize: 12),
                 ),
                 onChanged: (value) {
-                  if (value != null) {
-                    final selectedChoice = promotionProgramInputState
-                        .productTransactionPageDropdownState!
-                        .choiceListWrapper!
-                        .value!
-                        .firstWhere((element) => element.id == value);
-
-                    inputPagePresenter.changeProduct(index, selectedChoice);
-                  }
+                  setState(() {
+                    inputPagePresenter.changeProduct(index, value);
+                  });
                 },
               ),
               SearchChoices.single(
@@ -395,9 +383,8 @@ class _TransactionPageState extends State<TransactionPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colorAccent,
                       ),
-                      onPressed: isAddItem
-                          ? () => inputPagePresenter.addItem2()
-                          : null,
+                      onPressed:
+                          isAddItem ? () => inputPagePresenter.addItem() : null,
                       child: const Text("Add Data Transaction",
                           style: TextStyle(color: Colors.white)))
                   : ListView.builder(
@@ -408,60 +395,60 @@ class _TransactionPageState extends State<TransactionPage> {
                       itemBuilder: (context, index) => Column(
                             children: [
                               customCard(index, inputPagePresenter),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              index ==
-                                      promotionProgramInputStateList.length -
-                                          promotionProgramInputStateList.length
-                                  ? ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: colorAccent,
-                                      ),
-                                      child: const Text("Submit"),
-                                      onPressed: () {
-                                        List<PromotionProgramInputState>?
-                                            promotionProgramInputState =
-                                            inputPagePresenter
-                                                .promotionProgramInputStateRx
-                                                .value
-                                                .promotionProgramInputState
-                                                .toList();
-                                        List disc = promotionProgramInputState
-                                            .map((e) => e.discTransaction?.text)
-                                            .toList();
-                                        List<String?> price =
-                                            promotionProgramInputState
-                                                .map((e) =>
-                                                    e.priceTransaction?.text)
-                                                .toList();
-
-                                        bool isEqual = listEquals(
-                                            inputPagePresenter.originalPrice,
-                                            price);
-                                        if (isEqual) {
-                                          inputPagePresenter
-                                              .submitPromotionProgram();
-                                        } else {
-                                          Future.delayed(
-                                              const Duration(
-                                                  seconds: 1,
-                                                  milliseconds: 500), () {
-                                            inputPagePresenter
-                                                .submitPromotionProgram();
-                                          });
-                                          // Future.delayed(
-                                          //     const Duration(
-                                          //         seconds: 1,
-                                          //         milliseconds: 500), () {
-                                          //   inputPagePresenter
-                                          //       .submitPromotionProgramAll();
-                                          // });
-                                        }
+                              ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colorAccent,
+                                  ),
+                                  child: Text(
+                                    "Submit",
+                                    style: TextStyle(
+                                      color: colorNetral,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    List<PromotionProgramInputState>?
+                                        promotionProgramInputState =
                                         inputPagePresenter
-                                            .submitPromotionProgram();
-                                      })
-                                  : const SizedBox()
+                                            .promotionProgramInputStateRx
+                                            .value
+                                            .promotionProgramInputState
+                                            .toList();
+                                    List disc = promotionProgramInputState
+                                        .map((e) => e.discTransaction?.text)
+                                        .toList();
+                                    debugPrint("response$disc");
+                                    List<String?> price =
+                                        promotionProgramInputState
+                                            .map(
+                                                (e) => e.priceTransaction?.text)
+                                            .toList();
+                                    debugPrint("response $price");
+                                    inputPagePresenter.submitPromotionProgram();
+                                    bool isEqual = listEquals(
+                                        inputPagePresenter.originalPrice,
+                                        price);
+                                    inputPagePresenter.submitPromotionProgram();
+                                    // if (isEqual) {
+                                    //   inputPagePresenter
+                                    //       .submitPromotionProgram();
+                                    // } else {
+                                    //   Future.delayed(
+                                    //       const Duration(
+                                    //           seconds: 1,
+                                    //           milliseconds: 500), () {
+                                    //     inputPagePresenter
+                                    //         .submitPromotionProgram();
+                                    //   });
+                                    // Future.delayed(
+                                    //     const Duration(
+                                    //         seconds: 1,
+                                    //         milliseconds: 500), () {
+                                    //   inputPagePresenter
+                                    //       .submitPromotionProgramAll();
+                                    // });
+                                    // }
+                                    inputPagePresenter.submitPromotionProgram();
+                                  })
                             ],
                           ));
             }),

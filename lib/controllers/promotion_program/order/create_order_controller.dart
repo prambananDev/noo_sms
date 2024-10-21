@@ -6,6 +6,7 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:money_formatter/money_formatter.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/controllers/dashboard/dashboard_ordertaking.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -13,6 +14,8 @@ import 'package:noo_sms/models/input_pp_model.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropdown_state.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:noo_sms/models/wrapper.dart';
+import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
+import 'package:noo_sms/view/promotion_program/order/create_order_taking.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -66,10 +69,6 @@ class TransactionController extends GetxController {
       customerNameInputPageDropdownStateRx =
       InputPageDropdownState<IdAndValue<String>>().obs;
 
-  final InputPageDropdownState<String> _itemGroupInputPageDropdownState =
-      InputPageDropdownState<String>(
-          choiceList: <String>["Item", "Disc Group"], loadingState: 0);
-
   final WrappedInputPageDropdownState<IdAndValue<String>>
       _productInputPageDropdownState =
       WrappedInputPageDropdownState<IdAndValue<String>>(
@@ -77,12 +76,6 @@ class TransactionController extends GetxController {
           loadingStateWrapper: Wrapper(value: 0),
           selectedChoiceWrapper: Wrapper(value: null));
 
-  final WrappedInputPageDropdownState<IdAndValue<String>>
-      _warehouseInputPageDropdownState =
-      WrappedInputPageDropdownState<IdAndValue<String>>(
-          choiceListWrapper: Wrapper(value: <IdAndValue<String>>[]),
-          loadingStateWrapper: Wrapper(value: 0),
-          selectedChoiceWrapper: Wrapper(value: null));
   WrappedInputPageDropdownState<IdAndValue<String>>
       batchTransactionDropdownState =
       WrappedInputPageDropdownState<IdAndValue<String>>(
@@ -95,34 +88,12 @@ class TransactionController extends GetxController {
           choiceListWrapper: Wrapper(value: <IdAndValue<String>>[]),
           loadingStateWrapper: Wrapper(value: 0),
           selectedChoiceWrapper: Wrapper(value: null));
-  final InputPageDropdownState<IdAndValue<String>>
-      _multiplyInputPageDropdownState =
-      InputPageDropdownState<IdAndValue<String>>(
-    choiceList: <IdAndValue<String>>[
-      IdAndValue<String>(id: "0", value: "No"),
-      IdAndValue<String>(id: "1", value: "Yes"),
-    ],
-    loadingState: 0,
-  );
-  final InputPageDropdownState<String> _currencyInputPageDropdownState =
-      InputPageDropdownState<String>(
-          choiceList: <String>["IDR", "Dollar"], loadingState: 0);
-  final InputPageDropdownState<IdAndValue<String>>
-      _percentValueInputPageDropdownState =
-      InputPageDropdownState<IdAndValue<String>>(
-          choiceList: <IdAndValue<String>>[
-        IdAndValue<String>(id: "1", value: "Percent"),
-        IdAndValue<String>(id: "2", value: "Value"),
-      ],
-          loadingState: 0);
 
   @override
   void onInit() {
     super.onInit();
     _loadCustomerNameByUsername();
-
     _loadProduct();
-
     _loadLocation();
   }
 
@@ -215,7 +186,7 @@ class TransactionController extends GetxController {
     }
   }
 
-  void _loadProduct() async {
+  Future<void> _loadProduct() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? ID = preferences.getString("username");
     _productInputPageDropdownState.loadingStateWrapper?.value = 1;
@@ -257,7 +228,7 @@ class TransactionController extends GetxController {
     checkAddItemStatus2();
   }
 
-  void addItem2() {
+  void addItem() {
     List<PromotionProgramInputState> promotionProgramInputState =
         promotionProgramInputStateRx.value.promotionProgramInputState;
     promotionProgramInputState.add(
@@ -409,119 +380,59 @@ class TransactionController extends GetxController {
       return;
     }
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? username = preferences.getString("username");
     String? token = preferences.getString("token");
-    int ppTypeConvert = int.parse(
-        promotionTypeInputPageDropdownStateRx.value.selectedChoice!.id);
-    // int multiplyConvert = int.parse(element.multiplyInputPageDropdownState.selectedChoice.id);
-    int typeConvert = int.parse(
-        promotionTypeInputPageDropdownStateRx.value.selectedChoice!.id);
-    final selectedItemsPrincipal = selectedDataPrincipal
-        .map((index) => listDataPrincipal[index])
-        .toList()
-        .toString()
-        .replaceAll(RegExp(r'[\[\]]'), '');
+    String? username = preferences.getString("username");
+    int? userId = preferences.getInt("userid");
+    final int idEmp =
+        int.tryParse(preferences.getString("getIdEmp") ?? '0') ?? 0;
+
     final isiBody = jsonEncode(<String, dynamic>{
-      "PPtype": ppTypeConvert,
-      "PPname": programNameTextEditingControllerRx.value.text,
-      "Note": programNoteTextEditingControllerRx.value.text,
-      "FromDateHeader": programFromDateTextEditingControllerRx.value.text
-          .replaceAll(programFromDateTextEditingControllerRx.value.text,
-              "${programFromDateTextEditingControllerRx.value.text.split('-')[2]}-${programFromDateTextEditingControllerRx.value.text.split('-')[1]}-${programFromDateTextEditingControllerRx.value.text.split('-')[0]}"),
-      "ToDateHeader": programToDateTextEditingControllerRx.value.text.replaceAll(
-          programToDateTextEditingControllerRx.value.text,
-          "${programToDateTextEditingControllerRx.value.text.split('-')[2]}-${programToDateTextEditingControllerRx.value.text.split('-')[1]}-${programToDateTextEditingControllerRx.value.text.split('-')[0]}"),
-      "Location": preferences.getString("so"),
-      "Vendor": selectedItemsPrincipal,
-      "customerId": custNameHeaderValueDropdownStateRx.value.selectedChoice?.id,
-      "Lines": promotionProgramInputStateRx.value.promotionProgramInputState
+      "custid": customerNameInputPageDropdownStateRx.value.selectedChoice?.id,
+      "description": "",
+      "idEmp": idEmp,
+      "lines": promotionProgramInputStateRx.value.promotionProgramInputState
           .map<Map<String, dynamic>>((element) => <String, dynamic>{
-                "Customer":
-                    custNameHeaderValueDropdownStateRx.value.selectedChoice?.id,
-                "ItemId":
-                    element.selectProductPageDropdownState?.selectedChoice?.id,
-                "QtyFrom":
-                    element.qtyFrom!.text.isEmpty ? 0 : element.qtyFrom?.text,
-                "QtyTo": element.qtyTo!.text.isEmpty ? 0 : element.qtyTo?.text,
-                "Unit": element.unitPageDropdownState?.selectedChoice,
-                "Multiply":
-                    element.multiplyInputPageDropdownState?.selectedChoice?.id,
-                "FromDate": programFromDateTextEditingControllerRx.value.text
-                    .replaceAll(
-                        programFromDateTextEditingControllerRx.value.text,
-                        "${programFromDateTextEditingControllerRx.value.text.split('-')[2]}-${programFromDateTextEditingControllerRx.value.text.split('-')[1]}-${programFromDateTextEditingControllerRx.value.text.split('-')[0]}"),
-                "ToDate": programToDateTextEditingControllerRx.value.text
-                    .replaceAll(programToDateTextEditingControllerRx.value.text,
-                        "${programToDateTextEditingControllerRx.value.text.split('-')[2]}-${programToDateTextEditingControllerRx.value.text.split('-')[1]}-${programToDateTextEditingControllerRx.value.text.split('-')[0]}"),
-                "Currency":
-                    element.currencyInputPageDropdownState?.selectedChoice,
-                "type": element.percentValueInputPageDropdownState!
-                        .selectedChoice.isNull
+                "itemId": element.productTransactionPageDropdownState
+                    ?.selectedChoiceWrapper?.value?.id,
+                "qty": element.qtyTransaction!.text.isEmpty
                     ? 0
-                    : element.percentValueInputPageDropdownState?.selectedChoice
-                        ?.id, //
-                "Pct1": element.percent1!.text.isEmpty
-                    ? 0.0
-                    : element.percent1?.text,
-                "Pct2": element.percent2!.text.isEmpty
-                    ? 0.0
-                    : element.percent2?.text,
-                "Pct3": element.percent3!.text.isEmpty
-                    ? 0.0
-                    : element.percent3?.text,
-                "Pct4": element.percent4!.text.isEmpty
-                    ? 0.0
-                    : element.percent4?.text,
-                "Value1": element.value1!.text.isEmpty
-                    ? 0.0
-                    : element.value1?.text.replaceAll('.', ''),
-                "Value2": element.value2!.text.isEmpty
-                    ? 0.0
-                    : element.value2?.text.replaceAll('.', ''),
-                //"SupplyItemOnlyOnce": "",
-                "SupplyItem": element.supplyItem!.selectedChoice.isNull
-                    ? ""
-                    : element.supplyItem?.selectedChoice?.id,
-                "QtySupply":
-                    element.qtyItem!.text.isEmpty ? 0 : element.qtyItem?.text,
-                "UnitSupply": element.unitSupplyItem?.selectedChoice,
-                "SalesPrice":
-                    element.salesPrice?.text.replaceAll(RegExp(r"[.,]"), ""),
-                // element.supplyItem.selectedChoice.isNull ? "" : element.supplyItem.selectedChoice.id
-                "Warehouse": element.wareHousePageDropdownState
-                            ?.selectedChoiceWrapper?.value ==
-                        null
-                    ? "DC01K-B"
-                    : element.wareHousePageDropdownState?.selectedChoiceWrapper
-                        ?.value?.id,
-                "PriceTo": element.priceToCustomer?.text
-                    .replaceAll(RegExp(r"[.,]"), "")
+                    : element.qtyTransaction?.text,
+                "unit": element.unitPageDropdownState?.selectedChoice,
+                "price": element.priceTransaction!.text.isEmpty
+                    ? 0
+                    : int.parse(element.priceTransaction!.text
+                        .replaceAll(RegExp(r"[.,]"), "")),
               })
           .toList()
     });
+    debugPrint("response $isiBody");
+    List<PromotionProgramInputState>? promotionProgramInputState =
+        promotionProgramInputStateRx.value.promotionProgramInputState.toList();
+    List<String?>? dataTotal = promotionProgramInputState
+        .map((e) => e.totalTransaction?.text)
+        .toList();
 
-    final response =
-        await post(Uri.parse('$apiCons/api/activity?username=$username'),
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': '$token',
-            },
-            body: isiBody);
-    final tabController = Get.put(DashboardPPTabController());
+    var url = 'http://sms-api.prb.co.id/api/transaction?idUser=$userId';
+    final response = await post(
+        // Uri.parse('http://119.18.157.236:8869/api/transaction?idUser=$userId'),
+        Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': '$token',
+        },
+        body: isiBody);
+    debugPrint("response ${response.statusCode}");
     Future.delayed(const Duration(seconds: 2), () {
-      if (response.statusCode == 200 & 201) {
-        // Future.delayed(const Duration(seconds: 2), () {
-        //   tabController.initialIndex = 1;
-        //   onTap.value = true;
-        //   Get.offAll(
-        //     const DashboardPage(),
-        //   );
-        //   Get.to(const DashboardPP(
-        //     initialIndex: 1,
-        //   ));
-        //   update();
-        //   // Get.offAll(HistoryNomorPP());
-        // });
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        Future.delayed(const Duration(seconds: 1), () {
+          Get.off(() => const DashboardOrderTaking(
+                initialIndex: 1,
+              ));
+        });
+
+        //         Get.off(const DashboardPage(
+        //   initialIndex: 1,
+        // ));
         Get.dialog(
             const SimpleDialog(
               title: Text("Success"),
@@ -533,24 +444,20 @@ class TransactionController extends GetxController {
             ),
             barrierDismissible: false);
       } else {
-        onTap.value = false;
-
-        Get.dialog(
-            SimpleDialog(
-              title: const Text("Error"),
-              children: [
-                Center(
-                  child: Text(
-                      "${response.statusCode}\n${response.body.replaceAll(r"\'", "'")}",
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center),
-                ),
-                const Center(
-                  child: Icon(Icons.error),
-                ),
-              ],
+        Get.dialog(SimpleDialog(
+          title: const Text("Error"),
+          children: [
+            Center(
+              child: Text(
+                  "${response.statusCode}\n${response.body.replaceAll(r"\'", "'")}",
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center),
             ),
-            barrierDismissible: false);
+            const Center(
+              child: Icon(Icons.error),
+            )
+          ],
+        ));
       }
     });
   }
