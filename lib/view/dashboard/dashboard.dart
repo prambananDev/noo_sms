@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_sms_controller.dart';
+import 'package:noo_sms/view/dashboard/dashboard_noo.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 
@@ -27,7 +28,7 @@ class DashboardMainState extends State<DashboardMain> {
       appBar: AppBar(
         backgroundColor: colorAccent,
         title: const Text(
-          'Dashboards',
+          'Dashboard',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: Colors.white,
@@ -83,7 +84,7 @@ class DashboardMainState extends State<DashboardMain> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorAccent,
                 ),
-                onPressed: () => _navigateTo(context, const Text('data')),
+                onPressed: () => _navigateTo(context, const DashboardNoo()),
                 child:
                     Text("NOO Dashboard", style: TextStyle(color: colorNetral)),
               ),

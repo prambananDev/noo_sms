@@ -47,30 +47,45 @@ class _DashboardOrderSampleState extends State<DashboardOrderSample>
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: colorAccent,
-          title: Text(
-            'Product Sample Order',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: colorNetral),
-          ),
-          bottom: TabBar(
-            controller: _tabController,
-            labelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
+            centerTitle: true,
+            backgroundColor: colorAccent,
+            title: Text(
+              'Product Sample Order',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: colorNetral),
             ),
-            indicatorColor: colorNetral,
-            labelColor: colorNetral,
-            unselectedLabelColor: colorNetral,
-            isScrollable: true,
-            tabs: const [
-              Tab(text: "Create Order Sample"),
-              Tab(text: "History Order Sample"),
-              Tab(text: "Pending Order Sample"),
-              Tab(text: "Approved Order Sample"),
-            ],
-          ),
-        ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
+              child: Container(
+                color: colorNetral,
+                child: TabBar(
+                  controller: _tabController,
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  indicatorColor: colorAccent,
+                  labelColor: colorAccent,
+                  unselectedLabelColor: colorAccent,
+                  indicator: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: colorAccent,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  isScrollable: true,
+                  tabs: const [
+                    Tab(text: "Create Order Sample"),
+                    Tab(text: "History Order Sample"),
+                    Tab(text: "Pending Order Sample"),
+                    Tab(text: "Approved Order Sample"),
+                  ],
+                ),
+              ),
+            )),
         body: SizedBox(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
