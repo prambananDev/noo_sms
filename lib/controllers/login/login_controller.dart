@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:noo_sms/controllers/provider/login_provider.dart';
+import 'package:noo_sms/models/employee.dart';
 import 'package:noo_sms/models/user.dart';
 
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -69,6 +72,22 @@ class LoginController extends GetxController {
             Provider.of<LoginProvider>(context, listen: false).getStatus;
       });
     }
+    final employee = Employee();
+    employee.getEmployee(username, password).then((value) async {
+      List<String> result = value!.message!.split('_');
+      String message = result[0];
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final box = GetStorage();
+      prefs.setString("getIdEmp", result[2]);
+      prefs.setString("idSales", result[2]);
+      prefs.setString("getName", result[3]);
+      prefs.setString("getWh", result[4]);
+      box.write("getName", result[3]);
+      String dateLogin = DateFormat("ddMMMyyyy").format(DateTime.now());
+      String idSales = result[1];
+      setPreference(username, message, idSales, value.token!, dateLogin);
+      debugPrint("idemp ${prefs.getString('getIdEmp')!}");
+    });
 
     navigateToDashboard(user);
     isLoggingIn.value = false;
@@ -116,6 +135,16 @@ class LoginController extends GetxController {
         preferences.setString("idDevice", deviceId);
       } else {}
     }).catchError((error) {});
+  }
+
+  Future<void> setPreference(String username, String flag, String idSales,
+      String token, String dateLogin) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.setString("username", username);
+    await preferences.setString("flag", flag);
+    await preferences.setString("idSales", idSales);
+    await preferences.setString("token", token);
+    await preferences.setString("dateLogin", dateLogin);
   }
 
   void navigateToDashboard(User user) {

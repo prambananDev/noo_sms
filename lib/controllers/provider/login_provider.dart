@@ -4,7 +4,6 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard.dart';
-import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginProvider with ChangeNotifier {
@@ -18,7 +17,10 @@ class LoginProvider with ChangeNotifier {
     _userBox = await Hive.openBox('users');
     preferences = await SharedPreferences.getInstance();
 
-    user.getUsers(username, password, code).then((value) {
+    User.getUsers(
+      username,
+      password,
+    ).then((value) {
       // User.getUserNOTPassword(username, code)
       user.login(username, password);
       _status = value.code!;

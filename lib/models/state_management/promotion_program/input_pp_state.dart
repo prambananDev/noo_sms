@@ -11,7 +11,8 @@ class PromotionProgramInputState {
   WrappedInputPageDropdownState<IdAndValue<String>>? wareHousePageDropdownState;
   WrappedInputPageDropdownState<IdAndValue<String>>?
       productTransactionPageDropdownState;
-
+  WrappedInputPageDropdownState<IdAndValue<String>>?
+      batchTransactionDropdownState;
   TextEditingController? qtyFrom;
   TextEditingController? qtyTo;
   TextEditingController? qtyTransaction;

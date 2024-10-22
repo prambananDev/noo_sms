@@ -27,7 +27,12 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
   }
 
   void handleUploadsPOD(String salesId, ImageSource source) async {
-    await inputPagePresenter.uploadsPOD(salesId, source);
+    try {
+      await inputPagePresenter.uploadsPOD(salesId, source);
+      print('Upload successful');
+    } catch (e) {
+      print('Upload failed: $e');
+    }
   }
 
   @override

@@ -1,9 +1,6 @@
 import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
@@ -28,18 +25,7 @@ class InputPageController extends GetxController {
   Rx<bool> isClaim = false.obs;
   Rx<InputPageWrapper> promotionProgramInputStateRx =
       InputPageWrapper(promotionProgramInputState: [], isAddItem: false).obs;
-  Rx<TextEditingController> custNameTextEditingControllerRx =
-      TextEditingController().obs;
-  Rx<TextEditingController> custPicTextEditingControllerRx =
-      TextEditingController().obs;
-  Rx<TextEditingController> custPhoneTextEditingControllerRx =
-      TextEditingController().obs;
-  Rx<TextEditingController> custAddressTextEditingControllerRx =
-      TextEditingController().obs;
-  Rx<TextEditingController> purposeDescTextEditingControllerRx =
-      TextEditingController().obs;
-  Rx<TextEditingController> principalNameTextEditingControllerRx =
-      TextEditingController().obs;
+
   Rx<TextEditingController> transactionNumberTextEditingControllerRx =
       TextEditingController().obs;
   Rx<TextEditingController> transactionDateTextEditingControllerRx =
@@ -84,13 +70,6 @@ class InputPageController extends GetxController {
   final InputPageDropdownState<String> _itemGroupInputPageDropdownState =
       InputPageDropdownState<String>(
           choiceList: <String>["Item", "Disc Group"], loadingState: 0);
-
-  final WrappedInputPageDropdownState<IdAndValue<String>>
-      _productInputPageDropdownState =
-      WrappedInputPageDropdownState<IdAndValue<String>>(
-          choiceListWrapper: Wrapper(value: <IdAndValue<String>>[]),
-          loadingStateWrapper: Wrapper(value: 0),
-          selectedChoiceWrapper: Wrapper(value: null));
 
   WrappedInputPageDropdownState<IdAndValue<String>>
       productInputPageDropdownState =
@@ -138,36 +117,6 @@ class InputPageController extends GetxController {
       ],
           loadingState: 0);
 
-  Rx<InputPageDropdownState<IdAndValue<String>>> typesList =
-      InputPageDropdownState<IdAndValue<String>>(
-              choiceList: [], loadingState: 0)
-          .obs;
-
-  Rx<InputPageDropdownState<IdAndValue<String>>> purposeList =
-      InputPageDropdownState<IdAndValue<String>>(
-              choiceList: [], loadingState: 0)
-          .obs;
-
-  Rx<InputPageDropdownState<IdAndValue<String>>> deptList =
-      InputPageDropdownState<IdAndValue<String>>(
-              choiceList: [], loadingState: 0)
-          .obs;
-
-  Rx<InputPageDropdownState<IdAndValue<String>>> principalList =
-      InputPageDropdownState<IdAndValue<String>>(
-              choiceList: [], loadingState: 0)
-          .obs;
-
-  Rx<InputPageDropdownState<IdAndValue<String>>> distributionChannelList =
-      InputPageDropdownState<IdAndValue<String>>(
-              choiceList: [], loadingState: 0)
-          .obs;
-
-  final List<Map<String, dynamic>> types = [
-    {"id": "0", "value": "Commercial"},
-    {"id": "1", "value": "Non Commercial"},
-  ];
-
   @override
   void onInit() {
     super.onInit();
@@ -191,26 +140,11 @@ class InputPageController extends GetxController {
     _loadVendor();
     _loadWarehouse();
     _loadPrincipal();
-    _loadPrincipal2();
     _loadCustomerOrGroupHeader();
     _loadCustomerNameByUsername();
-    _loadSampleType();
   }
 
-  void _loadSampleType() {
-    typesList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: types.map<IdAndValue<String>>((type) {
-        return IdAndValue<String>(
-          id: type["id"].toString(),
-          value: type["value"],
-        );
-      }).toList(),
-      loadingState: 2,
-    );
-    update();
-  }
-
-  void _loadPrincipal2() async {
+  void _loadPrincipal() async {
     var urlPrincipal = "$apiCons/api/Principals";
     final response = await get(Uri.parse(urlPrincipal));
     final listData = jsonDecode(response.body);
@@ -302,29 +236,6 @@ class InputPageController extends GetxController {
     }
   }
 
-  _loadPrincipal() async {
-    var urlGetPrincipal = "http://sms.prb.co.id/sample/SamplePrincipals";
-    final response = await http.get(Uri.parse(urlGetPrincipal));
-    var listData = jsonDecode(response.body);
-    debugPrint(listData.toString());
-    List<IdAndValue<String>> mappedList =
-        listData.map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(
-        id: element["Value"].toString(),
-        value: element["Text"],
-      );
-    }).toList();
-    mappedList.insert(0, IdAndValue(id: '0', value: 'New Principal'));
-
-    principalList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: mappedList,
-      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-      loadingState: 2,
-    );
-
-    update();
-  }
-
   void _loadWarehouse() async {
     _warehouseInputPageDropdownState.loadingStateWrapper?.value = 1;
     _updateState();
@@ -386,7 +297,7 @@ class InputPageController extends GetxController {
 
     if (selectedChoice == itemGroupInputPageDropdownState!.choiceList?[0]) {
       var urlGetProduct =
-          "http://api-scs.prb.co.id/api/AllProduct?ID=$username&idSales=Sample";
+          "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
 
       try {
         final response = await get(
@@ -507,138 +418,6 @@ class InputPageController extends GetxController {
     _updateState();
   }
 
-  _loadPurpose() async {
-    final selectSampleType = typesList.value.selectedChoice?.id;
-    var urlGetPurpose =
-        "http://sms.prb.co.id/sample/SamplePurpose?type=$selectSampleType";
-
-    try {
-      var response = await Dio().get(urlGetPurpose);
-      var listData = response.data;
-      debugPrint(listData.toString());
-
-      List<IdAndValue<String>> mappedList =
-          (listData as List).map<IdAndValue<String>>((element) {
-        return IdAndValue<String>(
-          id: element["Value"].toString(),
-          value: element["Text"],
-        );
-      }).toList();
-
-      purposeList.value = InputPageDropdownState<IdAndValue<String>>(
-        choiceList: mappedList,
-        selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-        loadingState: 2,
-      );
-
-      debugPrint(purposeList.value.selectedChoice?.id.toString());
-    } catch (e) {
-      debugPrint("Error loading purpose: $e");
-    }
-    update();
-  }
-
-  _loadDistrChannel() async {
-    var urlGetPrincipal = "http://sms.prb.co.id/sample/SampleDistChannel";
-    final response = await http.get(Uri.parse(urlGetPrincipal));
-    var listData = jsonDecode(response.body);
-    debugPrint(listData.toString());
-    List<IdAndValue<String>> mappedList =
-        listData.map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(
-        id: element["Value"].toString(),
-        value: element["Text"],
-      );
-    }).toList();
-    distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: mappedList,
-      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-      loadingState: 2,
-    );
-
-    update();
-  }
-
-  _loadDept() async {
-    var urlGetDept = "http://sms.prb.co.id/sample/SampleDept";
-    try {
-      final response = await http.get(Uri.parse(urlGetDept));
-      if (response.statusCode == 200) {
-        var listData = jsonDecode(response.body);
-        debugPrint("Dept data: $listData");
-
-        List<IdAndValue<String>> mappedList =
-            listData.map<IdAndValue<String>>((element) {
-          return IdAndValue<String>(
-            id: element["Value"].toString(),
-            value: element["Text"],
-          );
-        }).toList();
-
-        deptList.value = InputPageDropdownState<IdAndValue<String>>(
-          choiceList: mappedList,
-          selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-          loadingState: 2,
-        );
-
-        debugPrint("Mapped dept list: ${mappedList.toString()}");
-      } else {
-        throw Exception('Failed to load department data');
-      }
-    } catch (e) {
-      debugPrint("Error loading dept: $e");
-    }
-    update();
-  }
-
-  void changeSampleType(IdAndValue<String>? selectedChoice) async {
-    typesList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: typesList.value.choiceList,
-      selectedChoice: selectedChoice,
-    );
-    update();
-    await _loadPurpose();
-    await _loadDept();
-    await _loadPrincipal();
-    update();
-  }
-
-  void changePrincipal(IdAndValue<String>? newValue) {
-    principalList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: principalList.value.choiceList,
-      selectedChoice: newValue,
-      loadingState: 2,
-    );
-    update();
-  }
-
-  void changeDept(IdAndValue<String>? newValue) {
-    deptList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: deptList.value.choiceList,
-      selectedChoice: newValue,
-      loadingState: 2,
-    );
-    update();
-  }
-
-  void changeDistributionChannel(IdAndValue<String>? newValue) {
-    distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: distributionChannelList.value.choiceList,
-      selectedChoice: newValue,
-      loadingState: 2,
-    );
-    update();
-  }
-
-  void changePurpose(IdAndValue<String>? newValue) {
-    purposeList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: purposeList.value.choiceList,
-      selectedChoice: newValue,
-      loadingState: 2,
-    );
-    update();
-  }
-
   void changePromotionType(IdAndValue<String>? selectedChoice) {
     promotionTypeInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
     checkAddItemStatus();
@@ -648,12 +427,6 @@ class InputPageController extends GetxController {
     customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
 
     checkAddItemStatus();
-  }
-
-  void changeSelectCustomer2(IdAndValue<String> selectedChoice) {
-    customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
-
-    checkAddItemStatus2();
   }
 
   void changeVendor(IdAndValue<String> selectedChoice) {
@@ -757,8 +530,7 @@ class InputPageController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
     try {
-      var urlGetCustomer =
-          "http://api-scs.prb.co.id/api/AllCustomer?username=$username";
+      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
       custNameHeaderValueDropdownStateRx.value.loadingState = 2;
@@ -1328,13 +1100,6 @@ class InputPageController extends GetxController {
     // && vendorInputPageDropdownStateRx.value.selectedChoice != null;
     // && locationInputPageDropdownStateRx.value.selectedChoice != null
     // && statusTestingInputPageDropdownStateRx.value.selectedChoice != null;
-    _updateState();
-  }
-
-  void checkAddItemStatus2() {
-    promotionProgramInputStateRx.value.isAddItem =
-        customerNameInputPageDropdownStateRx.value.selectedChoice != null;
-
     _updateState();
   }
 

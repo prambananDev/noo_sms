@@ -149,7 +149,10 @@ class User {
     }
   }
 
-  Future<User> getUsers(String username, String password, int code) async {
+  static Future<User> getUsers(
+    String username,
+    String password,
+  ) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 

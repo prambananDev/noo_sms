@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
-import 'package:noo_sms/controllers/promotion_program/input_pp_controller.dart';
+
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
+import 'package:noo_sms/controllers/sample_order/transaction_sample_controller.dart';
 import 'package:noo_sms/models/id_valaue.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:search_choices/search_choices.dart';
@@ -16,7 +17,8 @@ class TransactionSample extends StatefulWidget {
 }
 
 class _TransactionPageState extends State<TransactionSample> {
-  final InputPageController inputPagePresenter = Get.put(InputPageController());
+  final TransactionSampleController inputPagePresenter =
+      Get.put(TransactionSampleController());
   List<TextEditingController> valuesControllers = [];
   String? sampleType;
 
@@ -100,7 +102,7 @@ class _TransactionPageState extends State<TransactionSample> {
 
   void _addItem() {
     setState(() {
-      inputPagePresenter.addItem2();
+      inputPagePresenter.addItem();
       valuesControllers.add(TextEditingController(text: "1"));
     });
   }
@@ -134,7 +136,7 @@ class _TransactionPageState extends State<TransactionSample> {
     }
   }
 
-  Widget customCard(int index, InputPageController inputPagePresenter) {
+  Widget customCard(int index, TransactionSampleController inputPagePresenter) {
     PromotionProgramInputState promotionProgramInputState = inputPagePresenter
         .promotionProgramInputStateRx.value.promotionProgramInputState[index];
 
@@ -168,7 +170,7 @@ class _TransactionPageState extends State<TransactionSample> {
                     onPressed: () {
                       _removeItem(index);
                     },
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: Colors.black),
                   ),
                 ],
               ),
@@ -294,7 +296,7 @@ class _TransactionPageState extends State<TransactionSample> {
     );
   }
 
-  Widget addOrder(InputPageController inputPagePresenter) {
+  Widget addOrder(TransactionSampleController inputPagePresenter) {
     return Card(
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

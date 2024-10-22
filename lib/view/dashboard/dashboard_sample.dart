@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/view/sample_order/transaction_approved.dart';
 import 'package:noo_sms/view/sample_order/transaction_history.dart';
+import 'package:noo_sms/view/sample_order/transaction_pending.dart';
 import 'package:noo_sms/view/sample_order/transaction_sample.dart';
 
-void main() => runApp(const MyApp());
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const GetMaterialApp(
-      home: DashboardOrderSample(),
-    );
-  }
-}
-
 class DashboardOrderSample extends StatefulWidget {
-  final int? initialIndexs;
+  final int? initialIndex;
 
-  const DashboardOrderSample({Key? key, this.initialIndexs}) : super(key: key);
+  const DashboardOrderSample({Key? key, this.initialIndex}) : super(key: key);
 
   @override
   _DashboardOrderSampleState createState() => _DashboardOrderSampleState();
@@ -36,7 +25,7 @@ class _DashboardOrderSampleState extends State<DashboardOrderSample>
     _tabController = TabController(
       length: 4,
       vsync: this,
-      initialIndex: widget.initialIndexs ?? 0,
+      initialIndex: widget.initialIndex ?? 0,
     );
   }
 
@@ -48,9 +37,6 @@ class _DashboardOrderSampleState extends State<DashboardOrderSample>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
@@ -62,15 +48,21 @@ class _DashboardOrderSampleState extends State<DashboardOrderSample>
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const Text(
+          centerTitle: true,
+          backgroundColor: colorAccent,
+          title: Text(
             'Product Sample Order',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: colorNetral),
           ),
           bottom: TabBar(
             controller: _tabController,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-            indicatorColor: colorAccent,
-            labelColor: colorAccent,
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+            ),
+            indicatorColor: colorNetral,
+            labelColor: colorNetral,
+            unselectedLabelColor: colorNetral,
             isScrollable: true,
             tabs: const [
               Tab(text: "Create Order Sample"),
@@ -88,8 +80,8 @@ class _DashboardOrderSampleState extends State<DashboardOrderSample>
             children: const [
               TransactionSample(),
               TransactionHistorySampleView(),
-              // TransactionApprovalPage(),
-              // TransactionApprovedPage(),
+              TransactionPendingPage(),
+              TransactionApprovedPage(),
             ],
           ),
         ),

@@ -7,6 +7,7 @@ import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/feedback_detail.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -68,7 +69,7 @@ class TransactionHistorySampleController extends GetxController {
     };
     final String feedbackJson = jsonEncode(feedbackData);
     debugPrint("value $feedbackJson");
-    var url = 'http://api-scs.prb.co.id/api/SampleTransaction';
+    var url = '$apiCons2/api/SampleTransaction';
     final response = await http.put(
       Uri.parse(url),
       body: feedbackJson,
@@ -87,8 +88,8 @@ class TransactionHistorySampleController extends GetxController {
   Future<void> getTransactionHistory() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int idEmp = int.tryParse(prefs.getString("getIdEmp") ?? '0') ?? 0;
-    var urls = "http://api-scs.prb.co.id/api/SampleTransaction/$idEmp";
-
+    var urls = "$apiCons2/api/SampleTransaction/$idEmp";
+    debugPrint("idemp $idEmp");
     try {
       final response = await http.get(Uri.parse(urls));
       if (response.statusCode == 200) {
@@ -106,8 +107,7 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   getTransactionHistoryDetail(String idTransaction) async {
-    String url =
-        "http://api-scs.prb.co.id/api/SampleTransaction/detail?trx=$idTransaction";
+    String url = "$apiCons2/api/SampleTransaction/detail?trx=$idTransaction";
     final response = await http.get(Uri.parse(url));
     final listData = jsonDecode(response.body);
     listDetail.value = listData['Product'];
@@ -144,8 +144,7 @@ class TransactionHistorySampleController extends GetxController {
       "attachmentName": await dio.MultipartFile.fromFile(resizedFile.path,
           filename: resizedFile.path.split('/').last)
     });
-    String uploadURL =
-        "http://api-scs.prb.co.id/api/uploadPOD/?salesid=$salesId";
+    String uploadURL = "$apiCons2/api/uploadPOD/?salesid=$salesId";
     var response = await dioClient.post(uploadURL, data: formData);
 
     if (response.statusCode == 200) {
@@ -177,8 +176,7 @@ class TransactionHistorySampleController extends GetxController {
 
   Future<Uint8List?> fetchImagePOD(String salesId) async {
     dio.Dio dioClient = dio.Dio();
-    String downloadURL =
-        "http://api-scs.prb.co.id/api/downloadPOD/?salesid=$salesId";
+    String downloadURL = "$apiCons2/api/downloadPOD/?salesid=$salesId";
     try {
       dio.Response<List<int>> response = await dioClient.get<List<int>>(
         downloadURL,
@@ -201,7 +199,7 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   void _loadFeed() async {
-    var urlGetDept = "http://api-scs.prb.co.id/api/SampleFeedbackReasons";
+    var urlGetDept = "$apiCons2/api/SampleFeedbackReasons";
     final response = await http.get(Uri.parse(urlGetDept));
     var listData = jsonDecode(response.body);
     debugPrint(listData.toString());
@@ -222,8 +220,7 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   Future<void> loadFeedVal2(String salesId) async {
-    final url =
-        'http://api-scs.prb.co.id/api/SampleFeedbackReasons/?salesid=$salesId';
+    final url = '$apiCons2/api/SampleFeedbackReasons/?salesid=$salesId';
     final response = await http.get(Uri.parse(url));
     debugPrint("feedval2 ${response.body}");
     if (response.statusCode == 200) {
@@ -255,8 +252,7 @@ class TransactionHistorySampleController extends GetxController {
       "attachmentName": await dio.MultipartFile.fromFile(resizedFile.path,
           filename: resizedFile.path.split('/').last)
     });
-    String uploadURL =
-        "http://api-scs.prb.co.id/api/uploadFeedback/?salesid=$salesId";
+    String uploadURL = "$apiCons2/api/uploadFeedback/?salesid=$salesId";
     var response = await dioClient.post(uploadURL, data: formData);
 
     if (response.statusCode == 200) {
@@ -283,8 +279,7 @@ class TransactionHistorySampleController extends GetxController {
   Future<Uint8List?> fetchImageFeed(String salesId) async {
     loadFeedVal2(salesId);
     dio.Dio dioClient = dio.Dio();
-    String downloadURL =
-        "http://api-scs.prb.co.id/api/downloadFeedback/?salesid=$salesId";
+    String downloadURL = "$apiCons2/api/downloadFeedback/?salesid=$salesId";
     try {
       dio.Response<List<int>> response = await dioClient.get<List<int>>(
         downloadURL,

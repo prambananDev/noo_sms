@@ -1,0 +1,61 @@
+import 'package:intl/intl.dart';
+
+class Approval {
+  final int id;
+  final String salesOrder;
+  final String? customer;
+  final String date;
+  final String? custReff;
+  final String? desc;
+  final String status;
+
+  Approval({
+    required this.id,
+    required this.salesOrder,
+    this.customer,
+    required this.date,
+    this.custReff,
+    this.desc,
+    required this.status,
+  });
+
+  factory Approval.fromJson(Map<String, dynamic> json) {
+    return Approval(
+      id: json['Id'] as int,
+      salesOrder: json['SalesOrder'] as String,
+      customer: json['Customer'] as String?,
+      date: json['Date'] as String,
+      custReff: json['CustReff'] as String?,
+      desc: json['Desc'] as String?,
+      status: json['Status'] as String,
+    );
+  }
+
+  String getFormattedDate() {
+    DateTime parsedDate = DateTime.parse(date);
+    return DateFormat('dd-MM-yyyy').format(parsedDate);
+  }
+}
+
+class ApprovalDetail {
+  final String productId;
+  final String product;
+  final int qty;
+  final String unit;
+
+  ApprovalDetail({
+    required this.productId,
+    required this.product,
+    required this.qty,
+    required this.unit,
+  });
+
+  factory ApprovalDetail.fromJson(Map<String, dynamic> json) {
+    return ApprovalDetail(
+      productId: json['ProductId'] as String,
+      product: json['Product'] as String,
+      qty: json['Qty'] as int,
+      unit: json['Unit'] as String,
+    );
+  }
+}

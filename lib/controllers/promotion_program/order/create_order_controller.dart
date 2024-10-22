@@ -168,8 +168,7 @@ class TransactionController extends GetxController {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     try {
-      var urlGetCustomer =
-          "http://api-scs.prb.co.id/api/AllCustomer?username=$username";
+      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
       print("url get customer :$urlGetCustomer");
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
@@ -191,8 +190,7 @@ class TransactionController extends GetxController {
     String? ID = preferences.getString("username");
     _productInputPageDropdownState.loadingStateWrapper?.value = 1;
     _updateState();
-    var urlGetProduct =
-        "http://api-scs.prb.co.id/api/AllProduct?ID=$ID&idSales=Sample";
+    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$ID&idSales=Sample";
     final response = await get(Uri.parse(urlGetProduct));
     var listData = jsonDecode(response.body);
     _productInputPageDropdownState.loadingStateWrapper?.value = 2;
@@ -271,9 +269,9 @@ class TransactionController extends GetxController {
     var url =
         "http://119.18.157.236:8877/api/Product/cekStok?item=$idProduct&qty=$qty&unit=$unit&wh=DC01-X";
     var urlPrice =
-        "http://api-scs.prb.co.id/api/AllPrice?cust=${customerNameInputPageDropdownStateRx.value.choiceList![index].id}&item=$idProduct&unit=$unit&qty=$qty&type=1";
+        "$apiCons2/api/AllPrice?cust=${customerNameInputPageDropdownStateRx.value.choiceList![index].id}&item=$idProduct&unit=$unit&qty=$qty&type=1";
     var urlDiscount =
-        "http://api-scs.prb.co.id/api/AllDiscount?cust=${customerNameInputPageDropdownStateRx.value.choiceList![index].id}&item=$idProduct&unit=$unit&qty=$qty";
+        "$apiCons2/api/AllDiscount?cust=${customerNameInputPageDropdownStateRx.value.choiceList![index].id}&item=$idProduct&unit=$unit&qty=$qty";
 
     final response = await get(Uri.parse(url));
     final responsePrice = await get(Uri.parse(urlPrice));
