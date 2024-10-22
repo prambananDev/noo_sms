@@ -27,7 +27,7 @@ class DashboardMainState extends State<DashboardMain> {
       appBar: AppBar(
         backgroundColor: colorAccent,
         title: const Text(
-          'Dashboard',
+          'Dashboards',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: Colors.white,
