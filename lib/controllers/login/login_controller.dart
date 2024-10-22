@@ -86,7 +86,6 @@ class LoginController extends GetxController {
       String dateLogin = DateFormat("ddMMMyyyy").format(DateTime.now());
       String idSales = result[1];
       setPreference(username, message, idSales, value.token!, dateLogin);
-      debugPrint("idemp ${prefs.getString('getIdEmp')!}");
     });
 
     navigateToDashboard(user);

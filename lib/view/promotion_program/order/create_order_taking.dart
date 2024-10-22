@@ -27,8 +27,7 @@ class _TransactionPageState extends State<TransactionPage> {
     super.initState();
   }
 
-  final TransactionController inputPagePresenter =
-      Get.put(TransactionController());
+  final InputPageController inputPagePresenter = Get.put(InputPageController());
   Widget customCard(int index, TransactionController inputPagePresenter) {
     PromotionProgramInputState promotionProgramInputState = inputPagePresenter
         .promotionProgramInputStateRx.value.promotionProgramInputState[index];
@@ -416,13 +415,13 @@ class _TransactionPageState extends State<TransactionPage> {
                                     List disc = promotionProgramInputState
                                         .map((e) => e.discTransaction?.text)
                                         .toList();
-                                    debugPrint("response$disc");
+
                                     List<String?> price =
                                         promotionProgramInputState
                                             .map(
                                                 (e) => e.priceTransaction?.text)
                                             .toList();
-                                    debugPrint("response $price");
+
                                     inputPagePresenter.submitPromotionProgram();
                                     bool isEqual = listEquals(
                                         inputPagePresenter.originalPrice,

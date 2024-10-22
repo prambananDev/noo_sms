@@ -20,10 +20,10 @@ class HistoryAll extends StatefulWidget {
   const HistoryAll({Key? key}) : super(key: key);
 
   @override
-  _HistoryAllState createState() => _HistoryAllState();
+  HistoryAllState createState() => HistoryAllState();
 }
 
-class _HistoryAllState extends State<HistoryAll> {
+class HistoryAllState extends State<HistoryAll> {
   final _debouncer = Debounce(milliseconds: 5);
   TextEditingController filterController = TextEditingController();
   var _listHistory, listHistoryReal;
@@ -397,9 +397,7 @@ class _HistoryAllState extends State<HistoryAll> {
                         itemBuilder: (BuildContext context, int index) =>
                             cardAdapter(_listHistory[index]),
                       );
-                    } else {
-                      print(snapshot.error.toString());
-                    }
+                    } else {}
                   } else if (snapshot.connectionState == ConnectionState.none) {
                     return const Center(
                       child: Column(

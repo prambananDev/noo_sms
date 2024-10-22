@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
-import 'package:flutter/cupertino.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -68,7 +67,7 @@ class TransactionHistorySampleController extends GetxController {
       "notes": feedbackTextEditingControllerRx.value.text
     };
     final String feedbackJson = jsonEncode(feedbackData);
-    debugPrint("value $feedbackJson");
+
     var url = '$apiCons2/api/SampleTransaction';
     final response = await http.put(
       Uri.parse(url),
@@ -77,8 +76,6 @@ class TransactionHistorySampleController extends GetxController {
         "Content-Type": "application/json",
       },
     );
-    debugPrint("response status: ${response.statusCode}");
-    debugPrint("response body: ${response.body}");
   }
 
   Rx<InputPageDropdownState<IdAndValue<String>>>
@@ -89,7 +86,7 @@ class TransactionHistorySampleController extends GetxController {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int idEmp = int.tryParse(prefs.getString("getIdEmp") ?? '0') ?? 0;
     var urls = "$apiCons2/api/SampleTransaction/$idEmp";
-    debugPrint("idemp $idEmp");
+
     try {
       final response = await http.get(Uri.parse(urls));
       if (response.statusCode == 200) {
@@ -111,7 +108,7 @@ class TransactionHistorySampleController extends GetxController {
     final response = await http.get(Uri.parse(url));
     final listData = jsonDecode(response.body);
     listDetail.value = listData['Product'];
-    print("cek listDetail = ${listDetail.value}");
+
     update();
   }
 
@@ -164,7 +161,7 @@ class TransactionHistorySampleController extends GetxController {
       } catch (e) {
         throw Exception('Failed to parse response as JSON: $e');
       }
-      print("Success: $jsonObject");
+
       var objects =
           UploadFileResponse.fromJson(jsonObject as Map<String, dynamic>);
       return objects;
@@ -186,14 +183,11 @@ class TransactionHistorySampleController extends GetxController {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        print("Image data fetched successfully");
         return Uint8List.fromList(response.data!);
       } else {
-        print("Failed to download image: Status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Exception when downloading image: $e");
       return null;
     }
   }
@@ -222,7 +216,7 @@ class TransactionHistorySampleController extends GetxController {
   Future<void> loadFeedVal2(String salesId) async {
     final url = '$apiCons2/api/SampleFeedbackReasons/?salesid=$salesId';
     final response = await http.get(Uri.parse(url));
-    debugPrint("feedval2 ${response.body}");
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse =
           json.decode(response.body) as Map<String, dynamic>;
@@ -265,11 +259,7 @@ class TransactionHistorySampleController extends GetxController {
       );
       try {
         var jsonObject = jsonDecode(response.data);
-        print("Success: $jsonObject");
-      } catch (e) {
-        print("Failed to parse response as JSON: $e");
-        print("Response: ${response.data}");
-      }
+      } catch (e) {}
     } else {
       throw Exception(
           'Failed to upload image with status code: ${response.statusCode}');
@@ -288,14 +278,11 @@ class TransactionHistorySampleController extends GetxController {
         ),
       );
       if (response.statusCode == 200 && response.data != null) {
-        print("Image data fetched successfully");
         return Uint8List.fromList(response.data!);
       } else {
-        print("Failed to download image: Status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Exception when downloading image: $e");
       return null;
     }
   }

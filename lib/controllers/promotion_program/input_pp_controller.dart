@@ -194,9 +194,7 @@ class InputPageController extends GetxController {
       }).toList();
 
       update();
-    } else {
-      debugPrint('Failed to load program data');
-    }
+    } else {}
   }
 
   void _loadLocation() async {
@@ -261,7 +259,7 @@ class InputPageController extends GetxController {
     _updateState();
     var urlGetUnit =
         "$apiCons2/api/Unit?item=${selectProductPageDropdownState!.selectedChoice!.id}";
-    debugPrint("zz${selectProductPageDropdownState.selectedChoice!.id}");
+
     final response = await get(Uri.parse(urlGetUnit));
     var listData = jsonDecode(response.body);
     unitPageDropdownState?.loadingState = 2;
@@ -299,49 +297,45 @@ class InputPageController extends GetxController {
       var urlGetProduct =
           "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
 
-      try {
-        final response = await get(
-          Uri.parse(urlGetProduct),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        );
+      final response = await get(
+        Uri.parse(urlGetProduct),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
 
-        if (response.statusCode == 200) {
-          var listData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        var listData = jsonDecode(response.body);
 
-          selectProductPageDropdownState?.loadingState = 2;
-          selectProductPageDropdownState?.choiceList = listData
-              .map<IdAndValue<String>>((element) => IdAndValue<String>(
-                  id: element["itemId"].toString(), value: element["itemName"]))
-              .toList();
-          _updateState();
-        } else {
-          debugPrint(
-              "Failed to load product data, status code: ${response.statusCode}");
-        }
-      } catch (e) {}
+        selectProductPageDropdownState?.loadingState = 2;
+        selectProductPageDropdownState?.choiceList = listData
+            .map<IdAndValue<String>>((element) => IdAndValue<String>(
+                id: element["itemId"].toString(), value: element["itemName"]))
+            .toList();
+        _updateState();
+      } else {
+        debugPrint(
+            "Failed to load product data, status code: ${response.statusCode}");
+      }
     } else if (selectedChoice ==
         itemGroupInputPageDropdownState.choiceList?[1]) {
       var urlGetDiscGroup = "$apiCons/api/ItemGroup";
 
-      try {
-        final response = await get(Uri.parse(urlGetDiscGroup));
+      final response = await get(Uri.parse(urlGetDiscGroup));
 
-        if (response.statusCode == 200) {
-          var listData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        var listData = jsonDecode(response.body);
 
-          selectProductPageDropdownState?.loadingState = 2;
-          selectProductPageDropdownState?.choiceList = listData
-              .map<IdAndValue<String>>((element) => IdAndValue<String>(
-                  id: element["GROUPID"].toString(), value: element["NAME"]))
-              .toList();
-          _updateState();
-        } else {
-          debugPrint(
-              "Failed to load discount group data, status code: ${response.statusCode}");
-        }
-      } catch (e) {}
+        selectProductPageDropdownState?.loadingState = 2;
+        selectProductPageDropdownState?.choiceList = listData
+            .map<IdAndValue<String>>((element) => IdAndValue<String>(
+                id: element["GROUPID"].toString(), value: element["NAME"]))
+            .toList();
+        _updateState();
+      } else {
+        debugPrint(
+            "Failed to load discount group data, status code: ${response.statusCode}");
+      }
     }
   }
 
@@ -738,31 +732,25 @@ class InputPageController extends GetxController {
         promotionProgramInputState.value2!.text,
         replaceChar: ".");
 
-    try {
-      percent1 = promotionProgramInputState.percent1?.text != null &&
-              RegExp(r'^\d+$')
-                  .hasMatch(promotionProgramInputState.percent1!.text)
-          ? int.parse(promotionProgramInputState.percent1!.text)
-          : 0;
+    percent1 = promotionProgramInputState.percent1?.text != null &&
+            RegExp(r'^\d+$').hasMatch(promotionProgramInputState.percent1!.text)
+        ? int.parse(promotionProgramInputState.percent1!.text)
+        : 0;
 
-      percent2 = promotionProgramInputState.percent2?.text != null &&
-              RegExp(r'^\d+$')
-                  .hasMatch(promotionProgramInputState.percent2!.text)
-          ? int.parse(promotionProgramInputState.percent2!.text)
-          : 0;
+    percent2 = promotionProgramInputState.percent2?.text != null &&
+            RegExp(r'^\d+$').hasMatch(promotionProgramInputState.percent2!.text)
+        ? int.parse(promotionProgramInputState.percent2!.text)
+        : 0;
 
-      percent3 = promotionProgramInputState.percent3?.text != null &&
-              RegExp(r'^\d+$')
-                  .hasMatch(promotionProgramInputState.percent3!.text)
-          ? int.parse(promotionProgramInputState.percent3!.text)
-          : 0;
+    percent3 = promotionProgramInputState.percent3?.text != null &&
+            RegExp(r'^\d+$').hasMatch(promotionProgramInputState.percent3!.text)
+        ? int.parse(promotionProgramInputState.percent3!.text)
+        : 0;
 
-      percent4 = promotionProgramInputState.percent4?.text != null &&
-              RegExp(r'^\d+$')
-                  .hasMatch(promotionProgramInputState.percent4!.text)
-          ? int.parse(promotionProgramInputState.percent4!.text)
-          : 0;
-    } catch (e) {}
+    percent4 = promotionProgramInputState.percent4?.text != null &&
+            RegExp(r'^\d+$').hasMatch(promotionProgramInputState.percent4!.text)
+        ? int.parse(promotionProgramInputState.percent4!.text)
+        : 0;
 
     double countPriceToCustomerValue = salesPrice - (value1 + value2);
     promotionProgramInputState.priceToCustomer?.text =
@@ -960,7 +948,7 @@ class InputPageController extends GetxController {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     String? token = preferences.getString("token");
-    debugPrint("token $token");
+
     int ppTypeConvert = int.parse(
         promotionTypeInputPageDropdownStateRx.value.selectedChoice!.id);
     final isiBody = jsonEncode(<String, dynamic>{
@@ -1025,7 +1013,7 @@ class InputPageController extends GetxController {
         };
       }).toList(),
     });
-    debugPrint("zz $isiBody");
+
     final response =
         await put(Uri.parse('$apiCons/api/activity?username=$username'),
             headers: {

@@ -109,7 +109,7 @@ class HistoryLinesController extends GetxController {
       });
     } catch (onError) {
       // Handle error
-      Navigator.pop(context);
+
       // Fluttertoast.showToast(
       //     msg: 'Error : $onError',
       //     toastLength: Toast.LENGTH_LONG,

@@ -15,10 +15,10 @@ class PendingPP extends StatefulWidget {
   const PendingPP({Key? key}) : super(key: key);
 
   @override
-  _HistoryPendingState createState() => _HistoryPendingState();
+  HistoryPendingState createState() => HistoryPendingState();
 }
 
-class _HistoryPendingState extends State<PendingPP> {
+class HistoryPendingState extends State<PendingPP> {
   final _debouncer = Debounce(milliseconds: 500);
   TextEditingController filterController = TextEditingController();
   var _listHistory, listHistoryReal;

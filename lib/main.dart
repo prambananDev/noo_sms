@@ -6,10 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard.dart';
-import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:noo_sms/view/login/login_view.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart'; // Import provider package
 import 'package:noo_sms/controllers/provider/login_provider.dart'; // Import your LoginProvider
@@ -36,10 +34,10 @@ class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
 
   @override
-  _MainAppState createState() => _MainAppState();
+  MainAppState createState() => MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class MainAppState extends State<MainApp> {
   String? onesignalUserID;
 
   @override

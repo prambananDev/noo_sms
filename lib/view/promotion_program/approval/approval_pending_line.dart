@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/constant/date_time_formatter.dart';
-import 'package:noo_sms/assets/constant/money_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/card_line_adapter.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
 import 'package:noo_sms/controllers/promotion_program/approval_pending_line_controller.dart';
-import 'package:noo_sms/controllers/promotion_program/history_lines_all_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
-import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 
 class HistoryLines extends StatefulWidget {
@@ -20,10 +17,10 @@ class HistoryLines extends StatefulWidget {
       {super.key, required this.numberPP, required this.idEmp, this.promotion});
 
   @override
-  _HistoryLinesState createState() => _HistoryLinesState();
+  HistoryLinesState createState() => HistoryLinesState();
 }
 
-class _HistoryLinesState extends State<HistoryLines> {
+class HistoryLinesState extends State<HistoryLines> {
   late HistoryLinesPendingController _controller;
 
   @override
@@ -32,7 +29,7 @@ class _HistoryLinesState extends State<HistoryLines> {
     _controller = Get.put(
         HistoryLinesPendingController(numberPP: widget.numberPP),
         tag: widget.numberPP);
-    // debugPrint("tezz ${_controller.promotion.value.customer}");
+    //
     _controller.getSharedPreference();
     _controller.listHistoryPendingSO();
   }

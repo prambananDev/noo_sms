@@ -70,10 +70,10 @@ class CardLinesAdapter extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CardLinesAdapterState createState() => _CardLinesAdapterState();
+  CardLinesAdapterState createState() => CardLinesAdapterState();
 }
 
-class _CardLinesAdapterState extends State<CardLinesAdapter> {
+class CardLinesAdapterState extends State<CardLinesAdapter> {
   late TextEditingController qtyFromcontroller;
   late TextEditingController qtyTocontroller;
   late TextEditingController disc1Controller;
@@ -384,10 +384,6 @@ class _CardLinesAdapterState extends State<CardLinesAdapter> {
   Widget buildSalesHistoryButton(BuildContext context) {
     return TextButton(
       onPressed: () {
-        debugPrint("tzt ${widget.namePP!}");
-        debugPrint("tzt ${widget.promotion!.idCustomer!}");
-        debugPrint("tzt ${widget.promotion!.idProduct!}");
-        debugPrint("tzt ${widget.idEmp!}");
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
           return HistorySO(

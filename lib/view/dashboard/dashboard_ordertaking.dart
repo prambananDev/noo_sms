@@ -5,7 +5,6 @@ import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_ordertaking.dart';
 import 'package:noo_sms/view/promotion_program/order/create_order_taking.dart';
 import 'package:noo_sms/view/promotion_program/order/history_order_taking.dart';
-import 'package:noo_sms/view/test.dart';
 
 class DashboardOrderTaking extends StatefulWidget {
   final int initialIndex;
@@ -56,9 +55,9 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
             Expanded(
               child: TabBarView(
                 controller: tabController.controller,
-                children: [
+                children: const [
                   TransactionPage(),
-                  const HistoryOrder(),
+                  HistoryOrder(),
                 ],
               ),
             ),

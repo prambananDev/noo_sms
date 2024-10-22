@@ -54,7 +54,7 @@
 //     Promotion.getListPromotion(
 //             0, code, _user.token ?? "token kosong", _user.username)
 //         .then((value) {
-//       print("userToken: ${_user.token}");
+//       
 //       setState(() {
 //         listHistoryReal = value;
 //         _listHistory = listHistoryReal;
@@ -68,7 +68,7 @@
 //     Promosi.getAllListPromosi(
 //             0, code, _user.token ?? "token kosong", _user.username)
 //         .then((value) {
-//       print("userToken: ${_user.token}");
+//       
 //       setState(() {
 //         listHistoryReal = value;
 //         _listHistory = listHistoryReal;

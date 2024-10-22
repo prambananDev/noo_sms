@@ -10,16 +10,14 @@ import 'package:noo_sms/controllers/provider/lines_provider.dart';
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
-import 'package:noo_sms/view/promotion_program/history_number_pp.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryLinesApproved extends StatefulWidget {
   @override
-  _HistoryLinesApprovedState createState() => _HistoryLinesApprovedState();
+  HistoryLinesApprovedState createState() => HistoryLinesApprovedState();
   String numberPP;
   int idEmp;
 
@@ -27,7 +25,7 @@ class HistoryLinesApproved extends StatefulWidget {
       {super.key, required this.numberPP, required this.idEmp});
 }
 
-class _HistoryLinesApprovedState extends State<HistoryLinesApproved> {
+class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
   List? _listHistorySO;
   dynamic _listHistorySOEncode;
   final bool _statusDisable = true;

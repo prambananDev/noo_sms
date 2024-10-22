@@ -39,7 +39,6 @@ class HistoryLinesController extends GetxController {
 
   void submitForm() {
     // Form submission logic
-    print("Form submitted with program name: ${programNameController.text}");
   }
 
   void onBackPress() {

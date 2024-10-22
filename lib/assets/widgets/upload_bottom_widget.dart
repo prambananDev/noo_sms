@@ -7,7 +7,8 @@ class DynamicBottomSheet extends StatelessWidget {
   final Function(String, ImageSource) onCameraTap;
   final Function(String, ImageSource) onGalleryTap;
 
-  DynamicBottomSheet({
+  const DynamicBottomSheet({
+    super.key,
     required this.salesId,
     required this.onCameraTap,
     required this.onGalleryTap,
@@ -16,9 +17,9 @@ class DynamicBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16.0),
           topRight: Radius.circular(16.0),
         ),
@@ -28,16 +29,16 @@ class DynamicBottomSheet extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.end,
         children: [
           ListTile(
-            leading: Icon(Icons.camera),
-            title: Text('Camera'),
+            leading: const Icon(Icons.camera),
+            title: const Text('Camera'),
             onTap: () {
               Get.back();
               onCameraTap(salesId, ImageSource.camera);
             },
           ),
           ListTile(
-            leading: Icon(Icons.image),
-            title: Text('Gallery'),
+            leading: const Icon(Icons.image),
+            title: const Text('Gallery'),
             onTap: () {
               Get.back();
               onGalleryTap(salesId, ImageSource.gallery);

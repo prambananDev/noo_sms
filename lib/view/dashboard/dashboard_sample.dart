@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/view/sample_order/transaction_approved.dart';
 import 'package:noo_sms/view/sample_order/transaction_history.dart';

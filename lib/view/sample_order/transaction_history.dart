@@ -29,10 +29,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
   void handleUploadsPOD(String salesId, ImageSource source) async {
     try {
       await inputPagePresenter.uploadsPOD(salesId, source);
-      print('Upload successful');
-    } catch (e) {
-      print('Upload failed: $e');
-    }
+    } catch (e) {}
   }
 
   @override
@@ -299,7 +296,6 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                       Uint8List? fetchedData =
                                           await inputPagePresenter
                                               .fetchImagePOD(salesId!);
-                                      debugPrint("value $salesId");
 
                                       if (transaction.DocStatus == 1) {
                                         showDialog(

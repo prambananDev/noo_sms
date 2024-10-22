@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_sms_controller.dart';
-import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
-import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
-import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
-import 'package:noo_sms/view/sample_order/transaction_sample.dart';
 
 class DashboardMain extends StatefulWidget {
   const DashboardMain({Key? key}) : super(key: key);
 
   @override
-  _DashboardMainState createState() => _DashboardMainState();
+  DashboardMainState createState() => DashboardMainState();
 }
 
-class _DashboardMainState extends State<DashboardMain> {
+class DashboardMainState extends State<DashboardMain> {
   final DashboardController _controller = DashboardController();
 
   void _navigateTo(BuildContext context, Widget destination) {

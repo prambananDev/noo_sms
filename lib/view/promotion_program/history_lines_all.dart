@@ -9,14 +9,13 @@ import 'package:noo_sms/controllers/promotion_program/history_lines_all_controll
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryLinesAll extends StatefulWidget {
   @override
-  _HistoryLinesAllState createState() => _HistoryLinesAllState();
+  HistoryLinesAllState createState() => HistoryLinesAllState();
   final String numberPP;
   final int idEmp;
 
@@ -24,7 +23,7 @@ class HistoryLinesAll extends StatefulWidget {
       {super.key, required this.numberPP, required this.idEmp});
 }
 
-class _HistoryLinesAllState extends State<HistoryLinesAll> {
+class HistoryLinesAllState extends State<HistoryLinesAll> {
   List<Promotion>? _listHistorySO; // Ensure this is a list of Promotion
   dynamic _listHistorySOEncode;
   final bool _statusDisable = true;
@@ -59,19 +58,17 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
     await Future.delayed(const Duration(seconds: 1));
     try {
       final value = await Promotion.getListLines(
-        widget.numberPP ?? '0',
+        widget.numberPP,
         _user?.token ?? '',
         _user?.username ?? '',
       );
       setState(() {
-        listLines = value ?? [];
-        _listHistorySO = value ?? [];
+        listLines = value;
+        _listHistorySO = value;
         _listHistorySOEncode = jsonEncode(_listHistorySO);
         dataHeader = jsonDecode(_listHistorySOEncode);
       });
-    } catch (error) {
-      print('Error fetching history SO: $error');
-    }
+    } catch (error) {}
   }
 
   @override
@@ -116,7 +113,7 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
               onRefresh: listHistorySO,
               child: FutureBuilder<List<Promotion>>(
                 future: Promotion.getListLines(
-                  widget.numberPP ?? '',
+                  widget.numberPP,
                   _user?.token ?? '',
                   _user?.username ?? '',
                 ),
@@ -159,10 +156,8 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    return cardLinesAdapter(
-                                        widget.numberPP ?? '',
-                                        _listHistorySO![index],
-                                        index);
+                                    return cardLinesAdapter(widget.numberPP,
+                                        _listHistorySO![index], index);
                                   },
                                 ),
                               ],
@@ -260,7 +255,6 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
                             double.parse(value), dateFrom!, dateTo!);
                       } else {
                         // Handle the null case appropriately (e.g., show an error message)
-                        print('Error: dateFrom or dateTo is null');
                       }
                     },
                   ),
@@ -288,7 +282,6 @@ class _HistoryLinesAllState extends State<HistoryLinesAll> {
                             double.parse(value), dateFrom!, dateTo!);
                       } else {
                         // Handle the null case appropriately
-                        print('Error: dateFrom or dateTo is null');
                       }
                     },
                   ),

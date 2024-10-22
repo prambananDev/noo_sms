@@ -13,10 +13,10 @@ class ApprovedPP extends StatefulWidget {
   const ApprovedPP({Key? key}) : super(key: key);
 
   @override
-  _ApprovedPPState createState() => _ApprovedPPState();
+  ApprovedPPState createState() => ApprovedPPState();
 }
 
-class _ApprovedPPState extends State<ApprovedPP> {
+class ApprovedPPState extends State<ApprovedPP> {
   final _debouncer = Debounce(milliseconds: 500);
   TextEditingController filterController = TextEditingController();
   var _listHistory, listHistoryReal;

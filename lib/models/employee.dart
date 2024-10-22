@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
-
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
@@ -103,8 +100,8 @@ class Employee {
         ).then((value) {
           status = value.code;
           if (value.code != 200) {
-            // print("statuscodeLoginProvider: $status");
-            // print("ini message status code: $status");
+            //
+            //
             message = value.message;
           } else {
             // Get.offAll(MainMenuView());
@@ -137,8 +134,7 @@ class Employee {
         headers: {'content-type': 'application/json'},
       );
       final jsonObject = json.decode(apiResult.body);
-      print("url logout : $url");
-      print("json response : ${apiResult.body}");
+
       data = jsonObject as String;
     } on TimeoutException catch (_) {
       data = "Time out. Please reload._0";

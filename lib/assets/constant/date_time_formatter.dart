@@ -18,10 +18,10 @@ class CustomDatePickerField extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CustomDatePickerFieldState createState() => _CustomDatePickerFieldState();
+  CustomDatePickerFieldState createState() => CustomDatePickerFieldState();
 }
 
-class _CustomDatePickerFieldState extends State<CustomDatePickerField> {
+class CustomDatePickerFieldState extends State<CustomDatePickerField> {
   @override
   void initState() {
     super.initState();

@@ -101,13 +101,11 @@ class HistoryLinesPendingController extends GetxController {
 
       listHistorySO.assignAll(value);
       listHistorySOEncode = jsonEncode(listHistorySO);
-      debugPrint("idemp$dataHeader");
 
       if (listHistorySO.isNotEmpty) {
         dataHeader.assignAll(listHistorySO[0].toJson());
       }
     } catch (error) {
-      print('Error fetching history: $error');
     } finally {
       isLoading.value = false;
     }
@@ -135,7 +133,7 @@ class HistoryLinesPendingController extends GetxController {
   Future<void> getUnit(String? itemId) async {
     var url = "$apiCons2/api/Unit?item=$itemId";
     final response = await get(Uri.parse(url));
-    debugPrint("test ${response.body}");
+
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
 

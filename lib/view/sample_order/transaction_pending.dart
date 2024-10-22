@@ -8,10 +8,10 @@ class TransactionPendingPage extends StatefulWidget {
   const TransactionPendingPage({super.key});
 
   @override
-  _TransactionPendingPageState createState() => _TransactionPendingPageState();
+  TransactionPendingPageState createState() => TransactionPendingPageState();
 }
 
-class _TransactionPendingPageState extends State<TransactionPendingPage> {
+class TransactionPendingPageState extends State<TransactionPendingPage> {
   final TransactionPendingController presenter =
       Get.put(TransactionPendingController());
 

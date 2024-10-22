@@ -4,10 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:money_formatter/money_formatter.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
-import 'package:noo_sms/controllers/dashboard/dashboard_ordertaking.dart';
-import 'package:noo_sms/controllers/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/id_valaue.dart';
 import 'package:noo_sms/models/input_pp_model.dart';
@@ -15,9 +12,8 @@ import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropd
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:noo_sms/models/wrapper.dart';
 import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
-import 'package:noo_sms/view/promotion_program/order/create_order_taking.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class TransactionController extends GetxController {
   var inputItems = <InputPageModel>[].obs;
@@ -104,7 +100,7 @@ class TransactionController extends GetxController {
       var urlGetLocation = "$apiCons/api/SalesOffices";
       final response = await get(Uri.parse(urlGetLocation));
       var listData = jsonDecode(response.body);
-      print("ini url getLocation : $urlGetLocation");
+
       locationInputPageDropdownStateRx.value.loadingState = 2;
       locationInputPageDropdownStateRx.value.choiceList = listData
           .map<IdAndValue<String>>((element) => IdAndValue<String>(
@@ -157,9 +153,7 @@ class TransactionController extends GetxController {
       }).toList();
 
       update();
-    } else {
-      debugPrint('Failed to load program data');
-    }
+    } else {}
   }
 
   void _loadCustomerNameByUsername() async {
@@ -169,7 +163,7 @@ class TransactionController extends GetxController {
     String? username = preferences.getString("username");
     try {
       var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
-      print("url get customer :$urlGetCustomer");
+
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
 
@@ -209,7 +203,6 @@ class TransactionController extends GetxController {
     InputPageDropdownState<String>? unitPageDropdownState =
         promotionProgramInputState.unitPageDropdownState;
     var urlGetUnit = "$apiCons2/api/Unit?item=$selectProductPageDropdownState";
-    debugPrint('response Fetching data from: $urlGetUnit');
 
     final response = await get(Uri.parse(urlGetUnit));
 
@@ -256,58 +249,12 @@ class TransactionController extends GetxController {
         .productTransactionPageDropdownState
         ?.selectedChoiceWrapper
         ?.value = selectedChoice;
-    debugPrint("response ${selectedChoice.id}");
+
     update();
     _loadUnit(index);
   }
 
   List<String> originalPrice = [];
-  getQtyUnitPrice(int index, String idProduct, int qty, String unit) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    PromotionProgramInputState promotionProgramInputState =
-        promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    var url =
-        "http://119.18.157.236:8877/api/Product/cekStok?item=$idProduct&qty=$qty&unit=$unit&wh=DC01-X";
-    var urlPrice =
-        "$apiCons2/api/AllPrice?cust=${customerNameInputPageDropdownStateRx.value.choiceList![index].id}&item=$idProduct&unit=$unit&qty=$qty&type=1";
-    var urlDiscount =
-        "$apiCons2/api/AllDiscount?cust=${customerNameInputPageDropdownStateRx.value.choiceList![index].id}&item=$idProduct&unit=$unit&qty=$qty";
-
-    final response = await get(Uri.parse(url));
-    final responsePrice = await get(Uri.parse(urlPrice));
-    final responseDiscount = await get(Uri.parse(urlDiscount));
-    final listData = jsonDecode(response.body);
-    double listDataPrice = 0.0;
-    int listDataDiscount = 0;
-    if (responsePrice.statusCode == 200) {
-      listDataPrice = jsonDecode(responsePrice.body);
-    } else {
-      listDataPrice = 0.0;
-    }
-    if (responseDiscount.statusCode == 200) {
-      double discount = jsonDecode(responseDiscount.body);
-      listDataDiscount = discount.toInt();
-    } else {
-      listDataDiscount = 0;
-    }
-
-    promotionProgramInputState.qtyTransaction?.text =
-        1.toString() /*listData['qty'].toString().split(".").first*/;
-    promotionProgramInputState.priceTransaction?.text =
-        MoneyFormatter(amount: listDataPrice ?? 0).output.withoutFractionDigits;
-    String originalPrices = MoneyFormatter(amount: listDataPrice ?? 0.0)
-        .output
-        .withoutFractionDigits;
-    promotionProgramInputState.totalTransaction?.text =
-        listDataPrice.toString().split(".").first;
-    print("object :${promotionProgramInputState.totalTransaction?.text}");
-    originalPrice.add(originalPrices);
-    promotionProgramInputState.discTransaction?.text =
-        listDataDiscount.toString();
-    // if(listData['message']!='Available'){
-    //   Get.snackbar("Out of Stock", "Please choose another product",backgroundColor: Colors.red,icon: Icon(Icons.error));
-    // };
-  }
 
   void changeUnit(int index, String selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
@@ -403,7 +350,7 @@ class TransactionController extends GetxController {
               })
           .toList()
     });
-    debugPrint("response $isiBody");
+
     List<PromotionProgramInputState>? promotionProgramInputState =
         promotionProgramInputStateRx.value.promotionProgramInputState.toList();
     List<String?>? dataTotal = promotionProgramInputState
@@ -419,7 +366,7 @@ class TransactionController extends GetxController {
           'Authorization': '$token',
         },
         body: isiBody);
-    debugPrint("response ${response.statusCode}");
+
     Future.delayed(const Duration(seconds: 2), () {
       if (response.statusCode == 201 || response.statusCode == 200) {
         Future.delayed(const Duration(seconds: 1), () {

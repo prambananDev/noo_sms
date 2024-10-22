@@ -21,10 +21,10 @@ class FeedbackPage extends StatefulWidget {
   });
 
   @override
-  _FeedbackPageState createState() => _FeedbackPageState();
+  FeedbackPageState createState() => FeedbackPageState();
 }
 
-class _FeedbackPageState extends State<FeedbackPage> {
+class FeedbackPageState extends State<FeedbackPage> {
   final ImagePicker imagePicker = ImagePicker();
   File? _selectedImage;
   Uint8List? _uploadedImage;
@@ -69,8 +69,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
               null; // Reset uploaded image when a new image is picked
         });
       }
-    } catch (e) {
-      print('Image picking failed: $e');
     } finally {
       setState(() {
         isImagePickerActive = false;
@@ -92,7 +90,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
           _uploadedImage = uploadedImage;
         });
       } catch (e) {
-        print('Upload failed: $e');
         rethrow;
       } finally {
         setState(() {
@@ -114,7 +111,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
           _textController.text;
 
       await widget.inputPagePresenter.submitFeedback(widget.index);
-      Navigator.pop(context);
     } catch (e) {
       Get.snackbar(
         "Error",

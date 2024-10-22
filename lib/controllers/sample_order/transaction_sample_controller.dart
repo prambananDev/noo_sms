@@ -177,9 +177,7 @@ class TransactionSampleController extends GetxController {
       );
 
       debugPrint(purposeList.value.selectedChoice?.id.toString());
-    } catch (e) {
-      debugPrint("Error loading purpose: $e");
-    }
+    } catch (e) {}
     update();
   }
 
@@ -250,7 +248,6 @@ class TransactionSampleController extends GetxController {
       final response = await http.get(Uri.parse(urlGetDept));
       if (response.statusCode == 200) {
         var listData = jsonDecode(response.body);
-        debugPrint("Dept data: $listData");
 
         List<IdAndValue<String>> mappedList =
             listData.map<IdAndValue<String>>((element) {
@@ -265,14 +262,10 @@ class TransactionSampleController extends GetxController {
           selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
           loadingState: 2,
         );
-
-        debugPrint("Mapped dept list: ${mappedList.toString()}");
       } else {
         throw Exception('Failed to load department data');
       }
-    } catch (e) {
-      debugPrint("Error loading dept: $e");
-    }
+    } catch (e) {}
     update();
   }
 
@@ -558,7 +551,6 @@ class TransactionSampleController extends GetxController {
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {
-      debugPrint("value $isiBody");
       Get.dialog(
         const SimpleDialog(
           title: Text("Success"),
@@ -569,7 +561,7 @@ class TransactionSampleController extends GetxController {
         barrierDismissible: false,
       );
       Future.delayed(const Duration(seconds: 1), () {
-        Get.back(); // Close dialog
+        Get.back();
         Get.off(() => const DashboardOrderSample(initialIndex: 1));
       });
     } else {

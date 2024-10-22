@@ -65,12 +65,8 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           activityEditModel = ActivityEdit.fromJson(jsonDecode(response.body));
           _initializeData();
         });
-      } else {
-        print("Failed to load activity data");
-      }
-    } catch (e) {
-      print("Error fetching activity data: $e");
-    }
+      } else {}
+    } catch (e) {}
   }
 
   void _initializeData() {
