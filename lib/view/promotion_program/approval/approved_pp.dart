@@ -19,7 +19,8 @@ class ApprovedPP extends StatefulWidget {
 class ApprovedPPState extends State<ApprovedPP> {
   final _debouncer = Debounce(milliseconds: 500);
   TextEditingController filterController = TextEditingController();
-  var _listHistory, listHistoryReal;
+  List<Promotion>? _listHistory, listHistoryReal;
+
   GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
   User _user = User();
@@ -28,9 +29,7 @@ class ApprovedPPState extends State<ApprovedPP> {
 
   Future<void> listHistory() async {
     await Future.delayed(const Duration(seconds: 5));
-    Promotion.getListPromotionApproved(
-            _user.token ?? "token kosong", _user.username)
-        .then((value) {
+    Promotion.getListPromotionApproved().then((value) {
       setState(() {
         listHistoryReal = value;
         _listHistory = listHistoryReal;
@@ -112,7 +111,7 @@ class ApprovedPPState extends State<ApprovedPP> {
     setState(() {
       _user = userBox.getAt(0) ?? User();
       code = pref.getInt("code") ?? 0;
-      isLoading = false; // Set loading to false when initialization is complete
+      isLoading = false;
     });
   }
 
@@ -125,7 +124,6 @@ class ApprovedPPState extends State<ApprovedPP> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      // Show a loading indicator while waiting for the data to load
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -140,22 +138,22 @@ class ApprovedPPState extends State<ApprovedPP> {
               controller: filterController,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.all(10),
-                hintText: 'Enter customer, number PP or date',
+                hintText: 'Enter customer, number PP or dates',
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search, color: colorPrimary),
                   onPressed: () {
                     String value = filterController.text;
                     _debouncer.run(() {
                       setState(() {
-                        _listHistory = listHistoryReal
+                        _listHistory = listHistoryReal!
                             .where((element) =>
-                                element.nomorPP
+                                element.nomorPP!
                                     .toLowerCase()
                                     .contains(value.toLowerCase()) ||
                                 element.date
                                     .toLowerCase()
                                     .contains(value.toLowerCase()) ||
-                                element.customer
+                                element.customer!
                                     .toLowerCase()
                                     .contains(value.toLowerCase()))
                             .toList();
@@ -168,15 +166,15 @@ class ApprovedPPState extends State<ApprovedPP> {
                 String value = filterController.text;
                 _debouncer.run(() {
                   setState(() {
-                    _listHistory = listHistoryReal
+                    _listHistory = listHistoryReal!
                         .where((element) =>
-                            element.nomorPP
+                            element.nomorPP!
                                 .toLowerCase()
                                 .contains(value.toLowerCase()) ||
                             element.date
                                 .toLowerCase()
                                 .contains(value.toLowerCase()) ||
-                            element.customer
+                            element.customer!
                                 .toLowerCase()
                                 .contains(value.toLowerCase()))
                         .toList();
@@ -189,13 +187,12 @@ class ApprovedPPState extends State<ApprovedPP> {
             child: RefreshIndicator(
               onRefresh: listHistory,
               child: FutureBuilder(
-                future: Promotion.getListPromotionApproved(
-                    _user.token ?? "", _user.username ?? ""),
+                future: Promotion.getListPromotionApproved(),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (!snapshot.hasError) {
                       _listHistory = listHistoryReal = snapshot.data;
-                      if (_listHistory.isEmpty) {
+                      if (_listHistory!.isEmpty) {
                         return const Center(
                           child: Column(
                             children: <Widget>[
@@ -208,9 +205,7 @@ class ApprovedPPState extends State<ApprovedPP> {
                       return ListView.builder(
                           itemCount: _listHistory?.length,
                           itemBuilder: (BuildContext context, int index) =>
-                              cardAdapter(_listHistory[index]));
-                    } else {
-                      print(snapshot.error.toString());
+                              cardAdapter(_listHistory![index]));
                     }
                   } else if (snapshot.connectionState == ConnectionState.none) {
                     return const Center(

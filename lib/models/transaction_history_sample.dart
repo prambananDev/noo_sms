@@ -1,34 +1,34 @@
 class TransactionHistorySample {
   final int? id;
-  final String? SalesId;
-  final String? Customer;
-  final String? Date;
-  final String? CustReff;
-  final String? Status;
-  final int? DocStatus;
-  final String? DocStatusName;
+  final String? salesId;
+  final String? customer;
+  final String? date;
+  final String? custReff;
+  final String? status;
+  final int? docStatus;
+  final String? docStatusName;
 
   TransactionHistorySample({
     this.id,
-    this.SalesId,
-    this.Customer,
-    this.Date,
-    this.CustReff,
-    this.Status,
-    this.DocStatus,
-    this.DocStatusName,
+    this.salesId,
+    this.customer,
+    this.date,
+    this.custReff,
+    this.status,
+    this.docStatus,
+    this.docStatusName,
   });
 
   factory TransactionHistorySample.fromJson(Map<String, dynamic> json) {
     return TransactionHistorySample(
       id: json['id'] as int?,
-      SalesId: json['SalesId'] as String?,
-      Customer: json['Customer'] as String?,
-      Date: json['Date'] as String?,
-      CustReff: json['CustReff'] as String?,
-      Status: json['Status'] as String?,
-      DocStatus: json['DocStatus'] as int?,
-      DocStatusName: json['DocStatusName'] as String?,
+      salesId: json['SalesId'] as String?,
+      customer: json['Customer'] as String?,
+      date: json['Date'] as String?,
+      custReff: json['CustReff'] as String?,
+      status: json['Status'] as String?,
+      docStatus: json['DocStatus'] as int?,
+      docStatusName: json['DocStatusName'] as String?,
     );
   }
 }

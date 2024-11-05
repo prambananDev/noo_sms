@@ -257,9 +257,6 @@ class TransactionHistorySampleController extends GetxController {
         backgroundColor: Colors.blue.withOpacity(0.7),
         colorText: Colors.white,
       );
-      try {
-        var jsonObject = jsonDecode(response.data);
-      } catch (e) {}
     } else {
       throw Exception(
           'Failed to upload image with status code: ${response.statusCode}');

@@ -48,7 +48,7 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
                 labelColor: colorAccent,
                 controller: tabController.controller,
                 tabs: const [
-                  Tab(text: "Pending PPs"),
+                  Tab(text: "Pending PP"),
                   Tab(text: "Approved PP"),
                 ],
               ),

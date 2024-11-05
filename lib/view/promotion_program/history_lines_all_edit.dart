@@ -58,15 +58,14 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
 
   Future<void> getDataActivity() async {
     final url = '$apiCons/api/activity/${widget.numberPP}';
-    try {
-      final response = await get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        setState(() {
-          activityEditModel = ActivityEdit.fromJson(jsonDecode(response.body));
-          _initializeData();
-        });
-      } else {}
-    } catch (e) {}
+
+    final response = await get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      setState(() {
+        activityEditModel = ActivityEdit.fromJson(jsonDecode(response.body));
+        _initializeData();
+      });
+    } else {}
   }
 
   void _initializeData() {

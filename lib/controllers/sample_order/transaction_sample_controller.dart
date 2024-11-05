@@ -157,27 +157,26 @@ class TransactionSampleController extends GetxController {
     var urlGetPurpose =
         "http://sms.prb.co.id/sample/SamplePurpose?type=$selectSampleType";
 
-    try {
-      var response = await Dio().get(urlGetPurpose);
-      var listData = response.data;
-      debugPrint(listData.toString());
+    var response = await Dio().get(urlGetPurpose);
+    var listData = response.data;
+    debugPrint(listData.toString());
 
-      List<IdAndValue<String>> mappedList =
-          (listData as List).map<IdAndValue<String>>((element) {
-        return IdAndValue<String>(
-          id: element["Value"].toString(),
-          value: element["Text"],
-        );
-      }).toList();
-
-      purposeList.value = InputPageDropdownState<IdAndValue<String>>(
-        choiceList: mappedList,
-        selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-        loadingState: 2,
+    List<IdAndValue<String>> mappedList =
+        (listData as List).map<IdAndValue<String>>((element) {
+      return IdAndValue<String>(
+        id: element["Value"].toString(),
+        value: element["Text"],
       );
+    }).toList();
 
-      debugPrint(purposeList.value.selectedChoice?.id.toString());
-    } catch (e) {}
+    purposeList.value = InputPageDropdownState<IdAndValue<String>>(
+      choiceList: mappedList,
+      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+      loadingState: 2,
+    );
+
+    debugPrint(purposeList.value.selectedChoice?.id.toString());
+
     update();
   }
 
@@ -244,28 +243,28 @@ class TransactionSampleController extends GetxController {
 
   _loadDept() async {
     var urlGetDept = "http://sms.prb.co.id/sample/SampleDept";
-    try {
-      final response = await http.get(Uri.parse(urlGetDept));
-      if (response.statusCode == 200) {
-        var listData = jsonDecode(response.body);
 
-        List<IdAndValue<String>> mappedList =
-            listData.map<IdAndValue<String>>((element) {
-          return IdAndValue<String>(
-            id: element["Value"].toString(),
-            value: element["Text"],
-          );
-        }).toList();
+    final response = await http.get(Uri.parse(urlGetDept));
+    if (response.statusCode == 200) {
+      var listData = jsonDecode(response.body);
 
-        deptList.value = InputPageDropdownState<IdAndValue<String>>(
-          choiceList: mappedList,
-          selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-          loadingState: 2,
+      List<IdAndValue<String>> mappedList =
+          listData.map<IdAndValue<String>>((element) {
+        return IdAndValue<String>(
+          id: element["Value"].toString(),
+          value: element["Text"],
         );
-      } else {
-        throw Exception('Failed to load department data');
-      }
-    } catch (e) {}
+      }).toList();
+
+      deptList.value = InputPageDropdownState<IdAndValue<String>>(
+        choiceList: mappedList,
+        selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+        loadingState: 2,
+      );
+    } else {
+      throw Exception('Failed to load department data');
+    }
+
     update();
   }
 
@@ -384,10 +383,10 @@ class TransactionSampleController extends GetxController {
 
   void _loadProduct() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? ID = preferences.getString("username");
+    String? username = preferences.getString("username");
     productInputPageDropdownState.loadingStateWrapper?.value = 1;
     update();
-    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$ID&idSales=Sample";
+    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
     final response = await get(Uri.parse(urlGetProduct));
     var listData = jsonDecode(response.body);
     productInputPageDropdownState.loadingStateWrapper?.value = 2;

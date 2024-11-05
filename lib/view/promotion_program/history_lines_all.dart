@@ -1,17 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:noo_sms/assets/constant/money_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
 import 'package:noo_sms/controllers/promotion_program/history_lines_all_controller.dart';
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
-import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryLinesAll extends StatefulWidget {
   @override
@@ -33,7 +29,7 @@ class HistoryLinesAllState extends State<HistoryLinesAll> {
   DateTime? fromDate, toDate;
   DateTime? dateFrom, dateTo;
   double? discount;
-  User? _user;
+
   int? code;
   bool valueSelectAll = false;
   var dataHeader;
@@ -41,41 +37,25 @@ class HistoryLinesAllState extends State<HistoryLinesAll> {
   var listLines;
   final HistoryLinesController _controller = HistoryLinesController();
 
-  void getSharedPreference() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    List<User> listUser = userBox.values.map((e) => e as User).toList();
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    Future.delayed(const Duration(milliseconds: 10));
-    setState(() {
-      _user = listUser[0];
-      code = pref.getInt("code");
-    });
-  }
-
   Future<void> listHistorySO() async {
     await Future.delayed(const Duration(seconds: 1));
-    try {
-      final value = await Promotion.getListLines(
-        widget.numberPP,
-        _user?.token ?? '',
-        _user?.username ?? '',
-      );
-      setState(() {
-        listLines = value;
-        _listHistorySO = value;
-        _listHistorySOEncode = jsonEncode(_listHistorySO);
-        dataHeader = jsonDecode(_listHistorySOEncode);
-      });
-    } catch (error) {}
+
+    final value = await Promotion.getListLines(
+      widget.numberPP,
+    );
+    setState(() {
+      listLines = value;
+      _listHistorySO = value;
+      _listHistorySOEncode = jsonEncode(_listHistorySO);
+      dataHeader = jsonDecode(_listHistorySOEncode);
+    });
   }
 
   @override
   void initState() {
     super.initState();
     refreshKey = GlobalKey<RefreshIndicatorState>();
-    getSharedPreference();
+
     Future.delayed(const Duration(seconds: 2), () {
       startApp = true;
       listHistorySO();
@@ -114,8 +94,6 @@ class HistoryLinesAllState extends State<HistoryLinesAll> {
               child: FutureBuilder<List<Promotion>>(
                 future: Promotion.getListLines(
                   widget.numberPP,
-                  _user?.token ?? '',
-                  _user?.username ?? '',
                 ),
                 builder: (BuildContext context,
                     AsyncSnapshot<List<Promotion>> snapshot) {

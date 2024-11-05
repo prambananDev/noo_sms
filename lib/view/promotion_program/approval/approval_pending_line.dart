@@ -29,8 +29,7 @@ class HistoryLinesState extends State<HistoryLines> {
     _controller = Get.put(
         HistoryLinesPendingController(numberPP: widget.numberPP),
         tag: widget.numberPP);
-    //
-    _controller.getSharedPreference();
+
     _controller.listHistoryPendingSO();
   }
 
@@ -109,10 +108,7 @@ class HistoryLinesState extends State<HistoryLines> {
                         ),
                         TextResultCard(
                           title: "Note",
-                          value: _controller.dataHeader.isNotEmpty &&
-                                  _controller.dataHeader.containsKey("note")
-                              ? _controller.dataHeader["note"]
-                              : "Loading...", // Default or fallback value
+                          value: _controller.dataHeader['note'] ?? " ",
                         ),
                         Container(
                           width: screenWidth,

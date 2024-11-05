@@ -22,7 +22,6 @@ class HistoryLinesPendingController extends GetxController {
   GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
   var user = User().obs;
-  final User _user = User();
   final isLoading = true.obs;
   var valueSelectAll = false.obs;
   bool startApp = false;
@@ -30,7 +29,6 @@ class HistoryLinesPendingController extends GetxController {
   int? code;
   Rx<Promotion> dataApprovalDetails = Promotion().obs;
 
-  // TextEditingControllers for inputs
   List<TextEditingController> disc1Controller = [];
   List<TextEditingController> disc2Controller = [];
   List<TextEditingController> disc3Controller = [];
@@ -54,7 +52,7 @@ class HistoryLinesPendingController extends GetxController {
   void onInit() {
     super.onInit();
     refreshKey = GlobalKey<RefreshIndicatorState>();
-    getSharedPreference();
+
     getSupplyItem();
     // listHistoryPendingSO();
     // initializeDataAndControllers();
@@ -95,8 +93,6 @@ class HistoryLinesPendingController extends GetxController {
     try {
       final value = await Promotion.getListLinesPending(
         numberPP,
-        user.value.token ?? '',
-        user.value.username ?? '',
       );
 
       listHistorySO.assignAll(value);
@@ -105,20 +101,9 @@ class HistoryLinesPendingController extends GetxController {
       if (listHistorySO.isNotEmpty) {
         dataHeader.assignAll(listHistorySO[0].toJson());
       }
-    } catch (error) {
     } finally {
       isLoading.value = false;
     }
-  }
-
-  void getSharedPreference() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    List<User> listUser = userBox.values.map((e) => e as User).toList();
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    user.value = listUser.isNotEmpty ? listUser[0] : User();
-    code = pref.getInt("code") ?? 0;
   }
 
   Future<void> getSupplyItem() async {

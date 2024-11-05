@@ -54,11 +54,6 @@ class TransactionPendingController extends GetxController {
                 .toList() ??
             [];
 
-        if (details.isEmpty) {
-        } else {
-          for (var detail in details) {}
-        }
-
         showDialog(id, details);
       } else {
         Get.snackbar('Error', 'Failed to fetch detail: ${response.statusCode}',

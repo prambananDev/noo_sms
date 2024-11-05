@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/lines.dart';
@@ -175,9 +176,9 @@ class Promotion {
     return data;
   }
 
-  static Future<List<Promotion>> getListPromotion(
-      String token, String username) async {
+  static Future<List<Promotion>> getListPromotion() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token')!;
     String url =
         "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
 
@@ -185,7 +186,7 @@ class Promotion {
       Uri.parse(url),
       headers: {'Authorization': token, 'Content-Type': 'application/json'},
     );
-
+    debugPrint(response.body);
     if (response.statusCode == 200) {
       List jsonResponse = jsonDecode(response.body);
       return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
@@ -195,17 +196,16 @@ class Promotion {
     }
   }
 
-  static Future<List<Promotion>> getListPromotionApproved(
-      String token, String username) async {
+  static Future<List<Promotion>> getListPromotionApproved() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url =
         "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
-
+    String token = prefs.getString('token')!;
     final response = await http.get(
       Uri.parse(url),
       headers: {'Authorization': token, 'Content-Type': 'application/json'},
     );
-
+    debugPrint(response.body);
     if (response.statusCode == 200) {
       List jsonResponse = jsonDecode(response.body);
       return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
@@ -215,11 +215,12 @@ class Promotion {
     }
   }
 
-  static Future<List<Promotion>> getAllListPromotion(
-      int id, int code, String token, String username) async {
+  static Future<List<Promotion>> getAllListPromotion() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token')!;
+
     String url =
-        "$apiCons/api/Promosi?username=$username&userId=${prefs.getInt('userid')}";
+        "$apiCons/api/Promosi?username=${prefs.getString('username')}&userId=${prefs.getInt('userid')}";
     Map<String, String> headers = {
       'Authorization': token,
       'Content-Type': 'application/json',
@@ -242,7 +243,11 @@ class Promotion {
   }
 
   static Future<List<Promotion>> getListLines(
-      String nomorPP, String token, String username) async {
+    String nomorPP,
+  ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = prefs.getString('username')!;
+    String token = prefs.getString('token')!;
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username';
 
     final response = await http.get(
@@ -259,8 +264,10 @@ class Promotion {
     }
   }
 
-  static Future<List<Promotion>> getListLinesPending(
-      String nomorPP, String token, String username) async {
+  static Future<List<Promotion>> getListLinesPending(String nomorPP) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = prefs.getString('username')!;
+    String token = prefs.getString('token')!;
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username&type=1';
 
     final response = await http.get(
@@ -278,7 +285,11 @@ class Promotion {
   }
 
   static Future<List<Promotion>> getListActivity(
-      String nomorPP, String token, String username) async {
+    String nomorPP,
+  ) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = prefs.getString('username')!;
+    String token = prefs.getString('token')!;
     final url = '$apiCons/api/PromosiLines/$nomorPP?username=$username';
 
     final dio = Dio()..options.headers['Authorization'] = token;
@@ -287,8 +298,6 @@ class Promotion {
     if (response.statusCode != 200) {
       throw Exception('Failed to get list of lines');
     }
-
-    // Extract the JSON data from the response
     final jsonObject = response.data;
     final promotionList = List<Promotion>.from(
         jsonObject.map((model) => Promotion.fromJson(model)));
@@ -296,8 +305,11 @@ class Promotion {
     return promotionList;
   }
 
-  static Future<List<Promotion>> getListSalesOrder(String idProduct,
-      String idCustomer, String token, String username) async {
+  static Future<List<Promotion>> getListSalesOrder(
+      String idProduct, String idCustomer) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = prefs.getString('username')!;
+    String token = prefs.getString('token')!;
     String url =
         "$apiCons/api/SalesOrder?idProduct=$idProduct&idCustomer=$idCustomer&username=$username";
 

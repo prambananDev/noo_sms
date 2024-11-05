@@ -88,20 +88,15 @@ class Employee {
       employee = Employee.fromLoginJson(jsonObject);
 
       if (apiResult.statusCode == 200) {
-        Box userBox;
-        SharedPreferences preferences;
-        String? message = "";
         int? status;
-        preferences = await SharedPreferences.getInstance();
-        userBox = await Hive.openBox('users');
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        Box userBox = await Hive.openBox('users');
         User.getUsers(
           username,
           password,
         ).then((value) {
           status = value.code;
           if (value.code != 200) {
-            //
-            //
             message = value.message;
           } else {
             // Get.offAll(MainMenuView());

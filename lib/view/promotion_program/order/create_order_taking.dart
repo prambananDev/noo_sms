@@ -412,9 +412,9 @@ class _TransactionPageState extends State<TransactionPage> {
                                             .value
                                             .promotionProgramInputState
                                             .toList();
-                                    List disc = promotionProgramInputState
-                                        .map((e) => e.discTransaction?.text)
-                                        .toList();
+                                    // List disc = promotionProgramInputState
+                                    //     .map((e) => e.discTransaction?.text)
+                                    //     .toList();
 
                                     List<String?> price =
                                         promotionProgramInputState

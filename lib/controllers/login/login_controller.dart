@@ -67,10 +67,7 @@ class LoginController extends GetxController {
     if (context != null) {
       Provider.of<LoginProvider>(context, listen: false)
           .setMessage(username, password, context, 1)
-          .then((_) {
-        int statusCode =
-            Provider.of<LoginProvider>(context, listen: false).getStatus;
-      });
+          .then((_) {});
     }
     final employee = Employee();
     employee.getEmployee(username, password).then((value) async {

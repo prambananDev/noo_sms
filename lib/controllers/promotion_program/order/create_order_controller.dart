@@ -181,10 +181,10 @@ class TransactionController extends GetxController {
 
   Future<void> _loadProduct() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? ID = preferences.getString("username");
+    String? username = preferences.getString("username");
     _productInputPageDropdownState.loadingStateWrapper?.value = 1;
     _updateState();
-    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$ID&idSales=Sample";
+    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
     final response = await get(Uri.parse(urlGetProduct));
     var listData = jsonDecode(response.body);
     _productInputPageDropdownState.loadingStateWrapper?.value = 2;
@@ -326,7 +326,7 @@ class TransactionController extends GetxController {
     }
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? token = preferences.getString("token");
-    String? username = preferences.getString("username");
+
     int? userId = preferences.getInt("userid");
     final int idEmp =
         int.tryParse(preferences.getString("getIdEmp") ?? '0') ?? 0;

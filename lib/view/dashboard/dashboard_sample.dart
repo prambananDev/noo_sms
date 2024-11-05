@@ -11,10 +11,10 @@ class DashboardOrderSample extends StatefulWidget {
   const DashboardOrderSample({Key? key, this.initialIndex}) : super(key: key);
 
   @override
-  _DashboardOrderSampleState createState() => _DashboardOrderSampleState();
+  DashboardOrderSampleState createState() => DashboardOrderSampleState();
 }
 
-class _DashboardOrderSampleState extends State<DashboardOrderSample>
+class DashboardOrderSampleState extends State<DashboardOrderSample>
     with TickerProviderStateMixin {
   late TabController _tabController;
 

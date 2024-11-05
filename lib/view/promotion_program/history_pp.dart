@@ -26,23 +26,28 @@ class HistoryAll extends StatefulWidget {
 class HistoryAllState extends State<HistoryAll> {
   final _debouncer = Debounce(milliseconds: 5);
   TextEditingController filterController = TextEditingController();
-  var _listHistory, listHistoryReal;
+  List<Promotion>? _listHistory, listHistoryReal;
   GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
   User _user = User();
   late int code;
   bool _isLoading = true;
 
+  @override
+  void dispose() {
+    filterController.dispose();
+    super.dispose();
+  }
+
   Future<void> listHistory() async {
     await Future.delayed(const Duration(seconds: 1));
-    Promotion.getAllListPromotion(
-            0, code, _user.token ?? "token kosong", _user.username)
-        .then((value) {
-      setState(() {
-        listHistoryReal = value;
-
-        _listHistory = listHistoryReal;
-      });
+    Promotion.getAllListPromotion().then((value) {
+      if (mounted) {
+        setState(() {
+          listHistoryReal = value;
+          _listHistory = listHistoryReal;
+        });
+      }
     });
   }
 
@@ -249,7 +254,7 @@ class HistoryAllState extends State<HistoryAll> {
     );
   }
 
-  void getSharedPreference() async {
+  getSharedPreference() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
     Box userBox = await Hive.openBox('users');
@@ -285,7 +290,7 @@ class HistoryAllState extends State<HistoryAll> {
     pref.setString("result", "");
   }
 
-  void LogOut() {
+  void logOut() {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -304,13 +309,14 @@ class HistoryAllState extends State<HistoryAll> {
   @override
   void initState() {
     super.initState();
-    getSharedPreference();
+    getSharedPreference().then((_) {
+      listHistory();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      // Show a loading indicator while code is being fetched
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -334,15 +340,15 @@ class HistoryAllState extends State<HistoryAll> {
                     String value = filterController.text;
                     _debouncer.run(() {
                       setState(() {
-                        _listHistory = listHistoryReal
+                        _listHistory = listHistoryReal!
                             .where((element) =>
-                                element.nomorPP
+                                element.nomorPP!
                                     .toLowerCase()
                                     .contains(value.toLowerCase()) ||
                                 element.date
                                     .toLowerCase()
                                     .contains(value.toLowerCase()) ||
-                                element.customer
+                                element.customer!
                                     .toLowerCase()
                                     .contains(value.toLowerCase()))
                             .toList();
@@ -355,15 +361,15 @@ class HistoryAllState extends State<HistoryAll> {
                 String value = filterController.text;
                 _debouncer.run(() {
                   setState(() {
-                    _listHistory = listHistoryReal
+                    _listHistory = listHistoryReal!
                         .where((element) =>
-                            element.nomorPP
+                            element.nomorPP!
                                 .toLowerCase()
                                 .contains(value.toLowerCase()) ||
                             element.date
                                 .toLowerCase()
                                 .contains(value.toLowerCase()) ||
-                            element.customer
+                            element.customer!
                                 .toLowerCase()
                                 .contains(value.toLowerCase()))
                         .toList();
@@ -376,13 +382,12 @@ class HistoryAllState extends State<HistoryAll> {
             child: RefreshIndicator(
               onRefresh: listHistory,
               child: FutureBuilder(
-                future: Promotion.getAllListPromotion(
-                    0, code, _user.token ?? "", _user.username ?? ""),
+                future: Promotion.getAllListPromotion(),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasError != true) {
+                    if (!snapshot.hasError && mounted) {
                       _listHistory ??= listHistoryReal = snapshot.data;
-                      if (_listHistory.isEmpty) {
+                      if (_listHistory!.isEmpty) {
                         return const Center(
                           child: Column(
                             children: <Widget>[
@@ -393,28 +398,15 @@ class HistoryAllState extends State<HistoryAll> {
                         );
                       }
                       return ListView.builder(
-                        itemCount: _listHistory.length,
+                        itemCount: _listHistory!.length,
                         itemBuilder: (BuildContext context, int index) =>
-                            cardAdapter(_listHistory[index]),
+                            cardAdapter(_listHistory![index]),
                       );
-                    } else {}
-                  } else if (snapshot.connectionState == ConnectionState.none) {
-                    return const Center(
-                      child: Column(
-                        children: <Widget>[
-                          Text('No Data'),
-                          Text('Swipe down for refresh item'),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        semanticsLabel: 'Loading',
-                      ),
-                    );
+                    }
                   }
-                  return Container();
+                  return const Center(
+                    child: CircularProgressIndicator(semanticsLabel: 'Loading'),
+                  );
                 },
               ),
             ),

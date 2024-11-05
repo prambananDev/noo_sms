@@ -27,9 +27,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
   }
 
   void handleUploadsPOD(String salesId, ImageSource source) async {
-    try {
-      await inputPagePresenter.uploadsPOD(salesId, source);
-    } catch (e) {}
+    await inputPagePresenter.uploadsPOD(salesId, source);
   }
 
   @override
@@ -49,26 +47,26 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
               String statusText = "Pending";
               Color statusColor = Colors.grey;
 
-              if (transaction.Status == 'Pending') {
+              if (transaction.status == 'Pending') {
                 statusText = "Pending";
                 statusColor = Colors.grey;
-              } else if (transaction.Status == 'Approved') {
-                if (transaction.DocStatus == 0) {
+              } else if (transaction.status == 'Approved') {
+                if (transaction.docStatus == 0) {
                   statusText = "Approved";
                   statusColor = Colors.orange;
                   isPODButtonActive = false;
                   isFeedbackButtonActive = false;
-                } else if (transaction.DocStatus == 1) {
+                } else if (transaction.docStatus == 1) {
                   statusText = "Delivered";
                   statusColor = Colors.blue;
                   isPODButtonActive = true;
                   isFeedbackButtonActive = false;
-                } else if (transaction.DocStatus == 2) {
+                } else if (transaction.docStatus == 2) {
                   statusText = "Received";
                   statusColor = Colors.green;
                   isPODButtonActive = true;
                   isFeedbackButtonActive = true;
-                } else if (transaction.DocStatus == 3) {
+                } else if (transaction.docStatus == 3) {
                   statusText = "Closed";
                   statusColor = Colors.red;
                   isPODButtonActive = true;
@@ -79,7 +77,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
 
               return InkWell(
                 onTap: () async {
-                  String? idTransaction = transaction.SalesId;
+                  String? idTransaction = transaction.salesId;
 
                   await inputPagePresenter
                       .getTransactionHistoryDetail(idTransaction!);
@@ -141,7 +139,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                       borderRadius: BorderRadius.circular(10)),
                   child: ListTile(
                     title: Text(
-                      transaction.SalesId ?? "N/A",
+                      transaction.salesId ?? "N/A",
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.bold),
                     ),
@@ -149,15 +147,15 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Customer: ${transaction.Customer}',
+                          'Customer: ${transaction.customer}',
                           style: const TextStyle(fontSize: 12),
                         ),
                         Text(
-                          'Cust.Reff: ${transaction.CustReff}',
+                          'Cust.Reff: ${transaction.custReff}',
                           style: const TextStyle(fontSize: 12),
                         ),
                         Text(
-                          'Date: ${DateFormat("dd-MM-yyyy hh:mm").format(DateTime.parse(transaction.Date!))}',
+                          'Date: ${DateFormat("dd-MM-yyyy hh:mm").format(DateTime.parse(transaction.date!))}',
                           style: const TextStyle(
                               fontSize: 12, fontWeight: FontWeight.w300),
                         ),
@@ -189,7 +187,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                 size: MediaQuery.of(context).size,
                                 onTapAction: isFeedbackButtonActive
                                     ? () async {
-                                        if (transaction.DocStatus == 2) {
+                                        if (transaction.docStatus == 2) {
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
                                                   builder: (context) =>
@@ -198,13 +196,13 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                                         inputPagePresenter:
                                                             inputPagePresenter,
                                                         salesId: transaction
-                                                            .SalesId!,
+                                                            .salesId!,
                                                       )));
-                                        } else if (transaction.DocStatus == 3) {
+                                        } else if (transaction.docStatus == 3) {
                                           Uint8List? fetchedData =
                                               await inputPagePresenter
                                                   .fetchImageFeed(
-                                                      transaction.SalesId!);
+                                                      transaction.salesId!);
                                           showDialog(
                                             context: context,
                                             builder: (context) {
@@ -291,13 +289,13 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                               size: MediaQuery.of(context).size,
                               onTapAction: isPODButtonActive
                                   ? () async {
-                                      String? salesId = transaction.SalesId;
+                                      String? salesId = transaction.salesId;
 
                                       Uint8List? fetchedData =
                                           await inputPagePresenter
                                               .fetchImagePOD(salesId!);
 
-                                      if (transaction.DocStatus == 1) {
+                                      if (transaction.docStatus == 1) {
                                         showDialog(
                                           context: context,
                                           builder: (context) {
@@ -328,8 +326,8 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                             );
                                           },
                                         );
-                                      } else if (transaction.DocStatus == 2 ||
-                                          transaction.DocStatus == 3) {
+                                      } else if (transaction.docStatus == 2 ||
+                                          transaction.docStatus == 3) {
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) =>

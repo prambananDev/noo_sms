@@ -11,10 +11,10 @@ class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key, required this.initialIndex}) : super(key: key);
 
   @override
-  _DashboardPageState createState() => _DashboardPageState();
+  DashboardPageState createState() => DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class DashboardPageState extends State<DashboardPage> {
   final PageController _pageController = PageController();
   final DashboardController _controller = DashboardController();
   int _currentIndex = 0;

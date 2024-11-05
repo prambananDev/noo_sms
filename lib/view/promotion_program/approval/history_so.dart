@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:noo_sms/models/promotion.dart';
-import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/promotion_program/approval/approval_pending_line.dart';
 import 'package:noo_sms/view/promotion_program/approval/sales_order_adp.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HistorySO extends StatefulWidget {
   @override
-  _HistorySOState createState() => _HistorySOState();
+  HistorySOState createState() => HistorySOState();
   int idEmp;
   String namePP;
   String idProduct;
@@ -22,24 +18,23 @@ class HistorySO extends StatefulWidget {
       required this.idCustomer});
 }
 
-class _HistorySOState extends State<HistorySO> {
+class HistorySOState extends State<HistorySO> {
   var _listHistory;
   late GlobalKey<RefreshIndicatorState> refreshKey;
-  late User _user;
   late int code;
 
   @override
   void initState() {
     super.initState();
     refreshKey = GlobalKey<RefreshIndicatorState>();
-    getSharedPreference();
   }
 
   Future<void> listHistory() async {
     await Future.delayed(const Duration(seconds: 5));
     Promotion.getListSalesOrder(
-            widget.idProduct, widget.idCustomer, _user.token!, _user.username)
-        .then((value) {
+      widget.idProduct,
+      widget.idCustomer,
+    ).then((value) {
       setState(() {
         _listHistory = value;
       });
@@ -73,8 +68,10 @@ class _HistorySOState extends State<HistorySO> {
             body: RefreshIndicator(
               onRefresh: listHistory,
               child: FutureBuilder(
-                future: Promotion.getListSalesOrder(widget.idProduct,
-                    widget.idCustomer, _user.token!, _user.username),
+                future: Promotion.getListSalesOrder(
+                  widget.idProduct,
+                  widget.idCustomer,
+                ),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   _listHistory == null
                       ? _listHistory = snapshot.data
@@ -107,19 +104,6 @@ class _HistorySOState extends State<HistorySO> {
         ),
       ),
     );
-  }
-
-  void getSharedPreference() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    List<User> listUser = userBox.values.map((e) => e as User).toList();
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    Future.delayed(const Duration(milliseconds: 10));
-    setState(() {
-      _user = listUser[0];
-      code = pref.getInt("code")!;
-    });
   }
 
   Future<bool> onBackPressSalesOrder() {

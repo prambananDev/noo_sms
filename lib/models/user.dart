@@ -120,7 +120,7 @@ class User {
   Future<void> saveUserToPrefs(
       User user, String username, String password, bool rememberMe) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString("username", user.Username);
+    await prefs.setString("Username", user.Username);
     await prefs.setString("username", user.username);
     await prefs.setInt("iduser", user.id);
     await prefs.setString("name", user.name ?? '');

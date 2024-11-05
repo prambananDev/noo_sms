@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/money_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
@@ -9,9 +8,7 @@ import 'package:noo_sms/assets/widgets/text_result_card.dart';
 import 'package:noo_sms/controllers/provider/lines_provider.dart';
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
-import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,7 +36,6 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
   DateTime dateTo = DateTime.now().add(const Duration(days: 180));
   Promotion promosi = Promotion();
   double discount = 0;
-  User _user = User();
   late int code;
 
   bool valueSelectAll = false;
@@ -47,8 +43,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
   bool startApp = false;
   Future<void> listHistorySO() async {
     await Future.delayed(const Duration(seconds: 1));
-    Promotion.getListLines(widget.numberPP, _user.token!, _user.username)
-        .then((value) {
+    Promotion.getListLines(widget.numberPP).then((value) {
       setState(() {
         _listHistorySO = value;
         _listHistorySOEncode = jsonEncode(_listHistorySO);
@@ -62,7 +57,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
   void initState() {
     super.initState();
     refreshKey = GlobalKey<RefreshIndicatorState>();
-    getSharedPreference();
+
     Future.delayed(const Duration(milliseconds: 100), () {
       startApp = true;
       listHistorySO();
@@ -201,7 +196,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (BuildContext context, int index) {
-                                  return CardLinesAdapter(widget.numberPP,
+                                  return cardLinesAdapter(widget.numberPP,
                                       _listHistorySO![index], index);
                                 },
                               ),
@@ -214,7 +209,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
     );
   }
 
-  Container CardLinesAdapter(String namePP, Promotion promosi, int index) {
+  Container cardLinesAdapter(String namePP, Promotion promosi, int index) {
     double price = double.parse(
         promosi.price!.replaceAll(RegExp("Rp"), "").replaceAll(".", ""));
     double disc1 = double.parse(promosi.disc1!);
@@ -503,19 +498,6 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
     List<Map> listResult = listDisc.map((f) => f.toJson()).toList();
     result = jsonEncode(listResult);
     preferences.setString("result", result);
-  }
-
-  void getSharedPreference() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    List<User> listUser = userBox.values.map((e) => e as User).toList();
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    Future.delayed(const Duration(milliseconds: 10));
-    setState(() {
-      _user = listUser[0];
-      code = pref.getInt("code")!;
-    });
   }
 
   Future<bool> onBackPressLines() async {

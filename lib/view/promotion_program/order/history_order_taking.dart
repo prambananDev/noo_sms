@@ -6,7 +6,6 @@ import 'package:noo_sms/controllers/promotion_program/order/transaction_history_
 class HistoryOrder extends StatelessWidget {
   const HistoryOrder({Key? key}) : super(key: key);
 
-  // Helper function for formatting currency
   String formatCurrency(double amount) {
     final formatter = NumberFormat.currency(
       locale: 'id_ID',
@@ -98,29 +97,26 @@ class HistoryOrder extends StatelessWidget {
   }
 
   Widget buildRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 1, // Use 1 part of the available space
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14),
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 1,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 14),
           ),
-          const SizedBox(width: 10), // Add spacing between elements
-          Expanded(
-            flex: 2, // Use 2 parts of the available space
-            child: Text(
-              value,
-              textAlign: TextAlign.right, // Aligns text to the right
-              style: const TextStyle(fontSize: 14),
-            ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 14),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

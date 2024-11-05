@@ -23,9 +23,9 @@ class HistoryPendingState extends State<PendingPP> {
   TextEditingController filterController = TextEditingController();
   var _listHistory, listHistoryReal;
   late GlobalKey<RefreshIndicatorState> refreshKey;
-  User? _user; // Make _user nullable
-  int? code; // Make code nullable initially
-  bool isLoading = true; // Track loading state
+  User? _user;
+  int? code;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -42,18 +42,16 @@ class HistoryPendingState extends State<PendingPP> {
     await Future.delayed(const Duration(milliseconds: 20));
 
     setState(() {
-      _user = listUser.isNotEmpty ? listUser[0] : null; // Ensure user is set
-      code = pref.getInt("code") ?? 0; // Ensure code is set
-      isLoading = false; // Loading complete
+      _user = listUser.isNotEmpty ? listUser[0] : null;
+      code = pref.getInt("code") ?? 0;
+      isLoading = false;
     });
   }
 
   Future<void> listHistory() async {
     await Future.delayed(const Duration(seconds: 5));
     if (_user != null && code != null) {
-      Promotion.getListPromotion(
-              _user!.token ?? "token kosong", _user!.username)
-          .then((value) {
+      Promotion.getListPromotion().then((value) {
         setState(() {
           listHistoryReal = value;
           _listHistory = listHistoryReal;
@@ -65,8 +63,8 @@ class HistoryPendingState extends State<PendingPP> {
 
   Container cardAdapter(Promotion promotion) {
     return Container(
-        margin: const EdgeInsets.all(10), // Adjusted margin
-        padding: const EdgeInsets.all(5),
+        margin: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           border: Border.all(
             color: colorGray,
@@ -140,7 +138,6 @@ class HistoryPendingState extends State<PendingPP> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      // Show loading indicator until the data is initialized
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -176,7 +173,6 @@ class HistoryPendingState extends State<PendingPP> {
                                         .toLowerCase()
                                         .contains(value.toLowerCase()))
                                 .toList();
-                            print(_listHistory);
                           });
                         });
                       })),
@@ -196,7 +192,6 @@ class HistoryPendingState extends State<PendingPP> {
                                 .toLowerCase()
                                 .contains(value.toLowerCase()))
                         .toList();
-                    print(_listHistory);
                   });
                 });
               },
@@ -206,8 +201,7 @@ class HistoryPendingState extends State<PendingPP> {
             child: RefreshIndicator(
               onRefresh: listHistory,
               child: FutureBuilder(
-                future: Promotion.getListPromotion(_user!.token ?? "",
-                    _user!.username ?? ""), // Ensure safe access
+                future: Promotion.getListPromotion(), // Ensure safe access
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (!snapshot.hasError) {
@@ -228,9 +222,7 @@ class HistoryPendingState extends State<PendingPP> {
                               cardAdapter(
                                 _listHistory[index],
                               ));
-                    } else {
-                      print(snapshot.error.toString());
-                    }
+                    } else {}
                   } else if (snapshot.connectionState == ConnectionState.none) {
                     return const Center(
                       child: Column(
