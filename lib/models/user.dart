@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
@@ -91,14 +92,13 @@ class User {
       message: json['message'],
       code: json['code'],
       user: json['user'] != null ? User.fromJson(json['user']) : null,
-      so: json['SO'],
+      so: json['so'],
       bu: json['BU'],
       name: json['Name'],
       role: json['Role'],
     );
   }
 
-  // Handles login functionality
   Future<User?> login(
     String username,
     String password,
@@ -111,9 +111,11 @@ class User {
       Uri.parse(url),
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
     );
+
     if (response.body.isEmpty) {
       return null;
     }
+
     return User.fromJson(jsonDecode(response.body));
   }
 
@@ -190,7 +192,10 @@ class User {
     prefs.setString("username", user.username);
     prefs.setString("token", user.token ?? '');
     prefs.setInt("userid", user.id);
+    prefs.setString("bu", user.bu ?? '');
     prefs.setString("so", user.so.toString());
+    debugPrint(response.body);
+    debugPrint(user.bu);
     return user;
   }
 }

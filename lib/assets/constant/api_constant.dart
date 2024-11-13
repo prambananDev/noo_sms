@@ -16,4 +16,6 @@ class ApiConstant {
 
 var apiCons = "http://sms-api.prb.co.id";
 var apiCons2 = "http://api-scs.prb.co.id";
+// var apiCons3 = "http://noo.prb.co.id:8893";
+
 var baseURLDevelopment = "http://noo.prb.co.id:8893/api/";

@@ -199,7 +199,7 @@ class Promotion {
   static Future<List<Promotion>> getListPromotionApproved() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url =
-        "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
+        "$apiCons/api/PromosiHeader?usernames=${prefs.getString("username")}&userIds=${prefs.getInt("userid")}";
     String token = prefs.getString('token')!;
     final response = await http.get(
       Uri.parse(url),

@@ -9,8 +9,8 @@ import 'package:noo_sms/view/dashboard/dashboard.dart';
 import 'package:noo_sms/view/login/login_view.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart'; // Import provider package
-import 'package:noo_sms/controllers/provider/login_provider.dart'; // Import your LoginProvider
+import 'package:provider/provider.dart';
+import 'package:noo_sms/controllers/provider/login_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
