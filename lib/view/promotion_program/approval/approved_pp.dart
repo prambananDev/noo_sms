@@ -73,7 +73,7 @@ class ApprovedPPState extends State<ApprovedPP> {
                   MaterialPageRoute(builder: (context) {
                 return HistoryLinesApproved(
                   numberPP: promosi.namePP,
-                  idEmp: _user.id,
+                  idEmp: _user.id!,
                 );
               }));
             },

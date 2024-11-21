@@ -1,10 +1,14 @@
 class SalesOffice {
   final String name;
+  final String code;
 
-  SalesOffice({required this.name});
+  SalesOffice({required this.name, required this.code});
 
   factory SalesOffice.fromJson(Map<String, dynamic> json) {
-    return SalesOffice(name: json['NameSO'] ?? 'Unknown');
+    return SalesOffice(
+      name: json['NameSO'] ?? '',
+      code: json['CodeSO'] ?? '',
+    );
   }
 }
 
@@ -25,6 +29,16 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(name: json['name'] ?? 'Unknown');
+  }
+}
+
+class Category2 {
+  final String master;
+
+  Category2({required this.master});
+
+  factory Category2.fromJson(Map<String, dynamic> json) {
+    return Category2(master: json['MASTER_SETUP'] ?? 'Unknown');
   }
 }
 

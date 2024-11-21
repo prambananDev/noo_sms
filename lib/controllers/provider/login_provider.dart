@@ -21,7 +21,6 @@ class LoginProvider with ChangeNotifier {
       username,
       password,
     ).then((value) {
-      // User.getUserNOTPassword(username, code)
       user.login(username, password);
       _status = value.code!;
       if (value.code != 200) {

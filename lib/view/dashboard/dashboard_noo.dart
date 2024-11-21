@@ -16,6 +16,7 @@ class DashboardNoo extends StatefulWidget {
 class DashboardNooState extends State<DashboardNoo>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final CustomerFormController controller = Get.put(CustomerFormController());
 
   @override
   void initState() {
@@ -25,7 +26,6 @@ class DashboardNooState extends State<DashboardNoo>
       vsync: this,
       initialIndex: widget.initialIndex ?? 0,
     );
-    Get.put(CustomerFormController()); // Ensures controller is available
   }
 
   @override

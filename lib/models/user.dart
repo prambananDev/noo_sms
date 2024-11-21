@@ -1,66 +1,69 @@
-// user.dart
-
 import 'dart:convert';
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/assets/constant/app_id.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 part 'user.g.dart';
 
-@HiveType(typeId: 0) // Unique typeId for Hive
+@HiveType(typeId: 0)
 class User {
   @HiveField(0)
-  int id;
+  final int? id;
   @HiveField(1)
-  String username;
+  final String? username;
   @HiveField(2)
-  String? password;
+  final String? password;
   @HiveField(3)
-  String fullname;
+  final String? fullname;
   @HiveField(4)
-  String level;
+  final String? level;
   @HiveField(5)
-  String roles;
+  final String? roles;
   @HiveField(6)
-  String? approvalRoles;
+  final String? approvalRoles;
   @HiveField(7)
-  String? brand;
+  final String? brand;
   @HiveField(8)
-  String? custSegment;
+  final String? custSegment;
   @HiveField(9)
-  String? businessUnit;
+  final String? businessUnit;
   @HiveField(10)
-  String? token;
+  final String? token;
   @HiveField(11)
-  String? message;
+  final String? message;
   @HiveField(12)
-  int? code;
+  final int? code;
   @HiveField(13)
-  User? user;
+  final User? user;
   @HiveField(14)
-  dynamic so;
+  final dynamic so;
   @HiveField(15)
-  String? bu;
+  final String? bu;
   @HiveField(16)
-  String? name;
+  final String? name;
   @HiveField(17)
-  String? role;
+  final String? role;
   @HiveField(18)
-  String Username;
+  final String? Username;
+  @HiveField(19)
+  final int? editApproval;
+  @HiveField(20)
+  final int? approvalRole;
+  @HiveField(21)
+  final dynamic SO;
 
   User({
-    this.id = 0,
-    this.username = '',
-    this.Username = '',
+    this.id,
+    this.username,
+    this.Username,
     this.password,
-    this.fullname = '',
-    this.level = '',
-    this.roles = '',
+    this.fullname,
+    this.level,
+    this.roles,
     this.approvalRoles,
     this.brand,
     this.custSegment,
@@ -73,6 +76,9 @@ class User {
     this.bu,
     this.name,
     this.role,
+    this.editApproval,
+    this.approvalRole,
+    this.SO,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -96,39 +102,62 @@ class User {
       bu: json['BU'],
       name: json['Name'],
       role: json['Role'],
+      SO: json['SO'],
+      editApproval: json['EditApproval'],
+      approvalRole: json['ApprovalRole'],
     );
   }
 
-  Future<User?> login(
-    String username,
-    String password,
-  ) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idDevice = prefs.getString("idDevice") ?? await getDeviceId();
-    final url =
-        "${baseURLDevelopment}Login?username=$username&password=${password.replaceAll("#", "%23")}&playerId=$idDevice";
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-    );
+  Future<User?> login(String username, String password) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? idDevice = prefs.getString("idDevice") ?? await getDeviceId();
 
-    if (response.body.isEmpty) {
+      if (idDevice == null) {
+        throw Exception("Device ID not found. Ensure it is stored properly.");
+      }
+
+      final url =
+          "${baseURLDevelopment}Login?username=$username&password=${password.replaceAll("#", "%23")}&playerId=$idDevice";
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      );
+
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        return _handleSuccessfulLogin2(response, prefs);
+      } else if (response.body.isEmpty) {
+        debugPrint('Login response is empty.');
+        return null;
+      } else {
+        throw Exception('Failed to login: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Login error: $e');
       return null;
     }
-
-    return User.fromJson(jsonDecode(response.body));
   }
 
-  Future<void> saveUserToPrefs(
-      User user, String username, String password, bool rememberMe) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString("Username", user.Username);
-    await prefs.setString("username", user.username);
-    await prefs.setInt("iduser", user.id);
-    await prefs.setString("name", user.name ?? '');
-    await prefs.setString("so", user.so?.toString() ?? '');
-    await prefs.setString("bu", user.bu ?? '');
-    await prefs.setString("role", user.role ?? '');
+  static User _handleSuccessfulLogin2(
+      http.Response response, SharedPreferences prefs) {
+    try {
+      Map<String, dynamic> jsonObject = json.decode(response.body);
+      User user = User.fromJson(jsonObject);
+      prefs.setInt("id", user.id ?? 0);
+      prefs.setString("Username", user.username ?? '');
+      prefs.setString("Name", user.name ?? '');
+      prefs.setString("Role", user.role ?? '');
+      prefs.setString("SO", user.SO ?? '');
+      prefs.setString("BU", user.bu ?? '');
+      prefs.setInt("ApprovalRole", user.approvalRole ?? 0);
+      prefs.setInt("EditApproval", user.editApproval ?? 0);
+      debugPrint('User data: ${response.body}');
+      debugPrint(prefs.getString("SO"));
+      return user;
+    } catch (e) {
+      throw Exception("Failed to process login response: $e");
+    }
   }
 
   static Future<String?> getDeviceId() async {
@@ -146,35 +175,32 @@ class User {
         throw Exception("Failed to retrieve Device ID from OneSignal");
       }
     } catch (error) {
+      debugPrint('Get device ID error: $error');
       return null;
     }
   }
 
-  static Future<User> getUsers(
-    String username,
-    String password,
-  ) async {
+  static Future<User> getUsers(String username, String password) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-
       String? idDevice = prefs.getString("idDevice") ?? await getDeviceId();
 
       if (idDevice == null) {
         throw Exception("Device ID not found. Ensure it is stored properly.");
       }
 
-      String url = "$apiCons/api/LoginSMS?playerId=$idDevice";
-      dynamic dataLogin = {"username": username, "password": password};
+      String url = "${apiCons}/api/LoginSMS?playerId=$idDevice";
+      Map<String, dynamic> dataLogin = {
+        "username": username,
+        "password": password
+      };
 
       final response = await http.post(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode(dataLogin),
       );
 
-      // login(username, password, idDevice);
       if (response.statusCode == 200) {
         return _handleSuccessfulLogin(response, prefs);
       } else {
@@ -187,15 +213,25 @@ class User {
 
   static User _handleSuccessfulLogin(
       http.Response response, SharedPreferences prefs) {
-    dynamic jsonObject = json.decode(response.body);
-    User user = User.fromJson(jsonObject);
-    prefs.setString("username", user.username);
-    prefs.setString("token", user.token ?? '');
-    prefs.setInt("userid", user.id);
-    prefs.setString("bu", user.bu ?? '');
-    prefs.setString("so", user.so.toString());
-    debugPrint(response.body);
-    debugPrint(user.bu);
-    return user;
+    try {
+      dynamic jsonObject = json.decode(response.body);
+      User user = User.fromJson(jsonObject);
+
+      prefs.setString("username", user.username!);
+      prefs.setString("token", user.token ?? '');
+      prefs.setInt("userid", user.id!);
+      prefs.setString("bu", user.bu ?? '');
+      prefs.setString("so", user.so.toString());
+
+      debugPrint(response.body);
+      debugPrint(user.bu);
+
+      return user;
+    } catch (e) {
+      throw Exception("Failed to process login response: $e");
+    }
   }
 }
+
+
+// df4bfa4

@@ -94,7 +94,7 @@ class HistoryAllState extends State<HistoryAll> {
                         MaterialPageRoute(builder: (context) {
                       return HistoryLinesAll(
                         numberPP: promotion.namePP,
-                        idEmp: _user.id,
+                        idEmp: _user.id!,
                       );
                     }));
                   },

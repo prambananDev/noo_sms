@@ -100,7 +100,7 @@ class HistoryPendingState extends State<PendingPP> {
                     MaterialPageRoute(builder: (context) {
                   return HistoryLines(
                     numberPP: promotion.namePP,
-                    idEmp: _user!.id,
+                    idEmp: _user!.id!,
                     promotion: promotion,
                   );
                 }));
