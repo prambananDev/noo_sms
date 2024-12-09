@@ -50,7 +50,7 @@ class ApprovedController extends GetxController {
     }
 
     var urlGetApproved =
-        "${baseURLDevelopment}ApprovedNOO/1?page=${page.value}";
+        "${baseURLDevelopment}ApprovedNOO/$userId?page=${page.value}";
 
     final response = await http
         .get(Uri.parse(urlGetApproved), headers: {'authorization': basicAuth});

@@ -35,7 +35,7 @@ class DashboardMainState extends State<DashboardMain> {
   @override
   void initState() {
     super.initState();
-    // _checkRoleAndNavigate();
+    _checkRoleAndNavigate();
     getCurrentLocation();
   }
 
@@ -47,9 +47,10 @@ class DashboardMainState extends State<DashboardMain> {
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => ApprovalPage(
-                  role: role,
-                )),
+          builder: (context) => ApprovalPage(
+            role: role,
+          ),
+        ),
       );
     } else if (role == '0') {
       Navigator.push(
@@ -225,13 +226,13 @@ class DashboardMainState extends State<DashboardMain> {
                   backgroundColor: colorAccent,
                 ),
                 onPressed: () {
-                  // _checkRoleAndNavigate();
+                  _checkRoleAndNavigate();
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ApprovedView()),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (context) => const ApprovedView()),
+                  // );
                 },
                 child:
                     Text("NOO Dashboard", style: TextStyle(color: colorNetral)),

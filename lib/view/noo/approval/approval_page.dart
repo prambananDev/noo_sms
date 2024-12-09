@@ -6,11 +6,9 @@ import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/approval/approval_detail.dart';
 
 class ApprovalPage extends StatefulWidget {
-  final String? name;
   final String? role;
 
-  const ApprovalPage({Key? key, this.name, required this.role})
-      : super(key: key);
+  const ApprovalPage({Key? key, required this.role}) : super(key: key);
 
   @override
   ApprovalPageState createState() => ApprovalPageState();
@@ -45,17 +43,6 @@ class ApprovalPageState extends State<ApprovalPage> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Center(
-            child: Text(
-              widget.name ?? "",
-              style: const TextStyle(color: Colors.black),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
