@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/button_widget.dart';
 import 'package:noo_sms/assets/widgets/upload_photo_feedback.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_history_controller.dart';
@@ -125,6 +126,7 @@ class FeedbackPageState extends State<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: colorNetral,
       appBar: AppBar(
         title: const Text("Submit Feedback"),
       ),

@@ -41,6 +41,7 @@ class HistoryLinesState extends State<HistoryLines> {
     return WillPopScope(
       onWillPop: onBackPressLines,
       child: Scaffold(
+        backgroundColor: colorNetral,
         floatingActionButton: _controller.startApp == false
             ? null
             : Column(

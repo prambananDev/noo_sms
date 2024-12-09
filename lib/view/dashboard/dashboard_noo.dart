@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
+import 'package:noo_sms/view/noo/dashboard_new_customer/list_status_noo.dart';
 
 class DashboardNoo extends StatefulWidget {
   final int? initialIndex;
@@ -16,7 +17,7 @@ class DashboardNoo extends StatefulWidget {
 class DashboardNooState extends State<DashboardNoo>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final CustomerFormController controller = Get.put(CustomerFormController());
+  CustomerFormController? controller;
 
   @override
   void initState() {
@@ -26,12 +27,20 @@ class DashboardNooState extends State<DashboardNoo>
       vsync: this,
       initialIndex: widget.initialIndex ?? 0,
     );
+    initializeController();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void initializeController() {
+    if (Get.isRegistered<CustomerFormController>()) {
+      Get.delete<CustomerFormController>();
+    }
+    controller = Get.put(CustomerFormController());
   }
 
   @override
@@ -44,6 +53,7 @@ class DashboardNooState extends State<DashboardNoo>
         }
       },
       child: Scaffold(
+        backgroundColor: colorNetral,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           centerTitle: true,
@@ -78,20 +88,16 @@ class DashboardNooState extends State<DashboardNoo>
             ),
           ),
         ),
-        body: GetBuilder<CustomerFormController>(
-          builder: (_) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TabBarView(
-                controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: const [
-                  CustomerForm(),
-                  Text('List NOO'),
-                ],
-              ),
-            );
-          },
+        body: TabBarView(
+          controller: _tabController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            GetBuilder<CustomerFormController>(
+              init: controller,
+              builder: (ctrl) => const CustomerForm(editData: null),
+            ),
+            const StatusPage(),
+          ],
         ),
       ),
     );

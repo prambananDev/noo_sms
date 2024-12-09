@@ -317,14 +317,16 @@ class HistoryAllState extends State<HistoryAll> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
+      return Scaffold(
+        backgroundColor: colorNetral,
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: colorNetral,
       body: Column(
         children: <Widget>[
           Container(

@@ -21,10 +21,6 @@ class PreviewDialog extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: BorderSide.none,
-              // side: BorderSide(
-              //   color: colorAccent,
-              //   width: 2,
-              // ),
             ),
             title: Center(
               child: Text(
@@ -162,7 +158,6 @@ class PreviewDialog extends StatelessWidget {
     );
   }
 
-  // Helper to build each row for preview
   Widget buildRow(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),

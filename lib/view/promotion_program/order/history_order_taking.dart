@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/promotion_program/order/transaction_history_order_controller.dart';
 
 class HistoryOrder extends StatelessWidget {
@@ -19,6 +20,7 @@ class HistoryOrder extends StatelessWidget {
   Widget build(BuildContext context) {
     final transactionHistoryPresenter = Get.put(HistoryOrderController());
     return Obx(() => Scaffold(
+          backgroundColor: colorNetral,
           body: Padding(
             padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(

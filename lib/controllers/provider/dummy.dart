@@ -364,6 +364,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
+// backgroundColor: colorNetral,
 //       backgroundColor: Colors.white,
 //       body: SafeArea(
 //         child: Center(

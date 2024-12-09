@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_approved_controller.dart';
 
 class TransactionApprovedPage extends StatelessWidget {
@@ -11,6 +12,7 @@ class TransactionApprovedPage extends StatelessWidget {
         Get.put(TransactionApprovedController());
 
     return Scaffold(
+      backgroundColor: colorNetral,
       body: Obx(() {
         if (presenter.approvedList.isEmpty) {
           return const Center(child: CircularProgressIndicator());

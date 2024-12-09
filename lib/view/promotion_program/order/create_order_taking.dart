@@ -248,6 +248,7 @@ class _TransactionPageState extends State<TransactionPage> {
   Widget build(BuildContext context) {
     final inputPagePresenter = Get.put(TransactionController());
     return Scaffold(
+      backgroundColor: colorNetral,
       body: SafeArea(
           child: SingleChildScrollView(
         scrollDirection: Axis.vertical,

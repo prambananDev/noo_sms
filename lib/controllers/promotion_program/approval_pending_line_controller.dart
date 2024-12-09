@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryLinesPendingController extends GetxController {

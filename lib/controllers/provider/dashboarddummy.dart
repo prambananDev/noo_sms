@@ -9,6 +9,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
+          // backgroundColor: colorNetral,
 //       appBar: AppBar(
 //         title: const Text('Employee Dashboard'),
 //         actions: [
@@ -220,6 +221,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
+          // backgroundColor: colorNetral,
 //       appBar: AppBar(
 //         title: const Text('Manager Dashboard'),
 //         actions: [

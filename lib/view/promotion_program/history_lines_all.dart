@@ -69,6 +69,7 @@ class HistoryLinesAllState extends State<HistoryLinesAll> {
       child: MaterialApp(
         theme: Theme.of(context),
         home: Scaffold(
+          backgroundColor: colorNetral,
           appBar: AppBar(
             backgroundColor: colorAccent,
             title: Text(
@@ -89,6 +90,7 @@ class HistoryLinesAllState extends State<HistoryLinesAll> {
             ),
           ),
           body: Scaffold(
+            backgroundColor: colorNetral,
             body: RefreshIndicator(
               onRefresh: listHistorySO,
               child: FutureBuilder<List<Promotion>>(

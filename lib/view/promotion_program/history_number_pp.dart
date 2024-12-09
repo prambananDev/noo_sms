@@ -115,6 +115,7 @@
 //       child: MaterialApp(
 //         theme: Theme.of(context),
 //         home: Scaffold(
+          // backgroundColor: colorNetral,
 //           floatingActionButton: Column(
 //             // crossAxisAlignment: CrossAxisAlignment.end,
 //             mainAxisAlignment: MainAxisAlignment.end,

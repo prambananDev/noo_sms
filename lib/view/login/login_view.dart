@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/login/login_controller.dart';
 
 class LoginView extends StatefulWidget {
@@ -43,6 +44,7 @@ class LoginViewState extends State<LoginView> {
     double scaleFont(double fontSize) => fontSize * screenWidth / 375;
 
     return Scaffold(
+      backgroundColor: colorNetral,
       body: Form(
         key: _controller.formKey,
         child: Padding(

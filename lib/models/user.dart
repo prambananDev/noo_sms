@@ -189,7 +189,7 @@ class User {
         throw Exception("Device ID not found. Ensure it is stored properly.");
       }
 
-      String url = "${apiCons}/api/LoginSMS?playerId=$idDevice";
+      String url = "$apiCons/api/LoginSMS?playerId=$idDevice";
       Map<String, dynamic> dataLogin = {
         "username": username,
         "password": password

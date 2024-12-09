@@ -1,0 +1,199 @@
+// lib/controllers/status_detail_controller.dart
+
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
+import 'package:noo_sms/models/list_status_noo.dart';
+import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
+
+class StatusDetailController extends GetxController {
+  final isLoading = true.obs;
+  final errorMessage = RxString('');
+  final statusData = Rxn<StatusModel>();
+  final approvalStatusList = RxList<Map<String, dynamic>>();
+
+  final statusApproval = RxString('');
+  final String statusRejected = "Rejected";
+  String? statusDataApprovalDetail;
+
+  Future<void> initializeData(int id) async {
+    try {
+      isLoading(true);
+      await Future.wait([
+        fetchStatusDetail(id),
+        fetchApprovalStatus(id),
+      ]);
+    } catch (e) {
+      errorMessage.value = e.toString();
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  // Fetch status detail
+  Future<void> fetchStatusDetail(int id) async {
+    try {
+      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+      final response = await http.get(
+        Uri.parse('$baseURLDevelopment/NOOCustTables/$id'),
+        headers: {'authorization': auth},
+      );
+      debugPrint(id.toString());
+      debugPrint(response.body);
+
+      if (response.statusCode == 200) {
+        final data = StatusModel.fromJson(jsonDecode(response.body));
+        statusData.value = data;
+
+        statusApproval.value = data.status;
+      } else {
+        throw Exception('Failed to load status detail: ${response.statusCode}');
+      }
+    } catch (e) {
+      errorMessage.value = 'Error getting status detail: $e';
+      rethrow;
+    }
+  }
+
+  // Fetch approval status
+  Future<void> fetchApprovalStatus(int id) async {
+    try {
+      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+      final response = await http.get(
+        Uri.parse('$baseURLDevelopment/Approval/$id'),
+        headers: {'authorization': auth},
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        approvalStatusList.value = data.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception(
+            'Failed to load approval status: ${response.statusCode}');
+      }
+    } catch (e) {
+      errorMessage.value = 'Error getting approval status: $e';
+      rethrow;
+    }
+  }
+
+  // Get image
+  Future<Uint8List> getImage(String fileName) async {
+    try {
+      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+      final response = await http.get(
+        Uri.parse('$baseURLDevelopment/Files/GetFiles?fileName=$fileName'),
+        headers: {'authorization': auth},
+      );
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception('Failed to load image: ${response.statusCode}');
+      }
+    } catch (e) {
+      errorMessage.value = 'Error getting image: $e';
+      rethrow;
+    }
+  }
+
+  Future<bool> updateStatus(int id, Map<String, dynamic> data) async {
+    try {
+      isLoading(true);
+      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+      final response = await http.put(
+        Uri.parse('$baseURLDevelopment/NOOCustTables/$id'),
+        headers: {
+          'authorization': auth,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        await fetchStatusDetail(id); // Refresh data after update
+        return true;
+      }
+      return false;
+    } catch (e) {
+      errorMessage.value = 'Error updating status: $e';
+      return false;
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  // Upload signature
+  Future<String?> uploadSignature(
+      String signatureBase64, String fileName) async {
+    try {
+      isLoading(true);
+      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+      final response = await http.post(
+        Uri.parse('$baseURLDevelopment/Files/UploadFile'),
+        headers: {
+          'authorization': auth,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'file': signatureBase64,
+          'fileName': fileName,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return fileName;
+      } else {
+        throw Exception('Failed to upload signature: ${response.statusCode}');
+      }
+    } catch (e) {
+      errorMessage.value = 'Error uploading signature: $e';
+      return null;
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  void navigateToEdsit() {
+    if (statusData.value != null) {
+      Get.to(
+        () => CustomerForm(editData: statusData.value),
+      )?.then((value) {
+        if (value == true) {
+          initializeData(statusData.value!.id);
+        }
+      });
+    }
+  }
+
+  void navigateToEdit() {
+    if (statusData.value != null) {
+      Get.delete<CustomerFormController>();
+
+      final controller =
+          Get.put(CustomerFormController(editData: statusData.value));
+      controller.isEditMode.value = true;
+
+      Get.to(
+        () => CustomerForm(editData: statusData.value),
+      )?.then((value) {
+        if (value == true) {
+          initializeData(statusData.value!.id);
+        }
+      });
+    }
+  }
+
+  bool get isStatusRejected => statusApproval.value == statusRejected;
+
+  @override
+  void onClose() {
+    statusData.value = null;
+    approvalStatusList.clear();
+    super.onClose();
+  }
+}

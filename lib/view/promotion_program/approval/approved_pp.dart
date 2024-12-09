@@ -124,12 +124,14 @@ class ApprovedPPState extends State<ApprovedPP> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: colorNetral,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
+      backgroundColor: colorNetral,
       body: Column(
         children: <Widget>[
           Container(

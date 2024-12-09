@@ -45,6 +45,7 @@ class DashboardOrderSampleState extends State<DashboardOrderSample>
         }
       },
       child: Scaffold(
+        backgroundColor: colorNetral,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
             centerTitle: true,

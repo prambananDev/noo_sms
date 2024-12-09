@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/view/promotion_program/approval/approval_pending_line.dart';
 import 'package:noo_sms/view/promotion_program/approval/sales_order_adp.dart';
@@ -49,6 +50,7 @@ class HistorySOState extends State<HistorySO> {
       child: MaterialApp(
         theme: Theme.of(context),
         home: Scaffold(
+          backgroundColor: colorNetral,
           appBar: AppBar(
             backgroundColor: Theme.of(context).primaryColorDark,
             leading: IconButton(
@@ -65,6 +67,7 @@ class HistorySOState extends State<HistorySO> {
             ),
           ),
           body: Scaffold(
+            backgroundColor: colorNetral,
             body: RefreshIndicator(
               onRefresh: listHistory,
               child: FutureBuilder(

@@ -662,6 +662,7 @@ class _TransactionPageState extends State<TransactionSample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: colorNetral,
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         child: Container(

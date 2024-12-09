@@ -37,6 +37,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
+          // backgroundColor: colorNetral,
 //       appBar: AppBar(
 //         backgroundColor: Colors.green,
 //         title: const Text(

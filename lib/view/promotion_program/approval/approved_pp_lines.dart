@@ -73,6 +73,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
         home: ChangeNotifierProvider<LinesProvider>(
           create: (ctx) => LinesProvider(),
           child: Scaffold(
+            backgroundColor: colorNetral,
             appBar: AppBar(
               backgroundColor: colorAccent,
               automaticallyImplyLeading: false,

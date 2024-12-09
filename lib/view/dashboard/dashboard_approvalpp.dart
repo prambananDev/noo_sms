@@ -37,6 +37,7 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: colorNetral,
       // Add Scaffold here
       body: GetBuilder<DashboardApprovalPPTabController>(
         builder: (_) {

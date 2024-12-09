@@ -222,6 +222,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
     return WillPopScope(
       onWillPop: _onBackPressLines,
       child: Scaffold(
+        backgroundColor: colorNetral,
         appBar: AppBar(
           backgroundColor: colorAccent,
           title: Text("Edit Lines",

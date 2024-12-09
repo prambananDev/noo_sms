@@ -138,14 +138,16 @@ class HistoryPendingState extends State<PendingPP> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(
+      return Scaffold(
+        backgroundColor: colorNetral,
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: colorNetral,
       body: Column(
         children: <Widget>[
           Container(

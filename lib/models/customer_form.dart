@@ -22,13 +22,13 @@ class BusinessUnit {
   }
 }
 
-class Category {
+class Category1 {
   final String name;
 
-  Category({required this.name});
+  Category1({required this.name});
 
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(name: json['name'] ?? 'Unknown');
+  factory Category1.fromJson(Map<String, dynamic> json) {
+    return Category1(name: json['name'] ?? 'Unknown');
   }
 }
 
