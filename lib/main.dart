@@ -15,17 +15,13 @@ import 'package:noo_sms/controllers/provider/login_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize GetStorage and Hive
   await GetStorage.init();
   await Hive.initFlutter();
-
-  // Register Hive Adapter for User if not already registered
   if (!Hive.isAdapterRegistered(UserAdapter().typeId)) {
     Hive.registerAdapter(UserAdapter());
   }
 
-  // Initialize OneSignal
-  OneSignal.shared.setAppId("ffad8398-fdf5-4aef-a16b-a33696f48630");
+  OneSignal.initialize("ffad8398-fdf5-4aef-a16b-a33696f48630");
 
   runApp(const MainApp());
 }
@@ -63,23 +59,24 @@ class MainAppState extends State<MainApp> {
 
   Future<void> getOneSignal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    OneSignal.shared.setAppId("ffad8398-fdf5-4aef-a16b-a33696f48630");
 
-    OneSignal.shared.getDeviceState().then((value) async {
-      onesignalUserID = value?.userId ?? "";
-      prefs.setString("idDevice", onesignalUserID!);
+    OneSignal.initialize("ffad8398-fdf5-4aef-a16b-a33696f48630");
+
+    OneSignal.Notifications.requestPermission(true);
+
+    final pushSubscription = OneSignal.User.pushSubscription;
+    if (pushSubscription.id != null) {
+      onesignalUserID = pushSubscription.id;
+      await prefs.setString("idDevice", onesignalUserID!);
+    }
+
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      event.notification.display();
     });
 
-    OneSignal.shared.setNotificationWillShowInForegroundHandler(
-        (OSNotificationReceivedEvent event) {
-      event.complete(event.notification);
-    });
+    OneSignal.Notifications.addClickListener((event) {});
 
-    OneSignal.shared
-        .setNotificationOpenedHandler((OSNotificationOpenedResult result) {});
-
-    OneSignal.shared
-        .setSubscriptionObserver((OSSubscriptionStateChanges changes) {});
+    OneSignal.User.pushSubscription.addObserver((state) {});
   }
 
   Future<void> registeredAdapter() async {

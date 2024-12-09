@@ -161,22 +161,19 @@ class User {
   }
 
   static Future<String?> getDeviceId() async {
-    try {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      OneSignal.shared.setAppId(appId);
-      await Future.delayed(const Duration(seconds: 2));
+    SharedPreferences preferences = await SharedPreferences.getInstance();
 
-      OSDeviceState? deviceState = await OneSignal.shared.getDeviceState();
-      if (deviceState != null && deviceState.userId != null) {
-        String deviceId = deviceState.userId!;
-        preferences.setString("idDevice", deviceId);
-        return deviceId;
-      } else {
-        throw Exception("Failed to retrieve Device ID from OneSignal");
-      }
-    } catch (error) {
-      debugPrint('Get device ID error: $error');
-      return null;
+    OneSignal.initialize(appId);
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    final pushSubscription = OneSignal.User.pushSubscription;
+    if (pushSubscription.id != null) {
+      String deviceId = pushSubscription.id!;
+      await preferences.setString("idDevice", deviceId);
+      return deviceId;
+    } else {
+      throw Exception("Failed to retrieve Device ID from OneSignal");
     }
   }
 

@@ -116,21 +116,19 @@ class LoginController extends GetxController {
 
   void getIdDevice() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    OneSignal.shared.setAppId(""); // Set your OneSignal app ID here
-    OneSignal.shared.setNotificationWillShowInForegroundHandler(
-      (OSNotificationReceivedEvent event) {
-        event.complete(event.notification);
-      },
-    );
+    OneSignal.initialize("ffad8398-fdf5-4aef-a16b-a33696f48630");
+    OneSignal.Notifications.requestPermission(true);
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      event.notification.display();
+    });
 
     await Future.delayed(const Duration(seconds: 2));
 
-    OneSignal.shared.getDeviceState().then((deviceState) {
-      if (deviceState != null && deviceState.userId != null) {
-        String deviceId = deviceState.userId!;
-        preferences.setString("idDevice", deviceId);
-      } else {}
-    }).catchError((error) {});
+    final deviceState = await OneSignal.User.pushSubscription;
+    if (deviceState.id != null) {
+      String deviceId = deviceState.id!;
+      preferences.setString("idDevice", deviceId);
+    }
   }
 
   Future<void> setPreference(String username, String flag, String idSales,
