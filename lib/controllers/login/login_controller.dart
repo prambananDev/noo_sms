@@ -111,66 +111,56 @@ class LoginController extends GetxController {
   }
 
   Future<void> loadRememberMeStatus() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      rememberMe.value = prefs.getBool('rememberMe') ?? false;
-      usernameController.text = prefs.getString('username') ?? '';
-      passwordController.text = prefs.getString('password') ?? '';
-    } catch (e) {}
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    rememberMe.value = prefs.getBool('rememberMe') ?? false;
+    usernameController.text = prefs.getString('username') ?? '';
+    passwordController.text = prefs.getString('password') ?? '';
   }
 
   Future<void> saveRememberMe(
       bool rememberMe, String username, String password) async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', username);
-      await prefs.setString('password', password);
-      await prefs.setBool('rememberMe', rememberMe);
-    } catch (e) {}
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+    await prefs.setString('password', password);
+    await prefs.setBool('rememberMe', rememberMe);
   }
 
   Future<void> clearRememberMe() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      if (!rememberMe.value) {
-        await prefs.remove('username');
-        await prefs.remove('password');
-        await prefs.remove('rememberMe');
-      }
-    } catch (e) {}
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (!rememberMe.value) {
+      await prefs.remove('username');
+      await prefs.remove('password');
+      await prefs.remove('rememberMe');
+    }
   }
 
   Future<void> getIdDevice() async {
-    try {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
+    SharedPreferences preferences = await SharedPreferences.getInstance();
 
-      OneSignal.initialize("");
-      await OneSignal.Notifications.requestPermission(true);
+    OneSignal.initialize("");
+    await OneSignal.Notifications.requestPermission(true);
 
-      OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-        event.notification.display();
-      });
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      event.notification.display();
+    });
 
-      await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
-      final pushSubscription = OneSignal.User.pushSubscription;
-      if (pushSubscription.id != null) {
-        String deviceId = pushSubscription.id!;
-        await preferences.setString("idDevice", deviceId);
-      }
-    } catch (error) {}
+    final pushSubscription = OneSignal.User.pushSubscription;
+    if (pushSubscription.id != null) {
+      String deviceId = pushSubscription.id!;
+      await preferences.setString("idDevice", deviceId);
+    }
   }
 
   Future<void> setPreference(String username, String flag, String idSales,
       String token, String dateLogin) async {
-    try {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      await preferences.setString("username", username);
-      await preferences.setString("flag", flag);
-      await preferences.setString("idSales", idSales);
-      await preferences.setString("token", token);
-      await preferences.setString("dateLogin", dateLogin);
-    } catch (e) {}
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.setString("username", username);
+    await preferences.setString("flag", flag);
+    await preferences.setString("idSales", idSales);
+    await preferences.setString("token", token);
+    await preferences.setString("dateLogin", dateLogin);
   }
 
   void navigateToDashboard(User user) {

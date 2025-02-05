@@ -96,14 +96,13 @@ class StatusController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-      debugPrint("Loading finished. Data length: ${data.length}");
     }
   }
 
   Future<void> loadMoreData() async {
     if (!isLoading.value) {
       page.value++;
-      debugPrint("Loading more data... Page: ${page.value}");
+
       await fetchData(isLoadMore: true);
     }
   }

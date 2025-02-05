@@ -137,14 +137,12 @@ class LocationController extends GetxController {
   }
 
   Future<void> _saveBasicLocationData(Position position) async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      longitudeData.value = "${position.longitude}";
-      latitudeData.value = "${position.latitude}";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    longitudeData.value = "${position.longitude}";
+    latitudeData.value = "${position.latitude}";
 
-      await prefs.setString("getLongitude", "${position.longitude}");
-      await prefs.setString("getLatitude", "${position.latitude}");
-    } catch (e) {}
+    await prefs.setString("getLongitude", "${position.longitude}");
+    await prefs.setString("getLatitude", "${position.latitude}");
   }
 
   Future<void> _updateLocationData(

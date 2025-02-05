@@ -116,7 +116,6 @@ class User {
       if (idDevice == null) {
         throw Exception("Device ID not found. Ensure it is stored properly.");
       }
-      debugPrint(idDevice);
 
       final url =
           "${baseURLDevelopment}Login?username=$username&password=${password.replaceAll("#", "%23")}&playerId=$idDevice";
@@ -152,7 +151,6 @@ class User {
       prefs.setInt("ApprovalRole", user.approvalRole ?? 0);
       prefs.setInt("EditApproval", user.editApproval ?? 0);
 
-      debugPrint(prefs.getString("SO"));
       return user;
     } catch (e) {
       throw Exception("Failed to process login response: $e");
@@ -222,9 +220,6 @@ class User {
       prefs.setInt("userid", user.id!);
       prefs.setString("bu", user.bu ?? '');
       prefs.setString("so", user.so.toString());
-
-      debugPrint(response.body);
-      debugPrint(user.bu);
 
       return user;
     } catch (e) {

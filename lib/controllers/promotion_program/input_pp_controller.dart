@@ -336,7 +336,6 @@ class InputPageController extends GetxController {
       },
     );
 
-    debugPrint(response.body);
     var listData = jsonDecode(response.body);
     supplyItemPageDropdownState?.loadingState = 2;
     supplyItemPageDropdownState?.choiceList = listData
@@ -556,7 +555,7 @@ class InputPageController extends GetxController {
   void changeProduct(int index, IdAndValue<String> selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
         .supplyItem?.selectedChoice = selectedChoice;
-    debugPrint(selectedChoice.toString());
+
     _loadUnit(index);
 
     _updateState();

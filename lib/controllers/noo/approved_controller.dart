@@ -61,9 +61,7 @@ class ApprovedController extends GetxController {
 
     final response = await http
         .get(Uri.parse(urlGetApproved), headers: {'authorization': basicAuth});
-    debugPrint(userId);
-    debugPrint(urlGetApproved);
-    debugPrint(response.body);
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
       approvals.value =
@@ -76,7 +74,7 @@ class ApprovedController extends GetxController {
     var urlGetApprovalDetail = "${baseURLDevelopment}NOOCustTables/$id";
     final response = await http.get(Uri.parse(urlGetApprovalDetail),
         headers: <String, String>{'authorization': basicAuth});
-    debugPrint(response.body);
+    (response.body);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       currentApproval.value = ApprovalModel.fromJson(data);

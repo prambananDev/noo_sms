@@ -54,13 +54,11 @@ class ApprovedPPState extends State<ApprovedPP> {
   }
 
   Future<void> _loadHistory() async {
-    try {
-      final value = await Promotion.getListPromotionApproved();
-      setState(() {
-        _listHistoryReal = value;
-        _listHistory = value;
-      });
-    } catch (e) {}
+    final value = await Promotion.getListPromotionApproved();
+    setState(() {
+      _listHistoryReal = value;
+      _listHistory = value;
+    });
   }
 
   void _filterData(String query) {

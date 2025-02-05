@@ -162,7 +162,6 @@ class TransactionSampleController extends GetxController
 
     var response = await Dio().get(urlGetPurpose);
     var listData = response.data;
-    debugPrint(listData.toString());
 
     List<IdAndValue<String>> mappedList =
         (listData as List).map<IdAndValue<String>>((element) {
@@ -177,8 +176,6 @@ class TransactionSampleController extends GetxController
       selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
       loadingState: 2,
     );
-
-    debugPrint(purposeList.value.selectedChoice?.id.toString());
 
     update();
   }
@@ -202,28 +199,26 @@ class TransactionSampleController extends GetxController
 
     final url = "http://sms.prb.co.id/Unit/Index/$selectedProductId";
 
-    try {
-      final response = await http.get(Uri.parse(url));
+    final response = await http.get(Uri.parse(url));
 
-      if (response.statusCode == 200) {
-        final listData = jsonDecode(response.body) as List;
-        final mappedList = listData.map<String>((element) {
-          return element["Text"].toString();
-        }).toList();
+    if (response.statusCode == 200) {
+      final listData = jsonDecode(response.body) as List;
+      final mappedList = listData.map<String>((element) {
+        return element["Text"].toString();
+      }).toList();
 
-        // Update the state immediately
-        promotionProgramInputStateRx.value.promotionProgramInputState[index]
-            .unitPageDropdownState = InputPageDropdownState<String>(
-          choiceList: mappedList,
-          loadingState: 2,
-          selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-        );
+      // Update the state immediately
+      promotionProgramInputStateRx.value.promotionProgramInputState[index]
+          .unitPageDropdownState = InputPageDropdownState<String>(
+        choiceList: mappedList,
+        loadingState: 2,
+        selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+      );
 
-        // Force refresh
-        promotionProgramInputStateRx.refresh();
-        update();
-      }
-    } catch (e) {}
+      // Force refresh
+      promotionProgramInputStateRx.refresh();
+      update();
+    }
   }
 
   void changeUnit(int index, String? selectedChoice) {
@@ -272,7 +267,7 @@ class TransactionSampleController extends GetxController
     var urlGetPrincipal = "http://sms.prb.co.id/sample/SamplePrincipals";
     final response = await http.get(Uri.parse(urlGetPrincipal));
     var listData = jsonDecode(response.body);
-    debugPrint(listData.toString());
+
     List<IdAndValue<String>> mappedList =
         listData.map<IdAndValue<String>>((element) {
       return IdAndValue<String>(
@@ -304,7 +299,7 @@ class TransactionSampleController extends GetxController
     var urlGetPrincipal = "http://sms.prb.co.id/sample/SampleDistChannel";
     final response = await http.get(Uri.parse(urlGetPrincipal));
     var listData = jsonDecode(response.body);
-    debugPrint(listData.toString());
+
     List<IdAndValue<String>> mappedList =
         listData.map<IdAndValue<String>>((element) {
       return IdAndValue<String>(
@@ -656,7 +651,6 @@ class TransactionSampleController extends GetxController
         DashboardOrderSampleState.tabController.animateTo(1);
       });
     } else {
-      debugPrint(isiBody);
       Get.dialog(
         SimpleDialog(
           title: const Text("Error"),

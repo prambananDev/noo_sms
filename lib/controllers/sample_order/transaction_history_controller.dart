@@ -98,8 +98,6 @@ class TransactionHistorySampleController extends GetxController {
     try {
       final response = await http.get(Uri.parse(urls));
       if (response.statusCode == 200) {
-        debugPrint(idEmp.toString());
-        debugPrint(response.body);
         final jsonResponse = json.decode(response.body) as List;
         transactionHistory.value = jsonResponse
             .map((data) => TransactionHistorySample.fromJson(data))
@@ -115,7 +113,7 @@ class TransactionHistorySampleController extends GetxController {
 
   getTransactionHistoryDetail(String idTransaction) async {
     String url = "$apiCons2/api/SampleTransaction/detail?trx=$idTransaction";
-    debugPrint(url);
+
     final response = await http.get(Uri.parse(url));
     final listData = jsonDecode(response.body);
     listDetail.value = listData['Product'];
@@ -207,7 +205,7 @@ class TransactionHistorySampleController extends GetxController {
     var urlGetDept = "$apiCons2/api/SampleFeedbackReasons";
     final response = await http.get(Uri.parse(urlGetDept));
     var listData = jsonDecode(response.body);
-    debugPrint(listData.toString());
+
     List<IdAndValue<String>> mappedList =
         listData.map<IdAndValue<String>>((element) {
       return IdAndValue<String>(

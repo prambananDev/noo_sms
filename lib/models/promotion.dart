@@ -186,7 +186,7 @@ class Promotion {
       Uri.parse(url),
       headers: {'Authorization': token, 'Content-Type': 'application/json'},
     );
-    debugPrint(response.body);
+
     if (response.statusCode == 200) {
       List jsonResponse = jsonDecode(response.body);
       return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
@@ -205,7 +205,7 @@ class Promotion {
       Uri.parse(url),
       headers: {'Authorization': token, 'Content-Type': 'application/json'},
     );
-    debugPrint(response.body);
+
     if (response.statusCode == 200) {
       List jsonResponse = jsonDecode(response.body);
       return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
@@ -254,10 +254,7 @@ class Promotion {
       Uri.parse(url),
       headers: {'Authorization': token},
     );
-    debugPrint(token);
-    debugPrint(nomorPP);
 
-    debugPrint(response.body);
     if (response.statusCode == 200) {
       List jsonResponse = jsonDecode(response.body);
       return jsonResponse.map((e) => Promotion.fromJson(e)).toList();
@@ -313,7 +310,7 @@ class Promotion {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String username = prefs.getString('username')!;
     String token = prefs.getString('token')!;
-    debugPrint("tzt$idProduct$idCustomer$token");
+
     String url =
         "$apiCons/api/SalesOrder?idProduct=$idProduct&idCustomer=$idCustomer&username=$username";
 

@@ -141,43 +141,38 @@ class ApprovalController extends GetxController {
   }
 
   Future<void> fetchApprovalDetail(int id) async {
-    try {
-      isLoading.value = true;
-      initializeApprovalControllers(id);
+    isLoading.value = true;
+    initializeApprovalControllers(id);
 
-      final response =
-          await makeApiCall('${baseURLDevelopment}NOOCustTables/$id');
+    final response =
+        await makeApiCall('${baseURLDevelopment}NOOCustTables/$id');
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        currentApproval.value = ApprovalModel.fromJson(data);
-        companyAddress.value = Address.fromJson(data['CompanyAddresses']);
-        deliveryAddress.value = Address.fromJson(data['DeliveryAddresses']);
-        taxAddress.value = Address.fromJson(data['TaxAddresses']);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      currentApproval.value = ApprovalModel.fromJson(data);
+      companyAddress.value = Address.fromJson(data['CompanyAddresses']);
+      deliveryAddress.value = Address.fromJson(data['DeliveryAddresses']);
+      taxAddress.value = Address.fromJson(data['TaxAddresses']);
 
-        // Load all required data
-        await Future.wait([
-          fetchCreditLimitRange(currentApproval.value.segment ?? ''),
-          fetchPaymentTerms(currentApproval.value.segment ?? ''),
-          fetchApprovalStatuses(id),
-        ]);
+      // Load all required data
+      await Future.wait([
+        fetchCreditLimitRange(currentApproval.value.segment ?? ''),
+        fetchPaymentTerms(currentApproval.value.segment ?? ''),
+        fetchApprovalStatuses(id),
+      ]);
 
-        // Set initial values after data is loaded
-        getCreditLimitController(id).text =
-            currentApproval.value.creditLimit?.toString() ?? '';
+      // Set initial values after data is loaded
+      getCreditLimitController(id).text =
+          currentApproval.value.creditLimit?.toString() ?? '';
 
-        final currentPaymentTerm = currentApproval.value.paymentTerm;
-        if (currentPaymentTerm != null && currentPaymentTerm.isNotEmpty) {
-          setSelectedPaymentTerm(id, currentPaymentTerm);
-        } else if (paymentTerms.isNotEmpty) {
-          setSelectedPaymentTerm(id, paymentTerms.first);
-        }
-
-        update(['approval-$id']);
+      final currentPaymentTerm = currentApproval.value.paymentTerm;
+      if (currentPaymentTerm != null && currentPaymentTerm.isNotEmpty) {
+        setSelectedPaymentTerm(id, currentPaymentTerm);
+      } else if (paymentTerms.isNotEmpty) {
+        setSelectedPaymentTerm(id, paymentTerms.first);
       }
-    } catch (e) {
-    } finally {
-      isLoading.value = false;
+
+      update(['approval-$id']);
     }
   }
 
@@ -403,17 +398,15 @@ class ApprovalController extends GetxController {
   }
 
   Future<void> fetchPaymentTerms(String segment) async {
-    try {
-      var url = "${baseURLDevelopment}PaymentTerms/BySegment/$segment";
-      final response = await makeApiCall(url);
+    var url = "${baseURLDevelopment}PaymentTerms/BySegment/$segment";
+    final response = await makeApiCall(url);
 
-      if (response.statusCode == 200) {
-        List<dynamic> jsonResponse = json.decode(response.body);
-        paymentTerms.value =
-            jsonResponse.map((item) => item['PaymTermId'].toString()).toList();
-        update(['payment-terms']);
-      }
-    } catch (e) {}
+    if (response.statusCode == 200) {
+      List<dynamic> jsonResponse = json.decode(response.body);
+      paymentTerms.value =
+          jsonResponse.map((item) => item['PaymTermId'].toString()).toList();
+      update(['payment-terms']);
+    }
   }
 
   void _disposeApprovalControllers(int id) {

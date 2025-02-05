@@ -89,8 +89,6 @@ class TransactionPendingController extends GetxController {
       "lines": lines,
     };
 
-    debugPrint("Request Body: ${json.encode(requestBody)}");
-
     try {
       final response = await http.post(
         url,

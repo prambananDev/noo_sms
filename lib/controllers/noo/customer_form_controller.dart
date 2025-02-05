@@ -696,7 +696,7 @@ class CustomerFormController extends GetxController
   Future<void> fetchSalesOffices() async {
     final url = Uri.parse("${baseURLDevelopment}ViewSO?SO=$so");
     final response = await http.get(url, headers: {'authorization': basicAuth});
-    debugPrint(response.body);
+
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
       salesOffices.value =

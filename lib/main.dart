@@ -71,28 +71,26 @@ class MainAppState extends State {
   }
 
   Future getOneSignal() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      OneSignal.initialize("ffad8398-fdf5-4aef-a16b-a33696f48630");
+    OneSignal.initialize("ffad8398-fdf5-4aef-a16b-a33696f48630");
 
-      await OneSignal.Notifications.requestPermission(true);
+    await OneSignal.Notifications.requestPermission(true);
 
-      final pushSubscription = OneSignal.User.pushSubscription;
-      if (pushSubscription.id != null) {
-        onesignalUserID = pushSubscription.id;
-        debugPrint(onesignalUserID);
-        await prefs.setString("idDevice", onesignalUserID!);
-      }
+    final pushSubscription = OneSignal.User.pushSubscription;
+    if (pushSubscription.id != null) {
+      onesignalUserID = pushSubscription.id;
 
-      OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-        event.notification.display();
-      });
+      await prefs.setString("idDevice", onesignalUserID!);
+    }
 
-      OneSignal.Notifications.addClickListener((event) {});
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      event.notification.display();
+    });
 
-      OneSignal.User.pushSubscription.addObserver((state) {});
-    } catch (e) {}
+    OneSignal.Notifications.addClickListener((event) {});
+
+    OneSignal.User.pushSubscription.addObserver((state) {});
   }
 
   Future registeredAdapter() async {

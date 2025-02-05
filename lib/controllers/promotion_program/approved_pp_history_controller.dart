@@ -32,7 +32,7 @@ class HistoryController {
   Future<void> approveOrReject(int status, List<int> ids) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     dynamic id = prefs.getInt("userid");
-    debugPrint(id);
+
     String url = "$apiCons/api/Approve/$id";
     var body = {'status': status, 'ids': ids};
 
