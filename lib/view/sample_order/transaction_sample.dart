@@ -55,10 +55,6 @@ class _TransactionPageState extends State<TransactionSample> {
         .addListener(_updateProspectValidity);
     inputPagePresenter.custAddressTextEditingControllerRx.value
         .addListener(_updateProspectValidity);
-    inputPagePresenter.purposeDescTextEditingControllerRx.value
-        .addListener(_updateButtonValidity);
-    inputPagePresenter.principalNameTextEditingControllerRx.value
-        .addListener(_updateButtonValidity);
   }
 
   @override
@@ -69,6 +65,16 @@ class _TransactionPageState extends State<TransactionSample> {
     for (var focusNode in qtyFocusNodes) {
       focusNode.dispose();
     }
+    // Only remove prospect-related listeners
+    inputPagePresenter.custNameTextEditingControllerRx.value
+        .removeListener(_updateProspectValidity);
+    inputPagePresenter.custPicTextEditingControllerRx.value
+        .removeListener(_updateProspectValidity);
+    inputPagePresenter.custPhoneTextEditingControllerRx.value
+        .removeListener(_updateProspectValidity);
+    inputPagePresenter.custAddressTextEditingControllerRx.value
+        .removeListener(_updateProspectValidity);
+
     _descriptionFocusNode.dispose();
     _customerPICFocusNode.dispose();
     _customerPhoneFocusNode.dispose();
@@ -87,10 +93,6 @@ class _TransactionPageState extends State<TransactionSample> {
         inputPagePresenter
             .custAddressTextEditingControllerRx.value.text.isNotEmpty;
     inputPagePresenter.isProspectValid.value = isValid;
-  }
-
-  void _updateButtonValidity() {
-    setState(() {});
   }
 
   bool _isAddItemEnabled() {
@@ -236,7 +238,7 @@ class _TransactionPageState extends State<TransactionSample> {
             }).toList(),
             hint: const Text(
               "Select Product",
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             onChanged: (value) {
               inputPagePresenter.changeProduct(index, value);
@@ -686,7 +688,6 @@ class _TransactionPageState extends State<TransactionSample> {
                     onChanged: (bool? value) {
                       setState(() {
                         inputPagePresenter.isClaim.value = value ?? false;
-                        _updateButtonValidity();
                       });
                     },
                   ),
@@ -723,7 +724,6 @@ class _TransactionPageState extends State<TransactionSample> {
                       onChanged: (IdAndValue<String>? newValue) {
                         _closeKeyboard();
                         inputPagePresenter.changePrincipal(newValue);
-                        _updateButtonValidity();
                       },
                     ),
                   ),
@@ -838,11 +838,11 @@ class _TransactionPageState extends State<TransactionSample> {
                             child: const Text(
                               "Submit",
                               style: TextStyle(
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold),
                             ),
-                            onPressed: () async {
+                            onPressed: () {
                               _synchronizeValues();
                               inputPagePresenter.submitPromotionProgram();
                             },

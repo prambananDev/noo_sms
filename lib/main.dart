@@ -92,9 +92,7 @@ class MainAppState extends State {
       OneSignal.Notifications.addClickListener((event) {});
 
       OneSignal.User.pushSubscription.addObserver((state) {});
-    } catch (e) {
-      debugPrint('OneSignal initialization error: $e');
-    }
+    } catch (e) {}
   }
 
   Future registeredAdapter() async {

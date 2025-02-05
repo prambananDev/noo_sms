@@ -56,6 +56,20 @@ class ApprovalDetail {
     required this.unit,
   });
 
+  ApprovalDetail copyWith({
+    String? productId,
+    String? product,
+    int? qty,
+    String? unit,
+  }) {
+    return ApprovalDetail(
+      productId: productId ?? this.productId,
+      product: product ?? this.product,
+      qty: qty ?? this.qty,
+      unit: unit ?? this.unit,
+    );
+  }
+
   factory ApprovalDetail.fromJson(Map<String, dynamic> json) {
     return ApprovalDetail(
       productId: json['ProductId'] as String,

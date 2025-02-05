@@ -45,7 +45,6 @@ class LocationController extends GetxController {
       await getCurrentLocation();
     } catch (e) {
       errorMessage.value = 'Failed to initialize location: $e';
-      debugPrint('Location initialization error: $e');
     } finally {
       isLoading.value = false;
     }
@@ -87,12 +86,10 @@ class LocationController extends GetxController {
         },
         onError: (error) {
           errorMessage.value = 'Location stream error: $error';
-          debugPrint('Location stream error: $error');
         },
       );
     } catch (e) {
       errorMessage.value = 'Error getting location: $e';
-      debugPrint('Location error: $e');
     }
   }
 
@@ -147,9 +144,7 @@ class LocationController extends GetxController {
 
       await prefs.setString("getLongitude", "${position.longitude}");
       await prefs.setString("getLatitude", "${position.latitude}");
-    } catch (e) {
-      debugPrint('Error saving basic location data: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _updateLocationData(
@@ -203,13 +198,11 @@ class LocationController extends GetxController {
       await prefs.setString("getLongitude", "${position.longitude}");
       await prefs.setString("getLatitude", "${position.latitude}");
     } catch (e) {
-      debugPrint('Error updating location data: $e');
       await _saveBasicLocationData(position);
     }
   }
 
   void _handleGeocodingError(Position position, dynamic error) {
-    debugPrint('Geocoding error: $error');
     errorMessage.value = 'Failed to get address details';
     _saveBasicLocationData(position);
   }

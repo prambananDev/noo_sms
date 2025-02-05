@@ -202,7 +202,6 @@ class HistoryLinesPendingController extends GetxController {
         "status": action == "Approve" ? 1 : 2,
         "lines": selectedLines
       };
-      debugPrint('Request Body: ${jsonEncode(requestBody)}');
 
       final response = await put(Uri.parse("$apiCons/api/Approve/$userId"),
           headers: {
@@ -216,7 +215,6 @@ class HistoryLinesPendingController extends GetxController {
             'Server Error: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      debugPrint('Error during ${action.toLowerCase()}: $e');
       Get.snackbar(
         "Error",
         "Failed to ${action.toLowerCase()}: $e",

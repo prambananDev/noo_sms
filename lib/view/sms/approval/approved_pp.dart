@@ -49,7 +49,6 @@ class ApprovedPPState extends State<ApprovedPP> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading user data: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -61,9 +60,7 @@ class ApprovedPPState extends State<ApprovedPP> {
         _listHistoryReal = value;
         _listHistory = value;
       });
-    } catch (e) {
-      debugPrint('Error loading history: $e');
-    }
+    } catch (e) {}
   }
 
   void _filterData(String query) {

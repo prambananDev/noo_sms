@@ -75,7 +75,10 @@ class TransactionPendingController extends GetxController {
     final Uri url = Uri.parse('$apiCons2/api/SampleApproval');
 
     final lines = details
-        .map((detail) => {"item": detail.productId, "qty": detail.qty})
+        .map((detail) => {
+              "item": detail.productId,
+              "qty": int.parse(detail.qty.toString()),
+            })
         .toList();
 
     final requestBody = {
@@ -85,6 +88,8 @@ class TransactionPendingController extends GetxController {
       "message": message,
       "lines": lines,
     };
+
+    debugPrint("Request Body: ${json.encode(requestBody)}");
 
     try {
       final response = await http.post(

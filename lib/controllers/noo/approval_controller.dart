@@ -176,7 +176,6 @@ class ApprovalController extends GetxController {
         update(['approval-$id']);
       }
     } catch (e) {
-      debugPrint('Error in fetchApprovalDetail: $e');
     } finally {
       isLoading.value = false;
     }
@@ -414,9 +413,7 @@ class ApprovalController extends GetxController {
             jsonResponse.map((item) => item['PaymTermId'].toString()).toList();
         update(['payment-terms']);
       }
-    } catch (e) {
-      debugPrint('Error fetching payment terms: $e');
-    }
+    } catch (e) {}
   }
 
   void _disposeApprovalControllers(int id) {

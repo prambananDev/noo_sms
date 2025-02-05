@@ -104,7 +104,6 @@ class LoginController extends GetxController {
 
       navigateToDashboard(user);
     } catch (e) {
-      debugPrint('Login error: $e');
       showLoginError(context, e.toString());
     } finally {
       isLoggingIn.value = false;
@@ -117,9 +116,7 @@ class LoginController extends GetxController {
       rememberMe.value = prefs.getBool('rememberMe') ?? false;
       usernameController.text = prefs.getString('username') ?? '';
       passwordController.text = prefs.getString('password') ?? '';
-    } catch (e) {
-      debugPrint('Error loading remember me status: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> saveRememberMe(
@@ -129,9 +126,7 @@ class LoginController extends GetxController {
       await prefs.setString('username', username);
       await prefs.setString('password', password);
       await prefs.setBool('rememberMe', rememberMe);
-    } catch (e) {
-      debugPrint('Error saving remember me: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> clearRememberMe() async {
@@ -142,9 +137,7 @@ class LoginController extends GetxController {
         await prefs.remove('password');
         await prefs.remove('rememberMe');
       }
-    } catch (e) {
-      debugPrint('Error clearing remember me: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> getIdDevice() async {
@@ -165,9 +158,7 @@ class LoginController extends GetxController {
         String deviceId = pushSubscription.id!;
         await preferences.setString("idDevice", deviceId);
       }
-    } catch (error) {
-      debugPrint('Device ID setup error: $error');
-    }
+    } catch (error) {}
   }
 
   Future<void> setPreference(String username, String flag, String idSales,
@@ -179,9 +170,7 @@ class LoginController extends GetxController {
       await preferences.setString("idSales", idSales);
       await preferences.setString("token", token);
       await preferences.setString("dateLogin", dateLogin);
-    } catch (e) {
-      debugPrint('Error setting preferences: $e');
-    }
+    } catch (e) {}
   }
 
   void navigateToDashboard(User user) {

@@ -92,9 +92,25 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
 
   void showApprovalDialog(int id, List<ApprovalDetail> details) {
     TextEditingController messageController = TextEditingController();
-    List<TextEditingController> qtyControllers = details
-        .map((detail) => TextEditingController(text: detail.qty.toString()))
-        .toList();
+    List<TextEditingController> qtyControllers = [];
+
+    for (var detail in details) {
+      var controller = TextEditingController(text: detail.qty.toString());
+
+      controller.addListener(() {
+        int index = qtyControllers.indexOf(controller);
+        if (index >= 0 && index < details.length) {
+          int newQty = int.tryParse(controller.text) ?? details[index].qty;
+          details[index] = ApprovalDetail(
+            productId: details[index].productId,
+            product: details[index].product,
+            qty: newQty,
+            unit: details[index].unit,
+          );
+        }
+      });
+      qtyControllers.add(controller);
+    }
 
     showDialog(
       context: context,
@@ -275,16 +291,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  for (int i = 0; i < details.length; i++) {
-                                    details[i] = ApprovalDetail(
-                                      productId: details[i].productId,
-                                      product: details[i].product,
-                                      qty: int.tryParse(
-                                              qtyControllers[i].text) ??
-                                          details[i].qty,
-                                      unit: details[i].unit,
-                                    );
-                                  }
                                   presenter.sendApproval(id, true,
                                       messageController.text, details);
                                   Navigator.pop(context);
@@ -310,11 +316,10 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
       int index, bool isIncrement, List<TextEditingController> qtyControllers) {
     int currentQty = int.tryParse(qtyControllers[index].text) ?? 0;
     if (isIncrement) {
-      qtyControllers[index].text = (currentQty + 1).toString();
-    } else {
-      if (currentQty > 1) {
-        qtyControllers[index].text = (currentQty - 1).toString();
-      }
+      currentQty += 1;
+    } else if (currentQty > 1) {
+      currentQty -= 1;
     }
+    qtyControllers[index].text = currentQty.toString();
   }
 }

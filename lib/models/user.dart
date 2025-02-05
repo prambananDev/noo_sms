@@ -129,13 +129,11 @@ class User {
       if (response.statusCode == 200 && response.body.isNotEmpty) {
         return _handleSuccessfulLogin2(response, prefs);
       } else if (response.body.isEmpty) {
-        debugPrint('Login response is empty.');
         return null;
       } else {
         throw Exception('Failed to login: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Login error: $e');
       return null;
     }
   }
@@ -153,7 +151,7 @@ class User {
       prefs.setString("BU", user.bu ?? '');
       prefs.setInt("ApprovalRole", user.approvalRole ?? 0);
       prefs.setInt("EditApproval", user.editApproval ?? 0);
-      debugPrint('User data: ${response.body}');
+
       debugPrint(prefs.getString("SO"));
       return user;
     } catch (e) {
@@ -178,7 +176,6 @@ class User {
         throw Exception("Failed to retrieve Device ID from OneSignal");
       }
     } catch (error) {
-      debugPrint('Get device ID error: $error');
       return null;
     }
   }

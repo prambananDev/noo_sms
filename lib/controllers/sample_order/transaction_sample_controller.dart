@@ -223,9 +223,7 @@ class TransactionSampleController extends GetxController
         promotionProgramInputStateRx.refresh();
         update();
       }
-    } catch (e) {
-      debugPrint('Error loading units: $e');
-    }
+    } catch (e) {}
   }
 
   void changeUnit(int index, String? selectedChoice) {
@@ -475,8 +473,126 @@ class TransactionSampleController extends GetxController
     return true;
   }
 
+  bool validateSubmission() {
+    if (typesList.value.selectedChoice == null) {
+      Get.snackbar('Error', 'Please select Sample Type',
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white);
+      return false;
+    }
+
+    if (purposeList.value.selectedChoice == null) {
+      Get.snackbar('Error', 'Please select Purpose',
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white);
+      return false;
+    }
+
+    if (purposeDescTextEditingControllerRx.value.text.isEmpty) {
+      Get.snackbar('Error', 'Please enter Purpose Description',
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white);
+      return false;
+    }
+
+    if (promotionProgramInputStateRx.value.promotionProgramInputState.isEmpty) {
+      Get.snackbar('Error', 'Please add at least one product',
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white);
+      return false;
+    }
+
+    for (var i = 0;
+        i <
+            promotionProgramInputStateRx
+                .value.promotionProgramInputState.length;
+        i++) {
+      var element =
+          promotionProgramInputStateRx.value.promotionProgramInputState[i];
+
+      if (element.productTransactionPageDropdownState?.selectedChoiceWrapper
+              ?.value ==
+          null) {
+        Get.snackbar('Error', 'Please select product for line ${i + 1}',
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white);
+        return false;
+      }
+
+      if (element.qtyTransaction?.text.isEmpty == true ||
+          element.qtyTransaction?.text == "0") {
+        Get.snackbar('Error', 'Please enter quantity for line ${i + 1}',
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white);
+        return false;
+      }
+
+      if (element.unitPageDropdownState?.selectedChoice == null) {
+        Get.snackbar('Error', 'Please select unit for line ${i + 1}',
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white);
+        return false;
+      }
+    }
+
+    if (typesList.value.selectedChoice?.value == 'Commercial') {
+      if (customerNameInputPageDropdownStateRx.value.selectedChoice == null) {
+        Get.snackbar('Error', 'Please select Customer Name',
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white);
+        return false;
+      }
+
+      if (customerNameInputPageDropdownStateRx.value.selectedChoice?.id ==
+          'prospect') {
+        if (custNameTextEditingControllerRx.value.text.isEmpty ||
+            custPicTextEditingControllerRx.value.text.isEmpty ||
+            custPhoneTextEditingControllerRx.value.text.isEmpty ||
+            custAddressTextEditingControllerRx.value.text.isEmpty) {
+          Get.snackbar('Error', 'Please fill all prospect customer details',
+              backgroundColor: Colors.red.withOpacity(0.8),
+              colorText: Colors.white);
+          return false;
+        }
+
+        if (distributionChannelList.value.selectedChoice == null) {
+          Get.snackbar('Error', 'Please select Distribution Channel',
+              backgroundColor: Colors.red.withOpacity(0.8),
+              colorText: Colors.white);
+          return false;
+        }
+      }
+
+      if (isClaim.value) {
+        if (principalList.value.selectedChoice == null) {
+          Get.snackbar('Error', 'Please select Principal',
+              backgroundColor: Colors.red.withOpacity(0.8),
+              colorText: Colors.white);
+          return false;
+        }
+
+        if (principalList.value.selectedChoice?.id == '0' &&
+            principalNameTextEditingControllerRx.value.text.isEmpty) {
+          Get.snackbar('Error', 'Please enter Principal Name',
+              backgroundColor: Colors.red.withOpacity(0.8),
+              colorText: Colors.white);
+          return false;
+        }
+      }
+    } else {
+      if (deptList.value.selectedChoice == null) {
+        Get.snackbar('Error', 'Please select Department',
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   Future<void> submitPromotionProgram() async {
-    if (!promotionProgramInputValidation()) return;
+    if (!validateSubmission()) return;
 
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? token = preferences.getString("token");

@@ -70,7 +70,6 @@ class StatusController extends GetxController {
               try {
                 return NOOModel.fromJson(item);
               } catch (e) {
-                debugPrint('Error parsing item: $e');
                 return null;
               }
             })
@@ -89,7 +88,6 @@ class StatusController extends GetxController {
         throw Exception('Failed to load data: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Error fetching data: $e');
       hasMoreData.value = false;
       Get.snackbar(
         'Data has been finished loaded',
