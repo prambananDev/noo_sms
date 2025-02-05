@@ -6,7 +6,21 @@ class TransactionHistorySample {
   final String? custReff;
   final String? status;
   final int? docStatus;
+  final String? desc;
+  final String? address;
+  final String? pic;
+  final String? phone;
+  final String? principal;
+  final String? segment;
+  final String? notes;
+  final String? salesoffice;
+  final String? businessUnit;
+  final String? dept;
+  final String? isClaimed;
+  final String? feedback;
   final String? docStatusName;
+  final String? purpose;
+  final String? purposeType;
 
   TransactionHistorySample({
     this.id,
@@ -16,7 +30,21 @@ class TransactionHistorySample {
     this.custReff,
     this.status,
     this.docStatus,
+    this.desc,
+    this.address,
+    this.pic,
+    this.phone,
+    this.principal,
+    this.segment,
+    this.notes,
+    this.salesoffice,
+    this.businessUnit,
+    this.dept,
+    this.isClaimed,
+    this.feedback,
     this.docStatusName,
+    this.purpose,
+    this.purposeType,
   });
 
   factory TransactionHistorySample.fromJson(Map<String, dynamic> json) {
@@ -28,7 +56,21 @@ class TransactionHistorySample {
       custReff: json['CustReff'] as String?,
       status: json['Status'] as String?,
       docStatus: json['DocStatus'] as int?,
+      desc: json['Desc'] as String?,
+      address: json['Address'] as String?,
+      pic: json['PIC'] as String?,
+      phone: json['Phone'] as String?,
+      principal: json['Principal'] as String?,
+      segment: json['Segment'] as String?,
+      notes: json['Notes'] as String?,
+      salesoffice: json['salesoffice'] as String?,
+      businessUnit: json['BusinessUnit'] as String?,
+      dept: json['Dept'] as String?,
+      isClaimed: json['isClaimed'] as String?,
+      feedback: json['Feedback'] as String?,
       docStatusName: json['DocStatusName'] as String?,
+      purpose: json['Purpose'] as String?,
+      purposeType: json['PurposeType'] as String?,
     );
   }
 }

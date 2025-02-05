@@ -353,9 +353,7 @@ class TransactionController extends GetxController {
 
     List<PromotionProgramInputState>? promotionProgramInputState =
         promotionProgramInputStateRx.value.promotionProgramInputState.toList();
-    List<String?>? dataTotal = promotionProgramInputState
-        .map((e) => e.totalTransaction?.text)
-        .toList();
+    promotionProgramInputState.map((e) => e.totalTransaction?.text).toList();
 
     var url = 'http://sms-api.prb.co.id/api/transaction?idUser=$userId';
     final response = await post(

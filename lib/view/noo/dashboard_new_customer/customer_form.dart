@@ -10,15 +10,18 @@ import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/controllers/noo/draft_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
 import 'package:noo_sms/view/noo/draft/draft_page.dart';
+import 'package:signature/signature.dart';
 
 class CustomerForm extends StatefulWidget {
-  final StatusModel? editData;
+  final NOOModel? editData;
   final bool isFromDraft;
+  final CustomerFormController controller;
 
   const CustomerForm({
     Key? key,
     this.editData,
     this.isFromDraft = false,
+    required this.controller,
   }) : super(key: key);
 
   @override
@@ -27,6 +30,8 @@ class CustomerForm extends StatefulWidget {
 
 class CustomerFormState extends State<CustomerForm> {
   late CustomerFormController controller;
+  bool _showButtons = false;
+
   bool _isFront = true;
 
   @override
@@ -34,7 +39,7 @@ class CustomerFormState extends State<CustomerForm> {
     super.initState();
     controller = Get.find<CustomerFormController>();
     controller = Get.put(CustomerFormController());
-    controller.loadLongLatFromSharedPrefs();
+    controller.initializeData();
     controller.requestPermissions();
   }
 
@@ -89,17 +94,33 @@ class CustomerFormState extends State<CustomerForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
-                  child: Text(
-                    widget.isFromDraft
-                        ? 'Edit Draft'
-                        : controller.isEditMode.value
-                            ? 'Edit Customer'
-                            : 'New Customer',
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (widget.isFromDraft || controller.isEditMode.value)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Colors.black,
+                          size: 35,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
+                      child: Text(
+                        widget.isFromDraft
+                            ? 'Edit Draft'
+                            : controller.isEditMode.value
+                                ? 'Edit Customer'
+                                : 'New Customer',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 CustomTextField(
                   label: "Customer Name",
@@ -195,6 +216,8 @@ class CustomerFormState extends State<CustomerForm> {
                   onChanged: (value) {
                     setState(() {
                       controller.selectedSegment = value;
+                      controller.selectedSubSegment = null;
+                      controller.fetchSubSegment();
                       controller.update();
                     });
                   },
@@ -301,13 +324,7 @@ class CustomerFormState extends State<CustomerForm> {
                   validationText: "Please enter KTP Address",
                   capitalization: TextCapitalization.words,
                   inputType: TextInputType.text,
-                ),
-                CustomTextField(
-                  label: "NPWP",
-                  controller: controller.npwpController,
-                  validationText: "Please enter NPWP",
-                  inputType: TextInputType.number,
-                  maxLength: 16,
+                  maxLength: 100,
                 ),
                 CustomTextField(
                   label: "FAX",
@@ -349,9 +366,9 @@ class CustomerFormState extends State<CustomerForm> {
                     child: Text(
                       "Company Address",
                       style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -412,11 +429,18 @@ class CustomerFormState extends State<CustomerForm> {
                     child: Text(
                       "TAX Address",
                       style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
+                ),
+                CustomTextField(
+                  label: "NPWP",
+                  controller: controller.npwpController,
+                  validationText: "Please enter NPWP",
+                  inputType: TextInputType.number,
+                  maxLength: 16,
                 ),
                 CustomTextField(
                   label: "TAX Name",
@@ -427,6 +451,27 @@ class CustomerFormState extends State<CustomerForm> {
                   label: "Tax Address",
                   controller: controller.taxStreetController,
                   inputType: TextInputType.text,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Obx(() => Checkbox(
+                            value: controller.useKtpAddressForTax.value,
+                            onChanged: (bool? value) {
+                              controller.useKtpAddressForTax.value =
+                                  value ?? false;
+                              if (value == true) {
+                                controller.taxNameController.text =
+                                    controller.customerNameController.text;
+                                controller.taxStreetController.text =
+                                    controller.ktpAddressController.text;
+                              }
+                            },
+                          )),
+                      const Text("Use KTP Address for Tax Address"),
+                    ],
+                  ),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(
@@ -445,9 +490,9 @@ class CustomerFormState extends State<CustomerForm> {
                     child: Text(
                       "Delivery Address",
                       style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -508,9 +553,9 @@ class CustomerFormState extends State<CustomerForm> {
                     child: Text(
                       "Delivery Address 2",
                       style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -572,16 +617,13 @@ class CustomerFormState extends State<CustomerForm> {
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        width: 200,
-                        height: 100,
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        height: MediaQuery.of(context).size.height * 0.15,
                         child: _isFront ? _buildFront() : _buildBack(),
                       ),
                     ),
                   ],
                 ),
-                // Add this after the basic info section and before the Company Address section
-                // Inside the SingleChildScrollView's Column children:
-
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Divider(
@@ -597,13 +639,13 @@ class CustomerFormState extends State<CustomerForm> {
                     child: Text(
                       "Documents",
                       style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-                Container(
+                SizedBox(
                   height: 120,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
@@ -668,7 +710,7 @@ class CustomerFormState extends State<CustomerForm> {
                           )),
                       const SizedBox(width: 5),
                       Obx(() => ImageUploadCard(
-                            title: 'Competitor TOP',
+                            title: 'Competitor TOP(Optional)',
                             image: controller.imageCompetitorTop,
                             onCameraPress:
                                 controller.getImageCompetitorTopFromCamera,
@@ -680,13 +722,93 @@ class CustomerFormState extends State<CustomerForm> {
                     ],
                   ),
                 ),
-
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Divider(
+                      color: Colors.black,
+                      height: 0,
+                      thickness: 1,
+                      indent: 1,
+                      endIndent: 1),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Center(
+                    child: Text(
+                      "Signature Form",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const Center(
+                  child: Text(
+                    'Sales',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Signature(
+                  controller: controller.signatureSalesController,
+                  height: 150,
+                  width: double.infinity,
+                  backgroundColor: Colors.grey[200]!,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorAccent,
+                      ),
+                      onPressed: controller.signatureSalesController.clear,
+                      child: Text(
+                        'Clear',
+                        style: TextStyle(color: colorNetral),
+                      ),
+                    ),
+                  ),
+                ),
+                const Center(
+                  child: Text(
+                    'Customer',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Signature(
+                  controller: controller.signatureCustomerController,
+                  height: 150,
+                  width: double.infinity,
+                  backgroundColor: Colors.grey[200]!,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorAccent,
+                      ),
+                      onPressed: controller.signatureCustomerController.clear,
+                      child: Text(
+                        'Clear',
+                        style: TextStyle(color: colorNetral),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton(
+                      OutlinedButton(
                         onPressed: () async {
                           if (controller.isEditMode.value) {
                             final success = await controller.updateCustomer();
@@ -706,12 +828,60 @@ class CustomerFormState extends State<CustomerForm> {
                           controller.isEditMode.value ? 'Update' : 'Preview',
                           style: TextStyle(
                             color: colorAccent,
-                            fontSize: 12,
+                            fontSize: 16,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8), // Space between buttons
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorAccent,
+                        ),
+                        onPressed: () async {
+                          controller.handleSubmit();
+                        },
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(
+                            color: colorNetral,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        floatingActionButton: Stack(
+          children: [
+            Positioned(
+              bottom: 60,
+              right: 10,
+              child: FloatingActionButton(
+                backgroundColor: colorAccent,
+                onPressed: () {
+                  setState(() {
+                    _showButtons = !_showButtons;
+                  });
+                },
+                child: Icon(
+                  _showButtons ? Icons.close : Icons.menu,
+                  color: colorNetral,
+                ),
+              ),
+            ),
+            if (_showButtons)
+              Positioned(
+                bottom: 120,
+                right: 20,
+                child: AnimatedOpacity(
+                  opacity: _showButtons ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Column(
+                    children: [
+                      OutlinedButton(
                         onPressed: () async {
                           final draftController =
                               Get.isRegistered<DraftController>()
@@ -726,13 +896,12 @@ class CustomerFormState extends State<CustomerForm> {
                           'Save Draft',
                           style: TextStyle(
                             color: colorAccent,
-                            fontSize: 12,
+                            fontSize: 16,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
                       if (!widget.isFromDraft)
-                        ElevatedButton(
+                        OutlinedButton(
                           onPressed: () async {
                             Get.isRegistered<DraftController>()
                                 ? Get.find<DraftController>()
@@ -743,29 +912,15 @@ class CustomerFormState extends State<CustomerForm> {
                             'Draft List',
                             style: TextStyle(
                               color: colorAccent,
-                              fontSize: 12,
+                              fontSize: 16,
                             ),
                           ),
                         ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () async {
-                          controller.handleSubmit();
-                        },
-                        child: Text(
-                          'Submit',
-                          style: TextStyle(
-                            color: colorAccent,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+          ],
         ),
       );
     });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_pending_controller.dart';
 import 'package:noo_sms/models/approval.dart';
 
@@ -36,11 +37,22 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
         itemCount: presenter.approvalList.length,
         itemBuilder: (context, index) {
           final approval = presenter.approvalList[index];
-          return Card(
-            elevation: 4,
-            margin: const EdgeInsets.all(8),
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
             child: ListTile(
-              leading: const Icon(Icons.description, color: Colors.blue),
+              leading: Icon(Icons.description, color: colorAccent),
               title: Text(
                 approval.salesOrder,
                 style:
@@ -49,11 +61,23 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Customer : ${approval.customer}'),
-                  Text('Date : ${approval.getFormattedDate()}'),
-                  Text('Status : ${approval.status}'),
+                  Text(
+                    'Customer : ${approval.customer}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    'Date : ${approval.getFormattedDate()}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Text('Status : ${approval.status}',
+                      style: const TextStyle(fontSize: 16)),
                   if (approval.desc != null)
-                    Text('Description : ${approval.desc}'),
+                    Text('Description : ${approval.desc}',
+                        style: const TextStyle(fontSize: 16)),
+                  Text('Purpose : ${approval.purpose}',
+                      style: const TextStyle(fontSize: 16)),
+                  Text('Purpose Type : ${approval.purposeType}',
+                      style: const TextStyle(fontSize: 16)),
                 ],
               ),
               isThreeLine: true,
@@ -243,7 +267,7 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor: colorAccent,
                                   minimumSize: const Size(0, 45),
                                   foregroundColor: const Color(0xFFFFFFFF),
                                   shape: RoundedRectangleBorder(

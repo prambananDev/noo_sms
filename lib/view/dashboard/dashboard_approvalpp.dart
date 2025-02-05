@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_approvalpp_controller.dart';
-import 'package:noo_sms/view/promotion_program/approval/approval_pending_pp.dart';
-import 'package:noo_sms/view/promotion_program/approval/approved_pp.dart';
+import 'package:noo_sms/view/sms/approval/approval_pending_pp.dart';
+import 'package:noo_sms/view/sms/approval/approved_pp.dart';
 
 class DashboardApprovalPP extends StatefulWidget {
   final int initialIndex;
@@ -45,6 +45,10 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
             mainAxisSize: MainAxisSize.min,
             children: [
               TabBar(
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
                 unselectedLabelColor: Colors.black,
                 labelColor: colorAccent,
                 controller: tabController.controller,

@@ -9,7 +9,7 @@ class LinesProvider with ChangeNotifier {
   String result = '';
   List<Map<String, dynamic>> listResult = [];
 
-  LinesProvider(); // Constructor
+  LinesProvider();
 
   Future<void> setBundleLines(
       int id, double disc, DateTime fromDate, DateTime toDate) async {

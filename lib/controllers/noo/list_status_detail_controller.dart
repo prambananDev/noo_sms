@@ -2,23 +2,25 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
+import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
 
 class StatusDetailController extends GetxController {
   final isLoading = true.obs;
   final errorMessage = RxString('');
-  final statusData = Rxn<StatusModel>();
+  final statusData = Rxn<NOOModel>();
   final approvalStatusList = RxList<Map<String, dynamic>>();
-
+  final Rx<ApprovalModel> listDetail = ApprovalModel().obs;
   final statusApproval = RxString('');
   final String statusRejected = "Rejected";
   String? statusDataApprovalDetail;
+  final customerFormController =
+      Get.put(CustomerFormController(), permanent: true);
 
   Future<void> initializeData(int id) async {
     try {
@@ -34,19 +36,17 @@ class StatusDetailController extends GetxController {
     }
   }
 
-  // Fetch status detail
   Future<void> fetchStatusDetail(int id) async {
     try {
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
-        Uri.parse('$baseURLDevelopment/NOOCustTables/$id'),
+        Uri.parse('${baseURLDevelopment}NOOCustTables/$id'),
         headers: {'authorization': auth},
       );
-      debugPrint(id.toString());
-      debugPrint(response.body);
 
       if (response.statusCode == 200) {
-        final data = StatusModel.fromJson(jsonDecode(response.body));
+        listDetail.value = ApprovalModel.fromJson(jsonDecode(response.body));
+        final data = NOOModel.fromJson(jsonDecode(response.body));
         statusData.value = data;
 
         statusApproval.value = data.status;
@@ -64,7 +64,7 @@ class StatusDetailController extends GetxController {
     try {
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
-        Uri.parse('$baseURLDevelopment/Approval/$id'),
+        Uri.parse('${baseURLDevelopment}Approval/$id'),
         headers: {'authorization': auth},
       );
 
@@ -86,7 +86,7 @@ class StatusDetailController extends GetxController {
     try {
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
-        Uri.parse('$baseURLDevelopment/Files/GetFiles?fileName=$fileName'),
+        Uri.parse('${baseURLDevelopment}Files/GetFiles?fileName=$fileName'),
         headers: {'authorization': auth},
       );
 
@@ -106,7 +106,7 @@ class StatusDetailController extends GetxController {
       isLoading(true);
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.put(
-        Uri.parse('$baseURLDevelopment/NOOCustTables/$id'),
+        Uri.parse('${baseURLDevelopment}NOOCustTables/$id'),
         headers: {
           'authorization': auth,
           'Content-Type': 'application/json',
@@ -127,14 +127,13 @@ class StatusDetailController extends GetxController {
     }
   }
 
-  // Upload signature
   Future<String?> uploadSignature(
       String signatureBase64, String fileName) async {
     try {
       isLoading(true);
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.post(
-        Uri.parse('$baseURLDevelopment/Files/UploadFile'),
+        Uri.parse('${baseURLDevelopment}Files/UploadFile'),
         headers: {
           'authorization': auth,
           'Content-Type': 'application/json',
@@ -161,7 +160,10 @@ class StatusDetailController extends GetxController {
   void navigateToEdsit() {
     if (statusData.value != null) {
       Get.to(
-        () => CustomerForm(editData: statusData.value),
+        () => CustomerForm(
+          editData: statusData.value,
+          controller: customerFormController,
+        ),
       )?.then((value) {
         if (value == true) {
           initializeData(statusData.value!.id);
@@ -179,7 +181,10 @@ class StatusDetailController extends GetxController {
       controller.isEditMode.value = true;
 
       Get.to(
-        () => CustomerForm(editData: statusData.value),
+        () => CustomerForm(
+          editData: statusData.value,
+          controller: customerFormController,
+        ),
       )?.then((value) {
         if (value == true) {
           initializeData(statusData.value!.id);

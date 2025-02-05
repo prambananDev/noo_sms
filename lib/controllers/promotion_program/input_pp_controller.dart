@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:money_formatter/money_formatter.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
@@ -150,6 +151,7 @@ class InputPageController extends GetxController {
     var urlPrincipal = "$apiCons/api/Principals";
     final response = await get(Uri.parse(urlPrincipal));
     final listData = jsonDecode(response.body);
+
     listData.removeWhere((item) => item == null);
     listDataPrincipal.value = listData;
     update();
@@ -250,31 +252,6 @@ class InputPageController extends GetxController {
     _updateState();
   }
 
-  void _loadUnit(int index) async {
-    PromotionProgramInputState? promotionProgramInputState =
-        promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    InputPageDropdownState<IdAndValue<String>>? selectProductPageDropdownState =
-        promotionProgramInputState.selectProductPageDropdownState;
-    InputPageDropdownState<String>? unitPageDropdownState =
-        promotionProgramInputState.unitPageDropdownState;
-    unitPageDropdownState?.loadingState = 1;
-    _updateState();
-    var urlGetUnit =
-        "$apiCons2/api/Unit?item=${selectProductPageDropdownState!.selectedChoice!.id}";
-    final response = await get(Uri.parse(urlGetUnit));
-    var listData = jsonDecode(response.body);
-    debugPrint(response.body);
-    unitPageDropdownState?.loadingState = 2;
-    unitPageDropdownState?.choiceList = listData.map<String>((element) {
-      return element.toString();
-    }).toList();
-    promotionProgramInputStateRx.value.promotionProgramInputState[index]
-            .unitPageDropdownState?.selectedChoice =
-        promotionProgramInputStateRx.value.promotionProgramInputState[index]
-            .unitPageDropdownState!.choiceList?[0];
-    _updateState();
-  }
-
   void _loadProduct(int index) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
@@ -358,6 +335,8 @@ class InputPageController extends GetxController {
         'Content-Type': 'application/json',
       },
     );
+
+    debugPrint(response.body);
     var listData = jsonDecode(response.body);
     supplyItemPageDropdownState?.loadingState = 2;
     supplyItemPageDropdownState?.choiceList = listData
@@ -392,25 +371,49 @@ class InputPageController extends GetxController {
     }
   }
 
+  void _loadUnit(int index) async {
+    await _loadDropdownData(
+      index: index,
+      selectProductState: promotionProgramInputStateRx.value
+          .promotionProgramInputState[index].selectProductPageDropdownState,
+      unitState: promotionProgramInputStateRx
+          .value.promotionProgramInputState[index].unitPageDropdownState,
+    );
+  }
+
   void _loadSupplyItemProductUnit(int index) async {
-    PromotionProgramInputState? promotionProgramInputState =
-        promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    InputPageDropdownState<IdAndValue<String>>?
-        supplyItemInputPageDropdownState =
-        promotionProgramInputState.supplyItem;
-    InputPageDropdownState<String>? unitSupplyItemInputPageDropdownState =
-        promotionProgramInputState.unitSupplyItem;
-    unitSupplyItemInputPageDropdownState?.loadingState = 1;
+    await _loadDropdownData(
+      index: index,
+      selectProductState: promotionProgramInputStateRx
+          .value.promotionProgramInputState[index].supplyItem,
+      unitState: promotionProgramInputStateRx
+          .value.promotionProgramInputState[index].unitSupplyItem,
+    );
+  }
+
+  Future<void> _loadDropdownData({
+    required int index,
+    required InputPageDropdownState<IdAndValue<String>>? selectProductState,
+    required InputPageDropdownState<String>? unitState,
+  }) async {
+    if (selectProductState == null || unitState == null) return;
+
+    unitState.loadingState = 1;
     _updateState();
-    var urlGetUnit =
-        "$apiCons2/api/Unit?item=${supplyItemInputPageDropdownState?.selectedChoice?.id}";
+
+    final urlGetUnit =
+        "$apiCons2/api/Unit?item=${selectProductState.selectedChoice?.id}";
     final response = await get(Uri.parse(urlGetUnit));
-    var listData = jsonDecode(response.body);
-    unitSupplyItemInputPageDropdownState?.loadingState = 2;
-    unitSupplyItemInputPageDropdownState?.choiceList =
-        listData.map<String>((element) {
-      return element.toString();
-    }).toList();
+    final listData = jsonDecode(response.body);
+
+    unitState.loadingState = 2;
+    unitState.choiceList =
+        listData.map<String>((element) => element.toString()).toList();
+
+    if (unitState.choiceList != null && unitState.choiceList!.isNotEmpty) {
+      unitState.selectedChoice = unitState.choiceList![0];
+    }
+
     _updateState();
   }
 
@@ -486,27 +489,6 @@ class InputPageController extends GetxController {
     _updateState();
   }
 
-  void addItem2() {
-    List<PromotionProgramInputState>? promotionProgramInputState =
-        promotionProgramInputStateRx.value.promotionProgramInputState;
-    promotionProgramInputState.add(
-      PromotionProgramInputState(
-        productTransactionPageDropdownState:
-            WrappedInputPageDropdownState<IdAndValue<String>>(
-          choiceListWrapper:
-              productInputPageDropdownState.choiceListWrapper?.copy(),
-          loadingStateWrapper:
-              productInputPageDropdownState.loadingStateWrapper?.copy(),
-          selectedChoiceWrapper: Wrapper<IdAndValue<String>>(value: null),
-        ),
-        qtyTransaction: TextEditingController(),
-        unitPageDropdownState:
-            InputPageDropdownState<String>(choiceList: [], loadingState: 0),
-      ),
-    );
-    update();
-  }
-
   void changeCustomerGroup(int index, String? selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
         .customerGroupInputPageDropdownState?.selectedChoice = selectedChoice;
@@ -566,29 +548,19 @@ class InputPageController extends GetxController {
         .itemGroupInputPageDropdownState?.selectedChoice = selectedChoice;
 
     _updateState();
-    _loadProduct(index);
+    // _loadProduct(index);
+    _loadSupplyItem(index);
     // _loadProductByOrderSample(index);
   }
 
   void changeProduct(int index, IdAndValue<String> selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
-        .selectProductPageDropdownState?.selectedChoice = selectedChoice;
+        .supplyItem?.selectedChoice = selectedChoice;
     debugPrint(selectedChoice.toString());
     _loadUnit(index);
-    _loadSupplyItem(index);
+
     _updateState();
   }
-
-  // void changeProduct2(int index, IdAndValue<String> selectedChoice) {
-  //   promotionProgramInputStateRx
-  //       .value
-  //       .promotionProgramInputState[index]
-  //       .productTransactionPageDropdownState!
-  //       .selectedChoiceWrapper!
-  //       .value = selectedChoice;
-  //   _updateState();
-  //   _loadUnit(index);
-  // }
 
   void changeWarehouse(int index, IdAndValue<String> selectedChoice) {
     promotionProgramInputStateRx
@@ -755,8 +727,18 @@ class InputPageController extends GetxController {
         : 0;
 
     double countPriceToCustomerValue = salesPrice - (value1 + value2);
-    promotionProgramInputState.priceToCustomer?.text =
-        countPriceToCustomerValue.toString();
+    dynamic totalDiscount = ((salesPrice * percent1 / 100) +
+        (salesPrice * percent2 / 100) +
+        (salesPrice * percent3 / 100) +
+        (salesPrice * percent4 / 100));
+    double countPriceToCustomerPercent = salesPrice - totalDiscount;
+
+    promotionProgramInputState.priceToCustomer?.text = MoneyFormatter(
+            amount: value1 != 0.0
+                ? countPriceToCustomerValue
+                : countPriceToCustomerPercent)
+        .output
+        .withoutFractionDigits;
     update();
   }
 
@@ -791,65 +773,114 @@ class InputPageController extends GetxController {
     return true;
   }
 
-  void submitPromotionProgram() async {
-    try {
-      if (!promotionProgramInputValidation()) {
-        return;
-      }
+  Future<void> submitPromotionProgram(BuildContext context) async {
+    // if (!await _validateSubmission()) return;
 
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      String? username = preferences.getString("username");
-      String? token = preferences.getString("token");
+    onTap.value = true;
+    final credentials = await _getCredentials();
+    if (credentials == null) return;
 
-      if (username == null || token == null || token.isEmpty) {
-        onTap.value = false;
-        Get.snackbar(
-          "Error",
-          "Please login again. Authentication token is missing.",
-          backgroundColor: Colors.red,
-          icon: const Icon(Icons.error),
-        );
-        return;
-      }
-
-      final requestBody = <String, dynamic>{
-        "PPtype": int.parse(
-            promotionTypeInputPageDropdownStateRx.value.selectedChoice!.id),
-        "PPname": programNameTextEditingControllerRx.value.text,
-        "Note": programNoteTextEditingControllerRx.value.text,
-        "FromDateHeader":
-            formatDateForAPI(programFromDateTextEditingControllerRx.value.text),
-        "ToDateHeader":
-            formatDateForAPI(programToDateTextEditingControllerRx.value.text),
-        "Location": preferences.getString("so"),
-        "Vendor": selectedDataPrincipal
-            .map((index) => listDataPrincipal[index])
-            .toList()
-            .toString()
-            .replaceAll(RegExp(r'[\[\]]'), ''),
-        "customerId":
-            custNameHeaderValueDropdownStateRx.value.selectedChoice?.id,
-        "Lines": _prepareLines(),
-      };
-
-      final response = await post(
-        Uri.parse('$apiCons/api/activity?username=$username'),
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': token,
-        },
-        body: jsonEncode(requestBody),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint("Success Response: ${response.body}");
-        await _handleSuccessResponse();
-      } else {
-        await _handleErrorResponse(response);
-      }
-    } catch (e) {
-      _handleGenericError(e);
+    final response = await _submitRequest(credentials);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      await _handleSuccess();
+    } else {
+      _handleError("Submission failed");
     }
+  }
+
+  // Future<bool> _validateSubmission() async {
+  //   if (!promotionProgramInputValidation()) return false;
+
+  //   if (promotionProgramInputStateRx.value.promotionProgramInputState.any(
+  //       (element) =>
+  //           element.selectProductPageDropdownState?.selectedChoice == null ||
+  //           element.qtyFrom?.text.isEmpty == true ||
+  //           element.unitPageDropdownState?.selectedChoice == null)) {
+  //     debugPrint(promotionProgramInputStateRx
+  //         .value.promotionProgramInputState.length
+  //         .toString());
+  //     Get.snackbar(
+  //       "Error",
+  //       "Found empty fields in Lines",
+  //       backgroundColor: Colors.red,
+  //       icon: const Icon(Icons.error),
+  //     );
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+  Future<({String username, String token})?> _getCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final username = prefs.getString("username");
+    final token = prefs.getString("token");
+
+    if (username == null || token == null || token.isEmpty) {
+      _handleError("Authentication token is missing. Please login again.");
+      return null;
+    }
+
+    return (username: username, token: token);
+  }
+
+  Future<http.Response> _submitRequest(
+      ({String username, String token}) credentials) async {
+    final requestBody = await _prepareRequestBody();
+    return await http.post(
+      Uri.parse('$apiCons/api/activity?username=${credentials.username}'),
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': credentials.token,
+      },
+      body: jsonEncode(requestBody),
+    );
+  }
+
+  Future<Map<String, dynamic>> _prepareRequestBody() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    return {
+      "PPtype": int.parse(
+          promotionTypeInputPageDropdownStateRx.value.selectedChoice!.id),
+      "PPname": programNameTextEditingControllerRx.value.text,
+      "Note": programNoteTextEditingControllerRx.value.text,
+      "FromDateHeader":
+          formatDateForAPI(programFromDateTextEditingControllerRx.value.text),
+      "ToDateHeader":
+          formatDateForAPI(programToDateTextEditingControllerRx.value.text),
+      "Location": prefs.getString("so"),
+      "Vendor": _formatVendorList(),
+      "customerId": custNameHeaderValueDropdownStateRx.value.selectedChoice?.id,
+      "Lines": _prepareLines(),
+    };
+  }
+
+  String _formatVendorList() {
+    return selectedDataPrincipal
+        .map((index) => listDataPrincipal[index])
+        .toList()
+        .toString()
+        .replaceAll(RegExp(r'[\[\]]'), '');
+  }
+
+  Future<void> _handleSuccess() async {
+    Get.snackbar(
+      "Success",
+      "Promotion program submitted successfully",
+      backgroundColor: Colors.green,
+      icon: const Icon(Icons.check_circle),
+    );
+    await Future.delayed(const Duration(seconds: 1));
+    DashboardPPState.tabController.animateTo(1);
+  }
+
+  void _handleError(String message) {
+    Get.snackbar(
+      "Error",
+      message,
+      backgroundColor: Colors.red,
+      icon: const Icon(Icons.error),
+    );
   }
 
   String formatDateForAPI(String date) {
@@ -858,47 +889,42 @@ class InputPageController extends GetxController {
   }
 
   List<Map<String, dynamic>> _prepareLines() {
-    return promotionProgramInputStateRx.value.promotionProgramInputState
+    final lines = promotionProgramInputStateRx.value.promotionProgramInputState
         .map<Map<String, dynamic>>((element) {
-          bool isUnitRequired =
-              element.itemGroupInputPageDropdownState?.selectedChoice ==
-                  _itemGroupInputPageDropdownState.choiceList?[0];
-
-          if (element.selectProductPageDropdownState?.selectedChoice == null ||
-              element.qtyFrom!.text.isEmpty ||
-              (isUnitRequired &&
-                  element.unitPageDropdownState?.selectedChoice == null)) {
+          if (element.supplyItem?.selectedChoice == null ||
+              element.qtyFrom?.text.isEmpty == true ||
+              element.unitSupplyItem?.selectedChoice == null) {
             onTap.value = false;
             Get.snackbar(
               "Error",
-              "Found empty required fields in Lines",
+              "Please fill all required fields (Product, Quantity, and Unit)",
               backgroundColor: Colors.red,
               icon: const Icon(Icons.error),
             );
             return {};
           }
 
+          // Prepare the line data
           return {
             "Customer":
                 custNameHeaderValueDropdownStateRx.value.selectedChoice?.id,
-            "ItemId":
-                element.selectProductPageDropdownState?.selectedChoice?.id,
+            "ItemId": element.supplyItem?.selectedChoice?.id,
             "QtyFrom":
                 element.qtyFrom!.text.isEmpty ? 0 : element.qtyFrom?.text,
             "QtyTo": element.qtyTo!.text.isEmpty ? 0 : element.qtyTo?.text,
-            "Unit": element.unitPageDropdownState?.selectedChoice ?? "",
+            "Unit": element.unitSupplyItem?.selectedChoice ?? "",
             "Multiply":
-                element.multiplyInputPageDropdownState?.selectedChoice?.id,
+                element.multiplyInputPageDropdownState?.selectedChoice?.id ??
+                    "0",
             "FromDate": formatDateForAPI(
                 programFromDateTextEditingControllerRx.value.text),
             "ToDate": formatDateForAPI(
                 programToDateTextEditingControllerRx.value.text),
-            "Currency": element.currencyInputPageDropdownState?.selectedChoice,
+            "Currency":
+                element.currencyInputPageDropdownState?.selectedChoice ?? "IDR",
             "type": element
-                    .percentValueInputPageDropdownState!.selectedChoice.isNull
-                ? 0
-                : element
-                    .percentValueInputPageDropdownState?.selectedChoice?.id,
+                    .percentValueInputPageDropdownState?.selectedChoice?.id ??
+                "1",
             "Pct1":
                 element.percent1!.text.isEmpty ? 0.0 : element.percent1?.text,
             "Pct2":
@@ -913,98 +939,25 @@ class InputPageController extends GetxController {
             "Value2": element.value2!.text.isEmpty
                 ? 0.0
                 : element.value2?.text.replaceAll('.', ''),
-            "SupplyItem": element.supplyItem!.selectedChoice.isNull
-                ? ""
-                : element.supplyItem?.selectedChoice?.id,
+            "SupplyItem": element.supplyItem?.selectedChoice?.id ?? "",
             "QtySupply":
                 element.qtyItem!.text.isEmpty ? 0 : element.qtyItem?.text,
-            "UnitSupply": element.unitSupplyItem?.selectedChoice,
-            "SalesPrice":
-                element.salesPrice?.text.replaceAll(RegExp(r"[.,]"), ""),
+            "UnitSupply": element.unitSupplyItem?.selectedChoice ?? "",
+            "SalesPrice": element.salesPrice!.text.isEmpty
+                ? "0"
+                : element.salesPrice?.text.replaceAll(RegExp(r"[.,]"), ""),
             "Warehouse": element.wareHousePageDropdownState
-                        ?.selectedChoiceWrapper?.value ==
-                    null
-                ? "DC01K-B"
-                : element.wareHousePageDropdownState?.selectedChoiceWrapper
-                    ?.value?.id,
-            "PriceTo":
-                element.priceToCustomer?.text.replaceAll(RegExp(r"[.,]"), "")
+                    ?.selectedChoiceWrapper?.value?.id ??
+                "DC01K-B",
+            "PriceTo": element.priceToCustomer!.text.isEmpty
+                ? "0"
+                : element.priceToCustomer?.text.replaceAll(RegExp(r"[.,]"), "")
           };
         })
         .where((line) => line.isNotEmpty)
         .toList();
-  }
 
-  Future<void> _handleSuccessResponse() async {
-    debugPrint("Handling success response...");
-    onTap.value = true;
-
-    final tabController = Get.put(DashboardPPTabController());
-    tabController.initialIndex = 1;
-
-    Get.off(() => const DashboardPP(initialIndex: 1));
-    update();
-  }
-
-  Future<void> _handleErrorResponse(http.Response response) async {
-    onTap.value = false;
-
-    String errorMessage = "An error occurred";
-    if (response.statusCode == 401) {
-      errorMessage = "Authentication failed. Please login again.";
-    } else {
-      try {
-        final errorBody = jsonDecode(response.body);
-        errorMessage = errorBody['message'] ?? errorBody.toString();
-      } catch (e) {
-        errorMessage = response.body;
-      }
-    }
-
-    await Get.dialog(
-      SimpleDialog(
-        title: const Text("Error"),
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    "Status: ${response.statusCode}\n$errorMessage",
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  const Icon(Icons.error, color: Colors.red),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  void _handleTimeout() {
-    onTap.value = false;
-    Get.snackbar(
-      "Error",
-      "Request timed out. Please check your connection and try again.",
-      backgroundColor: Colors.red,
-      icon: const Icon(Icons.error),
-    );
-  }
-
-  void _handleGenericError(dynamic error) {
-    onTap.value = false;
-    Get.snackbar(
-      "Error",
-      "An unexpected error occurred: ${error.toString()}",
-      backgroundColor: Colors.red,
-      icon: const Icon(Icons.error),
-    );
+    return lines;
   }
 
   void submitEditPromotionProgram(
@@ -1052,8 +1005,8 @@ class InputPageController extends GetxController {
           "Multiply":
               element.multiplyInputPageDropdownState?.selectedChoice?.id,
           "Currency": element.currencyInputPageDropdownState?.selectedChoice,
-          "type": element
-                  .percentValueInputPageDropdownState!.selectedChoice.isNull
+          "type": element.percentValueInputPageDropdownState!.selectedChoice ==
+                  null
               ? 0
               : element.percentValueInputPageDropdownState?.selectedChoice?.id,
           "Pct1": element.percent1!.text.isEmpty ? 0.0 : element.percent1?.text,
@@ -1067,7 +1020,7 @@ class InputPageController extends GetxController {
               ? 0.0
               : element.value2?.text.replaceAll('.', ''),
           // "SupplyItemOnlyOnce":"",
-          "SupplyItem": element.supplyItem!.selectedChoice.isNull
+          "SupplyItem": element.supplyItem!.selectedChoice == null
               ? ""
               : element.supplyItem?.selectedChoice?.id,
           "QtySupply":

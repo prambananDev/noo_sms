@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/controllers/provider/login_provider.dart';
 import 'package:noo_sms/models/employee.dart';
 import 'package:noo_sms/models/user.dart';
-
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
@@ -20,17 +16,25 @@ class LoginController extends GetxController {
   final FocusNode passwordFocus = FocusNode();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final RxBool obscureText = true.obs;
-  final RxBool rememberMe = false.obs; // Make rememberMe reactive
-  final RxBool isLoggingIn = false.obs; // Make isLoggingIn reactive
+  final RxBool rememberMe = false.obs;
+  final RxBool isLoggingIn = false.obs;
   late Box userBox;
   bool isBoxInitialized = false;
   final User _user = User();
+
+  // Make loginProvider nullable and observable
+  final Rx<LoginProvider?> _loginProvider = Rx<LoginProvider?>(null);
 
   @override
   void onInit() {
     super.onInit();
     _initializeHive();
     loadRememberMeStatus();
+  }
+
+  // Method to set the login provider
+  void setLoginProvider(LoginProvider provider) {
+    _loginProvider.value = provider;
   }
 
   Future<void> _initializeHive() async {
@@ -44,110 +48,147 @@ class LoginController extends GetxController {
 
   Future<void> login(bool rememberMe, String username, String password,
       BuildContext? context) async {
-    if (rememberMe) {
-      await saveRememberMe(rememberMe, username, password);
-    } else {
-      await clearRememberMe();
-    }
-    getIdDevice();
+    try {
+      if (isLoggingIn.value) return;
+      isLoggingIn.value = true;
 
-    if (isLoggingIn.value) return; // Check reactive variable
-    isLoggingIn.value = true;
+      // Check if provider is initialized
+      if (_loginProvider.value == null) {
+        throw Exception('LoginProvider not initialized');
+      }
 
-    if (!isBoxInitialized) {
-      await _initializeHive();
-    }
-    final user = await _user.login(username, password);
-    if (user == null) {
-      showLoginError(context, "Invalid username or password");
+      if (rememberMe) {
+        await saveRememberMe(rememberMe, username, password);
+      } else {
+        await clearRememberMe();
+      }
+
+      await getIdDevice();
+
+      if (!isBoxInitialized) {
+        await _initializeHive();
+      }
+
+      final user = await _user.login(username, password);
+      if (user == null) {
+        showLoginError(context, "Invalid username or password");
+        return;
+      }
+
+      if (context != null) {
+        await _loginProvider.value!.setMessage(username, password, context, 1);
+      }
+
+      final employee = Employee();
+      final value = await employee.getEmployee(username, password);
+
+      if (value != null && value.message != null) {
+        List<String> result = value.message!.split('_');
+        String message = result[0];
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        final box = GetStorage();
+
+        await prefs.setString("getIdEmp", result[2]);
+        await prefs.setString("idSales", result[2]);
+        await prefs.setString("getName", result[3]);
+        await prefs.setString("getWh", result[4]);
+        box.write("getName", result[3]);
+
+        String dateLogin = DateFormat("ddMMMyyyy").format(DateTime.now());
+        String idSales = result[1];
+
+        await setPreference(
+            username, message, idSales, value.token!, dateLogin);
+      }
+
+      navigateToDashboard(user);
+    } catch (e) {
+      debugPrint('Login error: $e');
+      showLoginError(context, e.toString());
+    } finally {
       isLoggingIn.value = false;
-      return;
     }
-
-    if (context != null) {
-      Provider.of<LoginProvider>(context, listen: false)
-          .setMessage(username, password, context, 1)
-          .then((_) {});
-    }
-    final employee = Employee();
-    employee.getEmployee(username, password).then((value) async {
-      List<String> result = value!.message!.split('_');
-      String message = result[0];
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      final box = GetStorage();
-      prefs.setString("getIdEmp", result[2]);
-      prefs.setString("idSales", result[2]);
-      prefs.setString("getName", result[3]);
-      prefs.setString("getWh", result[4]);
-      box.write("getName", result[3]);
-      String dateLogin = DateFormat("ddMMMyyyy").format(DateTime.now());
-      String idSales = result[1];
-      setPreference(username, message, idSales, value.token!, dateLogin);
-    });
-
-    navigateToDashboard(user);
-    isLoggingIn.value = false;
   }
 
   Future<void> loadRememberMeStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    rememberMe.value =
-        prefs.getBool('rememberMe') ?? false; // Use reactive variable
-    usernameController.text = prefs.getString('username') ?? '';
-    passwordController.text = prefs.getString('password') ?? '';
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      rememberMe.value = prefs.getBool('rememberMe') ?? false;
+      usernameController.text = prefs.getString('username') ?? '';
+      passwordController.text = prefs.getString('password') ?? '';
+    } catch (e) {
+      debugPrint('Error loading remember me status: $e');
+    }
   }
 
   Future<void> saveRememberMe(
       bool rememberMe, String username, String password) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', username);
-    await prefs.setString('password', password);
-    await prefs.setBool('rememberMe', rememberMe);
-  }
-
-  Future<void> clearRememberMe() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (!rememberMe.value) {
-      await prefs.remove('username');
-      await prefs.remove('password');
-      await prefs.remove('rememberMe');
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('username', username);
+      await prefs.setString('password', password);
+      await prefs.setBool('rememberMe', rememberMe);
+    } catch (e) {
+      debugPrint('Error saving remember me: $e');
     }
   }
 
-  void getIdDevice() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    OneSignal.initialize("ffad8398-fdf5-4aef-a16b-a33696f48630");
-    OneSignal.Notifications.requestPermission(true);
-    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-      event.notification.display();
-    });
+  Future<void> clearRememberMe() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (!rememberMe.value) {
+        await prefs.remove('username');
+        await prefs.remove('password');
+        await prefs.remove('rememberMe');
+      }
+    } catch (e) {
+      debugPrint('Error clearing remember me: $e');
+    }
+  }
 
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> getIdDevice() async {
+    try {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
 
-    final deviceState = await OneSignal.User.pushSubscription;
-    if (deviceState.id != null) {
-      String deviceId = deviceState.id!;
-      preferences.setString("idDevice", deviceId);
+      OneSignal.initialize("");
+      await OneSignal.Notifications.requestPermission(true);
+
+      OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+        event.notification.display();
+      });
+
+      await Future.delayed(const Duration(seconds: 2));
+
+      final pushSubscription = OneSignal.User.pushSubscription;
+      if (pushSubscription.id != null) {
+        String deviceId = pushSubscription.id!;
+        await preferences.setString("idDevice", deviceId);
+      }
+    } catch (error) {
+      debugPrint('Device ID setup error: $error');
     }
   }
 
   Future<void> setPreference(String username, String flag, String idSales,
       String token, String dateLogin) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.setString("username", username);
-    await preferences.setString("flag", flag);
-    await preferences.setString("idSales", idSales);
-    await preferences.setString("token", token);
-    await preferences.setString("dateLogin", dateLogin);
+    try {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.setString("username", username);
+      await preferences.setString("flag", flag);
+      await preferences.setString("idSales", idSales);
+      await preferences.setString("token", token);
+      await preferences.setString("dateLogin", dateLogin);
+    } catch (e) {
+      debugPrint('Error setting preferences: $e');
+    }
   }
 
   void navigateToDashboard(User user) {
     if (user.role == "0") {
-      // Navigate to Employee Dashboard
     } else if (user.role == "1" || user.role == "2") {
-      // Navigate to Manager Dashboard
     } else {
-      throw Exception("Login failed");
+      throw Exception("Invalid user role");
     }
   }
 
@@ -157,5 +198,14 @@ class LoginController extends GetxController {
         SnackBar(content: Text(message)),
       );
     }
+  }
+
+  @override
+  void onClose() {
+    usernameFocus.dispose();
+    passwordFocus.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
+    super.onClose();
   }
 }

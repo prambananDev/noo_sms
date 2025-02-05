@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
@@ -10,22 +11,34 @@ import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryLinesPendingController extends GetxController {
-  // String numberPP = Get.arguments['numberPP'];
   final String numberPP;
-  HistoryLinesPendingController({required this.numberPP});
-
-  List listHistorySO = <Promotion>[].obs;
-  dynamic listHistorySOEncode;
+  final RxBool isDataLoaded = false.obs;
+  final RxList<Promotion> listHistorySO = <Promotion>[].obs;
   final RxMap<dynamic, dynamic> dataHeader = <dynamic, dynamic>{}.obs;
+  final RxBool isLoading = true.obs;
+  final RxBool valueSelectAll = false.obs;
+  final RxList<Map<String, dynamic>> selectedLines =
+      <Map<String, dynamic>>[].obs;
+  dynamic listHistorySOEncode;
   GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
   var user = User().obs;
-  final isLoading = true.obs;
-  var valueSelectAll = false.obs;
   bool startApp = false;
   var addToLines = <Map<String, dynamic>>[].obs;
-  int? code;
+
   Rx<Promotion> dataApprovalDetails = Promotion().obs;
+
+  final fromDateHeaderController = TextEditingController();
+  final toDateHeaderController = TextEditingController();
+  final qtyFromController = TextEditingController();
+  final qtyToController = TextEditingController();
+  final List<TextEditingController> discControllers =
+      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> valueControllers =
+      List.generate(2, (_) => TextEditingController());
+  final List<TextEditingController> suppQtyControllers = [];
+
+  HistoryLinesPendingController({required this.numberPP});
 
   List<TextEditingController> disc1Controller = [];
   List<TextEditingController> disc2Controller = [];
@@ -34,10 +47,6 @@ class HistoryLinesPendingController extends GetxController {
   List<TextEditingController> value1Controller = [];
   List<TextEditingController> value2Controller = [];
   List<TextEditingController> suppQtyController = [];
-  TextEditingController qtyToController = TextEditingController();
-  TextEditingController qtyFromController = TextEditingController();
-  TextEditingController fromDateHeaderController = TextEditingController();
-  TextEditingController toDateHeaderController = TextEditingController();
 
   List dataSupplyItem = [];
   List unitController = [];
@@ -49,28 +58,174 @@ class HistoryLinesPendingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    refreshKey = GlobalKey<RefreshIndicatorState>();
-
-    getSupplyItem();
-    // listHistoryPendingSO();
-    // initializeDataAndControllers();
-
-    Future.delayed(const Duration(seconds: 2), () {
-      startApp = true;
-      listHistoryPendingSO();
-      initializeDataAndControllers();
-    });
+    loadData();
   }
 
-  void initializeDataAndControllers() {
-    List<Promotion> data = listHistorySO.cast<Promotion>();
-    List<double?> qtyFrom = extractData(data, (e) => e.qty);
-    List<double?> qtyTo = extractData(data, (e) => e.qtyTo);
+  Future<void> loadData() async {
+    try {
+      isLoading.value = true;
+      final value = await Promotion.getListLinesPending(numberPP);
+      listHistorySO.assignAll(value);
 
-    // initializeTextControllers(
-    //     qtyFromController, qtyFrom.map((e) => e?.toString() ?? '').toList());
-    // initializeTextControllers(
-    //     qtyToController, qtyTo.map((e) => e?.toString() ?? '').toList());
+      if (listHistorySO.isNotEmpty) {
+        dataHeader.assignAll(listHistorySO[0].toJson());
+        _initializeControllers();
+      }
+      isDataLoaded.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _initializeControllers() {
+    for (var promotion in listHistorySO) {
+      suppQtyControllers.add(
+          TextEditingController(text: promotion.suppQty?.toString() ?? ''));
+    }
+  }
+
+  void toggleSelectAll() {
+    valueSelectAll.toggle();
+    selectedLines.clear();
+
+    if (valueSelectAll.value) {
+      selectedLines.addAll(listHistorySO
+          .map((promotion) => _createLineData(promotion))
+          .toList());
+    }
+    update();
+  }
+
+  void toggleLineSelection(Promotion promotion, bool isSelected) {
+    if (isSelected) {
+      selectedLines.add(_createLineData(promotion));
+    } else {
+      selectedLines.removeWhere((item) => item['id'] == promotion.id);
+    }
+    update();
+  }
+
+  Map<String, dynamic> _createLineData(Promotion promotion) {
+    // Helper function to format date
+    String formatDate(String? dateStr, String? defaultDate) {
+      if (dateStr == null || dateStr.isEmpty) {
+        return defaultDate ?? '';
+      }
+      try {
+        // Try parsing with different formats
+        DateTime date;
+        try {
+          date = DateFormat('MM-dd-yyyy').parse(dateStr);
+        } catch (e) {
+          try {
+            date = DateTime.parse(dateStr);
+          } catch (e) {
+            return defaultDate ?? '';
+          }
+        }
+        return DateFormat('MM-dd-yyyy').format(date);
+      } catch (e) {
+        return defaultDate ?? '';
+      }
+    }
+
+    String extractItemCode(String? fullItem) {
+      if (fullItem == null || fullItem.isEmpty) return '';
+
+      final itemCodeMatch = RegExp(r'^[A-Z]\d+').firstMatch(fullItem);
+      return itemCodeMatch?.group(0) ?? fullItem;
+    }
+
+    return {
+      "id": promotion.id,
+      "qtyFrom": qtyFromController.text.isEmpty
+          ? promotion.qty
+          : double.parse(qtyFromController.text),
+      "qtyTo": qtyToController.text.isEmpty
+          ? promotion.qtyTo
+          : double.parse(qtyToController.text),
+      "unit": promotion.unitId,
+      "disc1": _getDiscValue(0, promotion.disc1),
+      "disc2": _getDiscValue(1, promotion.disc2),
+      "disc3": _getDiscValue(2, promotion.disc3),
+      "disc4": _getDiscValue(3, promotion.disc4),
+      "value1": _getValueAmount(0, promotion.value1),
+      "value2": _getValueAmount(1, promotion.value2),
+      "suppQty": _getSuppQtyValue(promotion),
+      "suppItem": extractItemCode(promotion.suppItem),
+      "suppUnit": promotion.suppUnit,
+      "warehouse": promotion.warehouse,
+      "fromDate": formatDate(fromDateHeaderController.text, promotion.fromDate),
+      "toDate": formatDate(toDateHeaderController.text, promotion.toDate),
+    };
+  }
+
+  double _getDiscValue(int index, String? defaultValue) {
+    final text = discControllers[index].text;
+    return text.isEmpty
+        ? double.parse(defaultValue ?? '0')
+        : double.parse(text);
+  }
+
+  double _getValueAmount(int index, String? defaultValue) {
+    final text =
+        valueControllers[index].text.replaceAll(',', '').replaceAll('.', '');
+    return text.isEmpty
+        ? double.parse(defaultValue ?? '0')
+        : double.parse(text);
+  }
+
+  double _getSuppQtyValue(Promotion promotion) {
+    final index = listHistorySO.indexOf(promotion);
+    if (index >= 0 && index < suppQtyControllers.length) {
+      final text = suppQtyControllers[index].text;
+      return text.isEmpty
+          ? double.parse(promotion.suppQty ?? '0')
+          : double.parse(text);
+    }
+    return 0;
+  }
+
+  Future<void> approveOrReject(String action) async {
+    try {
+      isLoading.value = true;
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt("userid");
+
+      if (selectedLines.isEmpty) {
+        selectedLines.addAll(listHistorySO
+            .map((promotion) => _createLineData(promotion))
+            .toList());
+      }
+
+      final requestBody = {
+        "status": action == "Approve" ? 1 : 2,
+        "lines": selectedLines
+      };
+      debugPrint('Request Body: ${jsonEncode(requestBody)}');
+
+      final response = await put(Uri.parse("$apiCons/api/Approve/$userId"),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(requestBody));
+      if (response.statusCode == 200) {
+        Get.off(() => const DashboardApprovalPP(initialIndex: 0));
+      } else {
+        throw Exception(
+            'Server Error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error during ${action.toLowerCase()}: $e');
+      Get.snackbar(
+        "Error",
+        "Failed to ${action.toLowerCase()}: $e",
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void initializeTextControllers(
@@ -219,15 +374,19 @@ class HistoryLinesPendingController extends GetxController {
     }
   }
 
-  void toggleSelectAll() {
-    valueSelectAll.value = !valueSelectAll.value;
-    for (var promo in listHistorySO) {
-      promo.status = valueSelectAll.value;
-      if (promo.status!) {
-        addToLines.add(promo.toJson());
-      } else {
-        addToLines.removeWhere((item) => item['id'] == promo.id);
-      }
+  @override
+  void onClose() {
+    fromDateHeaderController.dispose();
+    toDateHeaderController.dispose();
+    qtyFromController.dispose();
+    qtyToController.dispose();
+    for (var controller in [
+      ...discControllers,
+      ...valueControllers,
+      ...suppQtyControllers
+    ]) {
+      controller.dispose();
     }
+    super.onClose();
   }
 }

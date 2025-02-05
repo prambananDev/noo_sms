@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/login/login_controller.dart';
+import 'package:noo_sms/controllers/provider/login_provider.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -10,16 +13,17 @@ class LoginView extends StatefulWidget {
 }
 
 class LoginViewState extends State<LoginView> {
-  final LoginController _controller = LoginController();
-
-  String _selectedUrl = "Server Main";
-  final List<String> _listUrl = ["Server Main", "Server 1", "Server 2"];
-  int code = 1;
+  final LoginController _controller = Get.put(LoginController());
 
   @override
   void initState() {
     super.initState();
-    _controller.loadRememberMeStatus();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      _controller.setLoginProvider(loginProvider);
+      _controller.loadRememberMeStatus();
+    });
   }
 
   @override
@@ -38,7 +42,6 @@ class LoginViewState extends State<LoginView> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
-    // Scaling factors
     double scaleWidth(double width) => width * screenWidth / 375;
     double scaleHeight(double height) => height * screenHeight / 812;
     double scaleFont(double fontSize) => fontSize * screenWidth / 375;
@@ -66,7 +69,7 @@ class LoginViewState extends State<LoginView> {
                       SizedBox(height: scaleHeight(20)),
                       TextFormField(
                         validator: (value) {
-                          if (value!.isEmpty) {
+                          if (value?.isEmpty ?? true) {
                             return 'Please, insert your Username';
                           }
                           return null;
@@ -100,100 +103,86 @@ class LoginViewState extends State<LoginView> {
                       Divider(
                           color: Theme.of(context).primaryColorDark,
                           thickness: 1),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please, insert your Password';
-                          }
-                          return null;
-                        },
-                        obscureText: _controller.obscureText.value,
-                        controller: _controller.passwordController,
-                        textInputAction: TextInputAction.done,
-                        focusNode: _controller.passwordFocus,
-                        onFieldSubmitted: (term) {
-                          _controller.passwordFocus.unfocus();
-                        },
-                        style: TextStyle(
-                            color: Theme.of(context).primaryColorDark,
-                            fontSize: scaleFont(15)),
-                        decoration: InputDecoration(
-                          hintText: 'Insert your password',
-                          labelText: 'Password*',
-                          errorStyle: TextStyle(
-                              color: Colors.red, fontSize: scaleFont(13)),
-                          hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontSize: scaleFont(15)),
-                          labelStyle: TextStyle(
-                              color: Theme.of(context).primaryColorDark,
-                              fontSize: scaleFont(17)),
-                          border: InputBorder.none,
-                          icon: Icon(Icons.lock,
-                              color: Theme.of(context).primaryColorDark),
-                          suffixIcon: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _controller.obscureText.value =
-                                    !_controller.obscureText.value;
-                              });
+                      Obx(() => TextFormField(
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) {
+                                return 'Please, insert your Password';
+                              }
+                              return null;
                             },
-                            child: Icon(_controller.obscureText.value
-                                ? Icons.visibility
-                                : Icons.visibility_off),
-                          ),
-                        ),
-                      ),
+                            obscureText: _controller.obscureText.value,
+                            controller: _controller.passwordController,
+                            textInputAction: TextInputAction.done,
+                            focusNode: _controller.passwordFocus,
+                            onFieldSubmitted: (term) {
+                              _controller.passwordFocus.unfocus();
+                            },
+                            style: TextStyle(
+                                color: Theme.of(context).primaryColorDark,
+                                fontSize: scaleFont(15)),
+                            decoration: InputDecoration(
+                              hintText: 'Insert your password',
+                              labelText: 'Password*',
+                              errorStyle: TextStyle(
+                                  color: Colors.red, fontSize: scaleFont(13)),
+                              hintStyle: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: scaleFont(15)),
+                              labelStyle: TextStyle(
+                                  color: Theme.of(context).primaryColorDark,
+                                  fontSize: scaleFont(17)),
+                              border: InputBorder.none,
+                              icon: Icon(Icons.lock,
+                                  color: Theme.of(context).primaryColorDark),
+                              suffixIcon: GestureDetector(
+                                onTap: () {
+                                  _controller.obscureText.value =
+                                      !_controller.obscureText.value;
+                                },
+                                child: Icon(_controller.obscureText.value
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                              ),
+                            ),
+                          )),
                       Divider(
                           color: Theme.of(context).primaryColorDark,
                           thickness: 1),
-                      CheckboxListTile(
-                        title: const Text("Remember me"),
-                        value: _controller.rememberMe.value,
-                        onChanged: (newValue) {
-                          setState(() {
-                            _controller.rememberMe.value = newValue!;
-                          });
-                        },
-                        controlAffinity: ListTileControlAffinity.leading,
-                      ),
-                      DropdownButton<String>(
-                        hint: const Text('Server: Choose One'),
-                        value: _selectedUrl,
-                        items: _listUrl.map((value) {
-                          return DropdownMenuItem(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedUrl = newValue!;
-                            code = _listUrl.indexOf(newValue);
-                          });
-                        },
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_controller.formKey.currentState!.validate()) {
-                            if (_controller.rememberMe.value) {
-                              _controller.saveRememberMe(
-                                _controller.rememberMe.value,
-                                _controller.usernameController.text,
-                                _controller.passwordController.text,
-                              );
-                            } else {
-                              _controller.clearRememberMe();
-                            }
-                            _controller.login(
-                                _controller.rememberMe.value,
-                                _controller.usernameController.text,
-                                _controller.passwordController.text,
-                                context);
-                          }
-                        },
-                        child: const Text("LOGIN"),
-                      ),
+                      Obx(() => CheckboxListTile(
+                            title: const Text("Remember me"),
+                            value: _controller.rememberMe.value,
+                            onChanged: (newValue) {
+                              _controller.rememberMe.value = newValue ?? false;
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                          )),
+                      Obx(() => ElevatedButton(
+                            onPressed: _controller.isLoggingIn.value
+                                ? null
+                                : () async {
+                                    if (_controller.formKey.currentState!
+                                        .validate()) {
+                                      await _controller.login(
+                                        _controller.rememberMe.value,
+                                        _controller.usernameController.text,
+                                        _controller.passwordController.text,
+                                        context,
+                                      );
+                                    }
+                                  },
+                            child: _controller.isLoggingIn.value
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text("LOGIN"),
+                          )),
                     ],
                   ),
                 ),

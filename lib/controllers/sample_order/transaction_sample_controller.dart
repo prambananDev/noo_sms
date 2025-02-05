@@ -13,7 +13,9 @@ import 'package:noo_sms/models/wrapper.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class TransactionSampleController extends GetxController {
+class TransactionSampleController extends GetxController
+    with GetSingleTickerProviderStateMixin {
+  late TabController tabController;
   Rx<InputPageWrapper> promotionProgramInputStateRx =
       InputPageWrapper(promotionProgramInputState: [], isAddItem: false).obs;
   Rx<TextEditingController> transactionNumberTextEditingControllerRx =
@@ -91,6 +93,7 @@ class TransactionSampleController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    tabController = TabController(length: 4, vsync: this);
     loadInitialData();
     _loadProduct();
     _loadSampleType();
@@ -137,7 +140,7 @@ class TransactionSampleController extends GetxController {
     customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
     checkAddItemStatus();
     _loadDistrChannel();
-
+    update();
     if (selectedChoice?.id == 'prospect') {
       validateProspectFields();
     }
@@ -189,50 +192,40 @@ class TransactionSampleController extends GetxController {
     update();
   }
 
-  void _loadUnit(int index) async {
-    PromotionProgramInputState promotionProgramInputState =
+  Future<void> _loadUnit(int index) async {
+    final promotionProgram =
         promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    final selectProductPageDropdownState = promotionProgramInputState
+    final selectedProductId = promotionProgram
         .productTransactionPageDropdownState?.selectedChoiceWrapper?.value?.id;
 
-    if (selectProductPageDropdownState == null) {
-      return;
-    }
+    if (selectedProductId == null) return;
 
-    var urlGetUnit =
-        "http://sms.prb.co.id/Unit/Index/$selectProductPageDropdownState";
+    final url = "http://sms.prb.co.id/Unit/Index/$selectedProductId";
 
     try {
-      final response = await http.get(Uri.parse(urlGetUnit));
-      if (response.statusCode == 200) {
-        List<dynamic> listData = jsonDecode(response.body);
+      final response = await http.get(Uri.parse(url));
 
-        List<IdAndValue<String>> mappedList =
-            listData.map<IdAndValue<String>>((element) {
-          return IdAndValue<String>(
-            id: element["Value"],
-            value: element["Text"],
-          );
+      if (response.statusCode == 200) {
+        final listData = jsonDecode(response.body) as List;
+        final mappedList = listData.map<String>((element) {
+          return element["Text"].toString();
         }).toList();
 
-        promotionProgramInputState.unitPageDropdownState =
-            InputPageDropdownState<String>(
-                choiceList: mappedList.map((e) => e.value).toList(),
-                loadingState: 2,
-                selectedChoice:
-                    mappedList.isNotEmpty ? mappedList[0].value : null);
-      } else {
-        promotionProgramInputState.unitPageDropdownState =
-            InputPageDropdownState<String>(
-                choiceList: [], loadingState: 3, selectedChoice: null);
+        // Update the state immediately
+        promotionProgramInputStateRx.value.promotionProgramInputState[index]
+            .unitPageDropdownState = InputPageDropdownState<String>(
+          choiceList: mappedList,
+          loadingState: 2,
+          selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+        );
+
+        // Force refresh
+        promotionProgramInputStateRx.refresh();
+        update();
       }
     } catch (e) {
-      promotionProgramInputState.unitPageDropdownState =
-          InputPageDropdownState<String>(
-              choiceList: [], loadingState: 3, selectedChoice: null);
+      debugPrint('Error loading units: $e');
     }
-
-    update();
   }
 
   void changeUnit(int index, String? selectedChoice) {
@@ -397,27 +390,6 @@ class TransactionSampleController extends GetxController {
     update();
   }
 
-  void _loadBatch(int index) async {
-    PromotionProgramInputState promotionProgramInputState =
-        promotionProgramInputStateRx.value.promotionProgramInputState[index];
-    final selectProductPageDropdownState = promotionProgramInputState
-        .productTransactionPageDropdownState?.selectedChoiceWrapper?.value?.id;
-    var urlGetBatch =
-        "$apiCons2/api/Product?item=$selectProductPageDropdownState";
-    final response = await http.get(Uri.parse(urlGetBatch));
-    List<dynamic> listData = jsonDecode(response.body);
-    List<IdAndValue<String>> mappedList =
-        listData.map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(id: element["id"], value: element["batch"]);
-    }).toList();
-    promotionProgramInputState.batchTransactionDropdownState =
-        WrappedInputPageDropdownState<IdAndValue<String>>(
-            choiceListWrapper: Wrapper(value: mappedList),
-            loadingStateWrapper: Wrapper(value: 2),
-            selectedChoiceWrapper: Wrapper(value: null));
-    update();
-  }
-
   List<String> originalPrice = [];
   Future<double> getQtyUnitPrice(
       String cusId, String idProduct, int qty, String unit) async {
@@ -433,16 +405,20 @@ class TransactionSampleController extends GetxController {
     return listDataPrice;
   }
 
-  void changeProduct(int index, IdAndValue<String> selectedChoice) {
+  void changeProduct(int index, IdAndValue<String> selectedChoice) async {
     promotionProgramInputStateRx
         .value
         .promotionProgramInputState[index]
         .productTransactionPageDropdownState
         ?.selectedChoiceWrapper
         ?.value = selectedChoice;
+
+    promotionProgramInputStateRx.refresh();
+
+    await _loadUnit(index);
+
+    promotionProgramInputStateRx.refresh();
     update();
-    _loadUnit(index);
-    _loadBatch(index);
   }
 
   void changeBatch(int index, IdAndValue<String> selectedChoice) {
@@ -471,9 +447,7 @@ class TransactionSampleController extends GetxController {
   }
 
   void addItem() {
-    List<PromotionProgramInputState>? promotionProgramInputState =
-        promotionProgramInputStateRx.value.promotionProgramInputState;
-    promotionProgramInputState.add(
+    promotionProgramInputStateRx.value.promotionProgramInputState.add(
       PromotionProgramInputState(
         productTransactionPageDropdownState:
             WrappedInputPageDropdownState<IdAndValue<String>>(
@@ -483,12 +457,12 @@ class TransactionSampleController extends GetxController {
               productInputPageDropdownState.loadingStateWrapper?.copy(),
           selectedChoiceWrapper: Wrapper<IdAndValue<String>>(value: null),
         ),
-        qtyTransaction: TextEditingController(),
         unitPageDropdownState:
             InputPageDropdownState<String>(choiceList: [], loadingState: 0),
+        qtyTransaction: TextEditingController(text: "1"),
       ),
     );
-    update();
+    promotionProgramInputStateRx.refresh();
   }
 
   void removeItem(int index) {
@@ -559,9 +533,11 @@ class TransactionSampleController extends GetxController {
         ),
         barrierDismissible: false,
       );
+
       Future.delayed(const Duration(seconds: 1), () {
         Get.back();
-        Get.off(() => const DashboardOrderSample(initialIndex: 1));
+        _resetAllControllers();
+        DashboardOrderSampleState.tabController.animateTo(1);
       });
     } else {
       debugPrint(isiBody);
@@ -581,6 +557,34 @@ class TransactionSampleController extends GetxController {
         ),
       );
     }
+  }
+
+  void _resetAllControllers() {
+    purposeDescTextEditingControllerRx.value.clear();
+    custNameTextEditingControllerRx.value.clear();
+    custPicTextEditingControllerRx.value.clear();
+    custPhoneTextEditingControllerRx.value.clear();
+    custAddressTextEditingControllerRx.value.clear();
+    principalNameTextEditingControllerRx.value.clear();
+
+    // Reset dropdown selections
+    typesList.value.selectedChoice = null;
+    purposeList.value.selectedChoice = null;
+    customerNameInputPageDropdownStateRx.value.selectedChoice = null;
+    distributionChannelList.value.selectedChoice = null;
+    principalList.value.selectedChoice = null;
+    deptList.value.selectedChoice = null;
+
+    isClaim.value = false;
+
+    isProspectValid.value = false;
+
+    promotionProgramInputStateRx.value = InputPageWrapper(
+      promotionProgramInputState: [],
+      isAddItem: false,
+    );
+
+    update();
   }
 
   void updateState() {

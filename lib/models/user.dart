@@ -116,6 +116,7 @@ class User {
       if (idDevice == null) {
         throw Exception("Device ID not found. Ensure it is stored properly.");
       }
+      debugPrint(idDevice);
 
       final url =
           "${baseURLDevelopment}Login?username=$username&password=${password.replaceAll("#", "%23")}&playerId=$idDevice";
@@ -161,19 +162,24 @@ class User {
   }
 
   static Future<String?> getDeviceId() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
+    try {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
 
-    OneSignal.initialize(appId);
+      OneSignal.initialize(appId);
 
-    await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
-    final pushSubscription = OneSignal.User.pushSubscription;
-    if (pushSubscription.id != null) {
-      String deviceId = pushSubscription.id!;
-      await preferences.setString("idDevice", deviceId);
-      return deviceId;
-    } else {
-      throw Exception("Failed to retrieve Device ID from OneSignal");
+      final pushSubscription = OneSignal.User.pushSubscription;
+      if (pushSubscription.id != null) {
+        String deviceId = pushSubscription.id!;
+        await preferences.setString("idDevice", deviceId);
+        return deviceId;
+      } else {
+        throw Exception("Failed to retrieve Device ID from OneSignal");
+      }
+    } catch (error) {
+      debugPrint('Get device ID error: $error');
+      return null;
     }
   }
 

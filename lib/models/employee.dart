@@ -90,7 +90,7 @@ class Employee {
       if (apiResult.statusCode == 200) {
         int? status;
         SharedPreferences preferences = await SharedPreferences.getInstance();
-        Box userBox = await Hive.openBox('users');
+
         User.getUsers(
           username,
           password,

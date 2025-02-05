@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/approval_controller.dart';
 import 'package:noo_sms/models/noo_approval.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
 
 class ApprovalDetailPage extends StatefulWidget {
@@ -30,39 +32,59 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
     if (widget.id != null) {
       controller.fetchApprovalDetail(widget.id!);
     }
-    debugPrint(widget.role);
+    _initializeCreditLimit();
+  }
+
+  Future<void> _initializeCreditLimit() async {
+    final prefs = await SharedPreferences.getInstance();
+    final editApproval = prefs.getInt("EditApproval") ?? 0;
+
+    if (editApproval == 1) {
+      controller.creditLimitController.text =
+          controller.currentApproval.value.creditLimit?.toString() ?? '';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: colorNetral,
       appBar: AppBar(
-        backgroundColor: Colors.white60,
-        title: const Text(
+        backgroundColor: colorAccent,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 35,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
           "Approval Detail",
-          style: TextStyle(color: Colors.blue),
+          style: TextStyle(color: colorNetral),
         ),
       ),
       body: Obx(() {
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildBasicInformation(),
-              _buildDivider(),
-              _buildCompanyAddress(),
-              _buildDivider(),
-              _buildTaxAddress(),
-              _buildDivider(),
-              _buildDeliveryAddress(),
-              _buildDivider(),
-              _buildDocuments(),
+              _buildCustomCard(_buildBasicInformation()),
+              _buildCustomCard(_buildCompanyAddress()),
+              _buildCustomCard(_buildTaxAddress()),
+              _buildCustomCard(_buildDeliveryAddress()),
+              _buildCustomCard(_buildDocuments()),
               if (widget.role != "2") ...[
                 _buildDivider(),
-                _buildSignatureSection(),
-                _buildRemarkSection(),
-                _buildPaymentAndCreditSection(),
+                _buildCustomCard(Column(
+                  children: [
+                    _buildSignatureSection(),
+                    _buildRemarkSection(),
+                    _buildPaymentAndCreditSection(),
+                  ],
+                )),
+                const SizedBox(height: 16),
                 _buildApprovalButtons(context),
               ],
             ],
@@ -72,42 +94,86 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
     );
   }
 
+  Widget _buildCustomCard(Widget child) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorNetral,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 48,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
   Widget _buildBasicInformation() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Basic Information'),
-        _buildDetailRow(
-            'Customer Name', controller.currentApproval.value.custName),
-        _buildDetailRow(
-            'Brand Name', controller.currentApproval.value.brandName),
-        _buildDetailRow('Category', controller.currentApproval.value.category),
-        _buildDetailRow('Segment', controller.currentApproval.value.segment),
-        _buildDetailRow(
-            'SubSegment', controller.currentApproval.value.subSegment),
-        _buildDetailRow('Class', controller.currentApproval.value.classField),
+        detailRow("Customer Name", controller.currentApproval.value.custName),
+        detailRow("Brand Name", controller.currentApproval.value.brandName),
+        detailRow("Sales Office", controller.currentApproval.value.salesOffice),
+        detailRow(
+            "Business Unit", controller.currentApproval.value.businessUnit),
+        detailRow("Category", controller.currentApproval.value.category),
+        detailRow(
+            "Distribution Channels", controller.currentApproval.value.segment),
+        detailRow("Channel Segmentation",
+            controller.currentApproval.value.subSegment),
+        detailRow("Class", controller.currentApproval.value.classField),
+        detailRow(
+            "Company Status", controller.currentApproval.value.companyStatus),
+        detailRow("Currency", controller.currentApproval.value.currency),
+        detailRow("Price Group", controller.currentApproval.value.priceGroup),
+        detailRow("AX Category", controller.currentApproval.value.category1),
+        detailRow("Regional", controller.currentApproval.value.regional),
+        detailRow("AX Payment Mode", controller.currentApproval.value.paymMode),
+        detailRow(
+            "Contact Person", controller.currentApproval.value.contactPerson),
+        detailRow("KTP", controller.currentApproval.value.ktp),
+        detailRow("KTP Address", controller.currentApproval.value.ktpAddress),
+        detailRow("NPWP", controller.currentApproval.value.npwp),
+        detailRow("Phone No", controller.currentApproval.value.phoneNo),
+        detailRow("Fax No", controller.currentApproval.value.faxNo),
+        detailRow(
+            "Email Address", controller.currentApproval.value.emailAddress),
+        detailRow("Website", controller.currentApproval.value.website),
       ],
     );
   }
 
-  Widget _buildDetailRow(String label, String? value) {
+  Widget detailRow(String title, String? value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$label: ",
+            title,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
               fontSize: 14,
+              color: Colors.grey,
             ),
           ),
-          Expanded(
-            child: Text(
-              value ?? '-',
-              style: const TextStyle(fontSize: 14),
+          Text(
+            value ?? '',
+            style: const TextStyle(
+              fontSize: 16,
             ),
           ),
+          const Divider(height: 8),
         ],
       ),
     );
@@ -125,7 +191,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -149,9 +215,9 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(title),
-        _buildDetailRow("Street", address.streetName),
-        _buildDetailRow("City", address.city),
-        _buildDetailRow("Postal Code", address.zipCode.toString()),
+        detailRow("Street", address.streetName),
+        detailRow("City", address.city),
+        detailRow("Postal Code", address.zipCode.toString()),
       ],
     );
   }
@@ -171,15 +237,30 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
   }
 
   Widget _buildImageViewer(String title, String? imageUrl) {
-    if (imageUrl == null) return const SizedBox.shrink();
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const Center(
+        child: Text(
+          'Image not found',
+          style: TextStyle(fontSize: 16, color: Colors.red),
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Image.network(
-        '$baseURLDevelopment/Files/GetFiles?fileName=$imageUrl',
+        '${baseURLDevelopment}Files/GetFiles?fileName=$imageUrl',
         fit: BoxFit.cover,
         height: 200,
         width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(
+            child: Text(
+              'Image not found',
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+          );
+        },
       ),
     );
   }
@@ -189,20 +270,16 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Signature'),
-        _buildSignatureWidget(controller.signatureController),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Signature(
+            controller: controller.getSignatureController(widget.id!),
+            height: 150,
+            width: double.infinity,
+            backgroundColor: Colors.grey[200]!,
+          ),
+        ),
       ],
-    );
-  }
-
-  Widget _buildSignatureWidget(SignatureController signatureController) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Signature(
-        controller: signatureController,
-        height: 150,
-        width: double.infinity,
-        backgroundColor: Colors.grey[200]!,
-      ),
     );
   }
 
@@ -214,7 +291,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: TextField(
-            controller: controller.remarkController,
+            controller: controller.getRemarkController(widget.id!),
             decoration: const InputDecoration(hintText: "Enter remark here"),
           ),
         ),
@@ -227,35 +304,162 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Payment and Credit'),
-        _buildDetailRow('Credit Limit',
-            controller.currentApproval.value.creditLimit.toString()),
-        _buildDetailRow('Payment Term', controller.selectedPaymentTerm.value),
+        GetBuilder<ApprovalController>(
+          builder: (controller) {
+            return FutureBuilder<int>(
+              future: _getEditApproval(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
+
+                if (snapshot.data == 1) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Credit Limit',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      TextField(
+                        controller:
+                            controller.getCreditLimitController(widget.id!),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          TextInputFormatter.withFunction((oldValue, newValue) {
+                            if (newValue.text.isEmpty) {
+                              return newValue;
+                            }
+                            String formatted = controller
+                                .formatNumberForDisplay(newValue.text);
+                            return TextEditingValue(
+                              text: formatted,
+                              selection: TextSelection.collapsed(
+                                  offset: formatted.length),
+                            );
+                          }),
+                        ],
+                        decoration: const InputDecoration(
+                          hintText: "Enter credit limit",
+                        ),
+                        onChanged: (value) {
+                          controller.validateCreditLimit(widget.id!, value);
+                        },
+                      ),
+                      GetBuilder<ApprovalController>(
+                        id: 'credit-limit-error${widget.id}',
+                        builder: (controller) {
+                          final error =
+                              controller.getCreditLimitError(widget.id!);
+                          if (error.isNotEmpty) {
+                            return Text(
+                              error,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 16,
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      GetBuilder<ApprovalController>(
+                        id: 'payment-terms-${widget.id}',
+                        builder: (controller) {
+                          final selectedTerm =
+                              controller.getSelectedPaymentTerm(widget.id!);
+
+                          return DropdownButtonFormField<String>(
+                            value: selectedTerm.isNotEmpty
+                                ? selectedTerm // Ensure selectedTerm is a plain String
+                                : null, // Set to null if empty or invalid
+                            items: controller.paymentTerms.map((term) {
+                              return DropdownMenuItem(
+                                value: term,
+                                child: Text(term),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.setSelectedPaymentTerm(
+                                    widget.id!, value);
+                              }
+                            },
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              border: OutlineInputBorder(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                } else {
+                  return detailRow(
+                    'Credit Limit',
+                    controller.currentApproval.value.creditLimit.toString(),
+                  );
+                }
+              },
+            );
+          },
+        ),
       ],
     );
   }
 
+  Future<int> _getEditApproval() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt("EditApproval") ?? 0;
+  }
+
   Widget _buildApprovalButtons(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        ElevatedButton(
-          onPressed: () {
-            _showRejectConfirmation();
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: Text(
-            'Reject',
-            style: TextStyle(color: colorNetral),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _showRejectConfirmation(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Reject',
+              style: TextStyle(
+                color: colorNetral,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
-        ElevatedButton(
-          onPressed: () {
-            _showApproveConfirmation();
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          child: Text(
-            'Approve',
-            style: TextStyle(color: colorNetral),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _showApproveConfirmation(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Approve',
+              style: TextStyle(
+                color: colorNetral,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ],
@@ -271,32 +475,25 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
           content: const Text('Are you sure you want to approve this request?'),
           actions: [
             TextButton(
-              onPressed: () {
-                // Close the dialog
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: colorAccent),
+              ),
             ),
             TextButton(
               onPressed: () async {
-                final signature =
-                    await controller.signatureController.toPngBytes();
-                if (signature == null) {
-                  Get.snackbar('Error', 'Please provide signature');
-                  return;
-                }
-                await controller.uploadSignature(signature);
                 await controller.processApproval(
+                  context,
                   widget.id!,
-                  controller.signatureApprovalFromServer.value,
-                  controller.remarkController.text,
-                  true,
+                  controller.getRemarkController(widget.id!).text,
+                  controller.getCreditLimitError(widget.id!).isEmpty,
                 );
                 Navigator.of(context).pop();
               },
-              child: const Text(
+              child: Text(
                 'Approve',
-                style: TextStyle(color: Colors.green),
+                style: TextStyle(color: colorAccent),
               ),
             ),
           ],

@@ -25,9 +25,9 @@ class CustomDatePickerFieldState extends State<CustomDatePickerField> {
   @override
   void initState() {
     super.initState();
-    // Initialize the controller with the formatted initial value.
+
     widget.controller.text =
-        DateFormat('dd-MM-yyyy').format(widget.initialValue);
+        DateFormat('MM-dd-yyyy').format(widget.initialValue);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -60,7 +60,7 @@ class CustomDatePickerFieldState extends State<CustomDatePickerField> {
         labelText: widget.labelText,
         suffixIcon: const Icon(Icons.arrow_drop_down),
       ),
-      style: const TextStyle(fontSize: 12),
+      style: const TextStyle(fontSize: 16),
       onTap: () => _selectDate(context),
     );
   }

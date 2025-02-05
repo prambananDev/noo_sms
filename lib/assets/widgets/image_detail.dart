@@ -12,19 +12,19 @@ class ImageDetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 17),
-        ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(62, 0, 20, 0),
-          child: Text(":"),
-        ),
-        Flexible(
-          child: Container(
-            height: 100,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 17),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(62, 0, 20, 0),
+            child: Text(":"),
+          ),
+          Flexible(
             child: InkWell(
               onTap: () => _showFullScreenImage(context),
               child: Image.network(
@@ -43,22 +43,37 @@ class ImageDetailRow extends StatelessWidget {
                     ),
                   );
                 },
+                errorBuilder: (context, error, stackTrace) {
+                  // Show a placeholder (e.g., SizedBox) when the image fails to load
+                  return const SizedBox(
+                    height: 100,
+                    width: 100,
+                  );
+                },
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   void _showFullScreenImage(BuildContext context) async {
     await showDialog(
       context: context,
-      builder: (_) => Image.network(
-        imageUrl,
-        filterQuality: FilterQuality.medium,
-        cacheHeight: 400,
-        cacheWidth: 300,
+      builder: (_) => Dialog(
+        child: Image.network(
+          imageUrl,
+          filterQuality: FilterQuality.medium,
+          cacheHeight: 400,
+          cacheWidth: 300,
+          errorBuilder: (context, error, stackTrace) {
+            // Handle errors in fullscreen mode as well
+            return const Center(
+              child: Text("Image not available"),
+            );
+          },
+        ),
       ),
     );
   }

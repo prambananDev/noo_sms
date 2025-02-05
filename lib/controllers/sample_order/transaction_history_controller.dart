@@ -59,23 +59,31 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   Future<void> submitFeedback(int index) async {
-    final int? id = transactionHistory[index].id;
-    final Map<String, dynamic> feedbackData = {
-      "id": id,
-      "feedback": feedList.value.selectedChoice?.id,
-      "file": fileName.value,
-      "notes": feedbackTextEditingControllerRx.value.text
-    };
-    final String feedbackJson = jsonEncode(feedbackData);
+    try {
+      final int? id = transactionHistory[index].id;
+      final Map<String, dynamic> feedbackData = {
+        "id": id,
+        "feedback": feedList.value.selectedChoice?.id,
+        "file": fileName.value,
+        "notes": feedbackTextEditingControllerRx.value.text
+      };
+      final String feedbackJson = jsonEncode(feedbackData);
 
-    var url = '$apiCons2/api/SampleTransaction';
-    final response = await http.put(
-      Uri.parse(url),
-      body: feedbackJson,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
+      var url = '$apiCons2/api/SampleTransaction';
+      final response = await http.put(
+        Uri.parse(url),
+        body: feedbackJson,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to submit feedback: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Rx<InputPageDropdownState<IdAndValue<String>>>
@@ -90,6 +98,8 @@ class TransactionHistorySampleController extends GetxController {
     try {
       final response = await http.get(Uri.parse(urls));
       if (response.statusCode == 200) {
+        debugPrint(idEmp.toString());
+        debugPrint(response.body);
         final jsonResponse = json.decode(response.body) as List;
         transactionHistory.value = jsonResponse
             .map((data) => TransactionHistorySample.fromJson(data))
@@ -105,6 +115,7 @@ class TransactionHistorySampleController extends GetxController {
 
   getTransactionHistoryDetail(String idTransaction) async {
     String url = "$apiCons2/api/SampleTransaction/detail?trx=$idTransaction";
+    debugPrint(url);
     final response = await http.get(Uri.parse(url));
     final listData = jsonDecode(response.body);
     listDetail.value = listData['Product'];

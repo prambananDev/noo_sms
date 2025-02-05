@@ -3,16 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/models/approved.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransactionApprovedController extends GetxController {
   var approvedList = <Approved>[].obs;
+  var isLoading = true.obs;
+  final tabIndex = 0.obs;
 
   @override
-  void onReady() {
-    super.onReady();
+  void onInit() {
+    super.onInit();
     fetchApproved();
+  }
+
+  void onTabChanged() {
+    if (tabIndex.value == 3) {
+      refreshData();
+    }
+  }
+
+  Future<void> refreshData() async {
+    isLoading.value = true;
+    await fetchApproved();
+    isLoading.value = false;
   }
 
   Future<void> fetchApproved() async {
@@ -22,6 +37,7 @@ class TransactionApprovedController extends GetxController {
     if (idEmpString == null || idEmpString.isEmpty) {
       Get.snackbar('Error', 'Employee ID not found',
           snackPosition: SnackPosition.BOTTOM);
+      isLoading.value = false;
       return;
     }
 
@@ -29,6 +45,7 @@ class TransactionApprovedController extends GetxController {
     if (idEmp == 0) {
       Get.snackbar('Error', 'Invalid Employee ID',
           snackPosition: SnackPosition.BOTTOM);
+      isLoading.value = false;
       return;
     }
 
@@ -42,13 +59,14 @@ class TransactionApprovedController extends GetxController {
         approvedList.value =
             jsonResponse.map((data) => Approved.fromJson(data)).toList();
       } else {
-        Get.snackbar('Info', 'No approved data found',
-            snackPosition: SnackPosition.BOTTOM);
+        approvedList.clear();
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e',
           snackPosition: SnackPosition.BOTTOM);
+      approvedList.clear();
     }
+    isLoading.value = false;
   }
 
   void showApprovedDetail(BuildContext context, int id) async {
@@ -92,7 +110,7 @@ class TransactionApprovedController extends GetxController {
                           Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: colorAccent,
                           minimumSize: const Size(0, 45),
                           foregroundColor: const Color(0xFFFFFFFF),
                           shape: RoundedRectangleBorder(

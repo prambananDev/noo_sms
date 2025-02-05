@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -20,6 +21,10 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isKTP = label.toUpperCase() == 'KTP';
+    final bool isNPWP = label.toUpperCase() == 'NPWP';
+    const int ktpNPWPLength = 16;
+
     return Container(
       padding: const EdgeInsets.only(bottom: 8),
       width: double.infinity,
@@ -34,13 +39,22 @@ class CustomTextField extends StatelessWidget {
             flex: 2,
             child: TextFormField(
               controller: controller,
-              keyboardType: inputType,
+              keyboardType:
+                  (isKTP || isNPWP) ? TextInputType.number : inputType,
               textCapitalization: capitalization,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               textAlign: TextAlign.center,
-              maxLength: maxLength,
+              maxLength: (isKTP || isNPWP) ? ktpNPWPLength : maxLength,
+              inputFormatters: (isKTP || isNPWP)
+                  ? [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(ktpNPWPLength),
+                    ]
+                  : null,
               decoration: InputDecoration(
-                hintText: label,
+                hintText: (isKTP || isNPWP)
+                    ? '$label (Max $ktpNPWPLength digit)'
+                    : label,
                 isDense: true,
                 filled: true,
                 contentPadding: const EdgeInsets.all(5),
@@ -49,8 +63,15 @@ class CustomTextField extends StatelessWidget {
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return validationText ?? 'Please enter $label';
-                } else if (maxLength != null && value.length < maxLength!) {
-                  return 'NPWP kurang dari $maxLength digit';
+                } else if (isKTP || isNPWP) {
+                  if (value.length != ktpNPWPLength) {
+                    return '$label must be $ktpNPWPLength digits';
+                  }
+                  if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                    return '$label can only contain numbers';
+                  }
+                } else if (maxLength != null && value.length > maxLength!) {
+                  return '$label exceeds $maxLength characters';
                 }
                 return null;
               },

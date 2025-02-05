@@ -8,6 +8,8 @@ class Approval {
   final String? custReff;
   final String? desc;
   final String status;
+  final String purpose;
+  final String purposeType;
 
   Approval({
     required this.id,
@@ -17,6 +19,8 @@ class Approval {
     this.custReff,
     this.desc,
     required this.status,
+    required this.purpose,
+    required this.purposeType,
   });
 
   factory Approval.fromJson(Map<String, dynamic> json) {
@@ -28,6 +32,8 @@ class Approval {
       custReff: json['CustReff'] as String?,
       desc: json['Desc'] as String?,
       status: json['Status'] as String,
+      purpose: json['Purpose'] as String,
+      purposeType: json['PurposeType'] as String,
     );
   }
 

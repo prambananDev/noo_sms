@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/image_detail.dart';
 import 'package:noo_sms/controllers/noo/list_status_detail_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
 
@@ -28,23 +30,29 @@ class StatusDetailView extends GetView<StatusDetailController> {
 
     return Scaffold(
       backgroundColor: colorNetral,
-      appBar: _buildAppBar(controller),
-      body: _buildBody(controller),
+      appBar: AppBar(
+        backgroundColor: colorAccent,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 35,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          "Status Detail",
+          style: TextStyle(color: colorNetral),
+        ),
+      ),
+      body: _buildBody(controller, context),
       bottomNavigationBar: _buildBottomButton(controller),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(StatusDetailController controller) {
-    return AppBar(
-      backgroundColor: colorAccent,
-      title: Text(
-        "Status Detail",
-        style: TextStyle(color: colorNetral),
-      ),
-    );
-  }
-
-  Widget _buildBody(StatusDetailController controller) {
+  Widget _buildBody(StatusDetailController controller, BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
@@ -80,11 +88,25 @@ class StatusDetailView extends GetView<StatusDetailController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildBasicInfo(data),
-                const SizedBox(height: 16),
-                _buildAddressInfo(data),
-                const SizedBox(height: 16),
-                _buildApprovalStatus(controller),
+                _buildCustomCard(
+                  _buildBasicInfo(data),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                _buildCustomCard(
+                  _buildAddressInfo(data),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                _buildCustomCard(
+                  _buildApprovalStatus(controller),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                _buildCustomCard(
+                  _buildDocumentsSection(),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                _buildCustomCard(
+                  _buildSignaturesSection(),
+                ),
               ],
             ),
           ),
@@ -138,75 +160,146 @@ class StatusDetailView extends GetView<StatusDetailController> {
     });
   }
 
-  Widget _buildBasicInfo(StatusModel data) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle('Basic Information'),
-            _buildDetailRow('Customer Name', data.custName),
-            _buildDetailRow('Customer ID', data.custId),
-            _buildDetailRow('Brand Name', data.brandName),
-            _buildDetailRow('Status', data.status),
-            _buildDetailRow('Business Unit', data.businessUnit),
-            _buildDetailRow('Sales Office', data.salesOffice),
-            _buildDetailRow('Phone', data.phoneNo),
-            _buildDetailRow('Email', data.emailAddress),
-            if (data.website.isNotEmpty)
-              _buildDetailRow('Website', data.website),
-          ],
-        ),
-      ),
+  Widget _buildBasicInfo(NOOModel data) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Basic Information'),
+        _buildDetailRow('Customer Name', data.custName),
+        _buildDetailRow('Brand Name', data.brandName),
+        _buildDetailRow('Sales Office', data.salesOffice),
+        _buildDetailRow('Business Unit', data.businessUnit),
+        _buildDetailRow('Category', data.category),
+        _buildDetailRow('Distribution Channels', data.segment),
+        _buildDetailRow('Class', data.classField),
+        _buildDetailRow('Company Status', data.companyStatus),
+        _buildDetailRow('Currency', data.currency),
+        _buildDetailRow('Price Group', data.priceGroup),
+        _buildDetailRow('AX Category', data.category1!),
+        _buildDetailRow('Regional', data.regional!),
+        _buildDetailRow('Payment Mode', data.paymentMode!),
+        _buildDetailRow('Contact Person', data.contactPerson),
+        _buildDetailRow('KTP', data.ktp),
+        _buildDetailRow('KTP Address', data.ktpAddress!),
+        _buildDetailRow('NPWP', data.npwp),
+        _buildDetailRow('FAX', data.faxNo),
+        _buildDetailRow('Phone', data.phoneNo),
+        _buildDetailRow('Email', data.emailAddress),
+        if (data.website.isNotEmpty) _buildDetailRow('Website', data.website),
+        _buildDetailRow('Status', data.status),
+      ],
     );
   }
 
-  Widget _buildAddressInfo(StatusModel data) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle('Address Information'),
-            if (data.companyAddresses != null) ...[
-              _buildSectionSubtitle('Company Address'),
-              _buildAddressDetails(data.companyAddresses!),
-            ],
-            if (data.deliveryAddresses != null) ...[
-              const SizedBox(height: 16),
-              _buildSectionSubtitle('Delivery Address'),
-              _buildAddressDetails(data.deliveryAddresses!),
-            ],
-            if (data.taxAddresses != null) ...[
-              const SizedBox(height: 16),
-              _buildSectionSubtitle('Tax Address'),
-              _buildTaxAddressDetails(data.taxAddresses!),
-            ],
-          ],
+  Widget _buildSignaturesSection() {
+    return Column(
+      children: [
+        ImageDetailRow(
+          title: "Customer\nSignature",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.custSignature}",
         ),
-      ),
+        ImageDetailRow(
+          title: "Sales\nSignature",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.salesSignature}",
+        ),
+        ImageDetailRow(
+          title: "Approval 1\nSignature",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.approval1Signature}",
+        ),
+        ImageDetailRow(
+          title: "Approval 2\nSignature",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.approval2Signature}",
+        ),
+        ImageDetailRow(
+          title: "Approval 3\nSignature",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.approval3Signature}",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDocumentsSection() {
+    return Column(
+      children: [
+        ImageDetailRow(
+          title: "Foto NPWP",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoNPWP}",
+        ),
+        ImageDetailRow(
+          title: "Foto KTP",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoKTP}",
+        ),
+        ImageDetailRow(
+          title: "Foto SIUP",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoSIUP}",
+        ),
+        ImageDetailRow(
+          title: "Foto Gedung\nDepan",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoGedung1}",
+        ),
+        ImageDetailRow(
+          title: "Foto Gedung\nSamping",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoGedung2}",
+        ),
+        ImageDetailRow(
+          title: "Foto Gedung\nDalam",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoGedung3}",
+        ),
+        ImageDetailRow(
+          title: "Foto Competitor\nTop",
+          imageUrl:
+              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.listDetail.value.fotoCompetitorTop}",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressInfo(NOOModel data) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Address Information'),
+        if (data.companyAddresses != null) ...[
+          _buildSectionSubtitle('Company Address'),
+          _buildAddressDetails(data.companyAddresses!),
+        ],
+        if (data.deliveryAddresses != null) ...[
+          const SizedBox(height: 16),
+          _buildSectionSubtitle('Delivery Address'),
+          _buildAddressDetails(data.deliveryAddresses!),
+        ],
+        if (data.taxAddresses != null) ...[
+          const SizedBox(height: 16),
+          _buildSectionSubtitle('Tax Address'),
+          _buildTaxAddressDetails(data.taxAddresses!),
+        ],
+      ],
     );
   }
 
   Widget _buildApprovalStatus(StatusDetailController controller) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle('Approval Status'),
-            ...controller.approvalStatusList.map((status) {
-              return _buildDetailRow(
-                status['level']?.toString() ?? 'Unknown Level',
-                status['status']?.toString() ?? 'Pending',
-              );
-            }).toList(),
-          ],
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Approval Status'),
+        ...controller.approvalStatusList.map((status) {
+          return _buildDetailRow(
+            status['level']?.toString() ?? 'Unknown Level',
+            status['status']?.toString() ?? 'Pending',
+          );
+        }).toList(),
+      ],
     );
   }
 
@@ -231,7 +324,7 @@ class StatusDetailView extends GetView<StatusDetailController> {
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: Colors.blue,
+          color: Colors.black,
         ),
       ),
     );
@@ -272,6 +365,29 @@ class StatusDetailView extends GetView<StatusDetailController> {
         Text('${address.city}, ${address.state} ${address.zipCode}'),
         Text(address.country),
       ],
+    );
+  }
+
+  Widget _buildCustomCard(Widget child) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorNetral,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 48,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 

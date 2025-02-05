@@ -42,13 +42,6 @@ class DashboardNooState extends State<DashboardNoo>
     role = prefs.getString("Role");
   }
 
-  // void initializeController() {
-  //   if (Get.isRegistered<CustomerFormController>()) {
-  //     Get.delete<CustomerFormController>();
-  //   }
-  //   controller = Get.put(CustomerFormController());
-  // }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -74,6 +67,10 @@ class DashboardNooState extends State<DashboardNoo>
             child: Container(
               color: colorNetral,
               child: TabBar(
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
                 indicatorColor: colorAccent,
                 labelColor: colorAccent,
                 unselectedLabelColor: colorAccent,

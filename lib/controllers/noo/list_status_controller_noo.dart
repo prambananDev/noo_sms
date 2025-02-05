@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class StatusController extends GetxController {
-  var data = <StatusModel>[].obs;
+  var data = <NOOModel>[].obs;
   var isLoading = false.obs;
   var page = 1.obs;
   var userId = ''.obs;
@@ -57,7 +57,7 @@ class StatusController extends GetxController {
     try {
       final response = await http.get(
         Uri.parse(
-            '$baseURLDevelopment/FindNOObyUserId/${userId.value}?page=${page.value}'),
+            '${baseURLDevelopment}FindNOObyUserId/${userId.value}?page=${page.value}'),
         headers: {
           'authorization': 'Basic ${base64Encode(utf8.encode('test:test456'))}'
         },
@@ -68,13 +68,13 @@ class StatusController extends GetxController {
         final newData = jsonData
             .map((item) {
               try {
-                return StatusModel.fromJson(item);
+                return NOOModel.fromJson(item);
               } catch (e) {
                 debugPrint('Error parsing item: $e');
                 return null;
               }
             })
-            .whereType<StatusModel>()
+            .whereType<NOOModel>()
             .toList();
 
         if (isLoadMore) {

@@ -1,116 +1,104 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/approval_controller.dart';
 import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/approval/approval_detail.dart';
 
-class ApprovalPage extends StatefulWidget {
+class ApprovalPage extends StatelessWidget {
   final String? role;
 
   const ApprovalPage({Key? key, required this.role}) : super(key: key);
 
   @override
-  ApprovalPageState createState() => ApprovalPageState();
-}
-
-class ApprovalPageState extends State<ApprovalPage> {
-  late final ApprovalController controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    controller = Get.put(ApprovalController());
-    controller.fetchApprovals();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
+    return GetBuilder<ApprovalController>(
+      init: ApprovalController(),
+      builder: (controller) {
+        return Scaffold(
+          backgroundColor: colorNetral,
+          body: _buildBody(controller),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white60,
-      title: const Text(
-        "Pending Approval",
-        style: TextStyle(
-          color: Colors.blue,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
+  Widget _buildBody(ApprovalController controller) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        controller.page.value = 1;
+        await controller.fetchApprovals();
+      },
+      child: Obx(() {
+        if (controller.isLoading.value && controller.approvals.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-  Widget _buildBody() {
-    return Obx(() {
-      if (controller.isLoading.value && controller.approvals.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      return RefreshIndicator(
-        onRefresh: () async {
-          controller.page.value = 1;
-          await controller.fetchApprovals();
-        },
-        child: ListView.builder(
+        return ListView.builder(
           itemCount: controller.approvals.length,
           itemBuilder: (context, index) {
-            final approval = controller.approvals[index];
-            return _buildApprovalCard(controller.approvals[index], index);
-            // controller.approvals[index], index
+            return _buildListItem(context, controller.approvals[index]);
           },
-        ),
-      );
-    });
-  }
-
-  Widget _buildApprovalCard(ApprovalModel approval, int index) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow("Customer Name", approval.custName),
-            _buildInfoRow("Date", _formatDate(approval.createdDate.toString())),
-            _buildInfoRow("Salesman", approval.salesman),
-            _buildStatusBadge(approval.status),
-            const Divider(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _buildDetailsButton(approval),
-              ],
-            ),
-          ],
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildInfoRow(String label, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text(
-            "$label: ",
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+  Widget _buildListItem(BuildContext context, ApprovalModel item) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 1,
           ),
-          Expanded(
-            child: Text(
-              value ?? '-',
-              style: const TextStyle(fontSize: 14),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInfoRow("Name", item.custName),
+              _buildInfoRow("Date", _formatDate(item.createdDate.toString())),
+              _buildInfoRow("Salesman", item.salesman),
+              _buildStatusRow("Status", item.status),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.075,
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: GestureDetector(
+              onTap: () {
+                Get.to(() => ApprovalDetailPage(
+                      id: item.id,
+                      role: role,
+                    ));
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorAccent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Text(
+                  "Detail",
+                  style: TextStyle(
+                    color: colorNetral,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -118,21 +106,56 @@ class ApprovalPageState extends State<ApprovalPage> {
     );
   }
 
-  Widget _buildStatusBadge(String? status) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status),
-        borderRadius: BorderRadius.circular(12),
+  Widget _buildInfoRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              "$label : ",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Text(
+            value ?? '-',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
-      child: Text(
-        status ?? 'Unknown',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
+    );
+  }
+
+  Widget _buildStatusRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              "$label : ",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Text(
+            value ?? '-',
+            style: TextStyle(
+              fontSize: 16,
+              color: _getStatusColor(value),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -150,28 +173,12 @@ class ApprovalPageState extends State<ApprovalPage> {
     }
   }
 
-  Widget _buildDetailsButton(ApprovalModel approval) {
-    return ElevatedButton.icon(
-      onPressed: () {
-        Get.to(ApprovalDetailPage(
-          id: approval.id,
-          role: widget.role,
-        ));
-      },
-      icon: const Icon(Icons.visibility),
-      label: const Text('View Details'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
-
   String _formatDate(String? date) {
     if (date == null) return '-';
     try {
-      final parsedDate = DateTime.parse(date);
-      return DateFormat('dd-MM-yyyy').format(parsedDate);
+      final DateTime parsedDate = DateTime.parse(date);
+      final DateFormat formatter = DateFormat('dd-MM-yyyy');
+      return formatter.format(parsedDate);
     } catch (e) {
       return date;
     }

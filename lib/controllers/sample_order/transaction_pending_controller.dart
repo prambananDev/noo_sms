@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/controllers/sample_order/transaction_approved_controller.dart';
 import 'package:noo_sms/models/approval.dart';
+import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransactionPendingController extends GetxController {
@@ -98,7 +100,12 @@ class TransactionPendingController extends GetxController {
                 ? 'Approval status updated to Approved.'
                 : 'Approval status updated to Rejected.',
             snackPosition: SnackPosition.BOTTOM);
+
         fetchApprovals();
+        if (Get.isRegistered<TransactionApprovedController>()) {
+          Get.find<TransactionApprovedController>().refreshData();
+        }
+        DashboardOrderSampleState.tabController.animateTo(3);
       } else {
         Get.snackbar('Error',
             'Failed to update status: ${response.statusCode}\nResponse Body: ${response.body}',

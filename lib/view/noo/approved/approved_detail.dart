@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/image_detail.dart';
 import 'package:noo_sms/controllers/noo/approved_controller.dart';
 import 'package:noo_sms/models/noo_approval.dart';
@@ -29,11 +30,20 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: colorNetral,
       appBar: AppBar(
-        backgroundColor: Colors.white60,
-        title: const Text(
+        backgroundColor: colorAccent,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 35,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
           "Approved Detail",
-          style: TextStyle(color: Colors.blue),
+          style: TextStyle(color: colorNetral),
         ),
       ),
       body: Obx(() {
@@ -42,52 +52,50 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // Basic Information Section
-                _buildBasicInformationSection(),
-
-                const Divider(color: Colors.black, thickness: 1),
-
-                _buildAddressSection(
+                _buildCustomCard(_buildBasicInformationSection()),
+                _buildCustomCard(_buildAddressSection(
                   "Company Address",
                   controller.companyAddress.value,
-                ),
-
-                const SizedBox(height: 30),
-                const Divider(color: Colors.black, thickness: 1),
-                const SizedBox(height: 10),
-
-                // TAX Address Section
-                _buildAddressSection(
+                )),
+                _buildCustomCard(_buildAddressSection(
                   "TAX Address",
                   controller.taxAddress.value,
-                ),
-
-                const SizedBox(height: 30),
-                const Divider(color: Colors.black, thickness: 1),
-                const SizedBox(height: 10),
-
-                // Delivery Address Section
-                _buildAddressSection(
+                )),
+                _buildCustomCard(_buildAddressSection(
                   "Delivery Address",
                   controller.deliveryAddress.value,
-                ),
-
-                const SizedBox(height: 20),
-                const Divider(color: Colors.black, thickness: 1),
-                const SizedBox(height: 20),
-
-                _buildDocumentsSection(),
-
-                // Signatures Section
-                _buildSignaturesSection(),
-
-                // Final Details Section
-                _buildFinalDetailsSection(),
+                )),
+                _buildCustomCard(_buildDocumentsSection()),
+                _buildCustomCard(_buildSignaturesSection()),
+                _buildCustomCard(_buildFinalDetailsSection()),
               ],
             ),
           ),
         );
       }),
+    );
+  }
+
+  Widget _buildCustomCard(Widget child) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorNetral,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 48,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 
@@ -128,14 +136,14 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
 
   Widget _buildAddressSection(String title, Address address) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              color: Colors.blue,
-            ),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
         const SizedBox(height: 20),
@@ -285,22 +293,24 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
 
   Widget detailRow(String title, String? value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$title ",
+            title,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
               fontSize: 14,
+              color: Colors.grey,
             ),
           ),
-          Expanded(
-            child: Text(
-              value ?? '',
-              style: const TextStyle(fontSize: 14),
+          Text(
+            value ?? '',
+            style: const TextStyle(
+              fontSize: 16,
             ),
           ),
+          const Divider(height: 8),
         ],
       ),
     );

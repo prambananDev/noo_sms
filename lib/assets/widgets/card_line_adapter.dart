@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_formatter/money_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/promotion_program/approval_pending_line_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
-import 'package:noo_sms/view/promotion_program/approval/history_so.dart';
+import 'package:noo_sms/view/sms/approval/history_so.dart';
 import 'package:search_choices/search_choices.dart';
 
 class CardLinesAdapter extends StatefulWidget {
@@ -174,7 +175,6 @@ class CardLinesAdapterState extends State<CardLinesAdapter> {
     );
   }
 
-  // Helper method to build Qty fields
   Widget buildQtyRow(
       BuildContext context,
       TextEditingController qtyFromController,
@@ -376,16 +376,16 @@ class CardLinesAdapterState extends State<CardLinesAdapter> {
       double totalPriceDiscValue) {
     return TextResultCard(
       title: "Net Price",
+      //  "Rp${MoneyFormatter(amount: widget.promotion!.disc1 == "0.00" && widget.promotion!.disc2 == "0.00" && widget.promotion!.disc3 == "0.00" && widget.promotion!.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).output.withoutFractionDigits.replaceAll(",", ".")}",
       value:
-          "Rp${(widget.promotion!.disc1 == "0.00" && widget.promotion!.disc2 == "0.00" && widget.promotion!.disc3 == "0.00" && widget.promotion!.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).toString()}",
+          "Rp${MoneyFormatter(amount: widget.promotion!.disc1 == "0.00" && widget.promotion!.disc2 == "0.00" && widget.promotion!.disc3 == "0.00" && widget.promotion!.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).output.withoutFractionDigits.replaceAll(",", ".")}",
     );
   }
 
   Widget buildSalesHistoryButton(BuildContext context) {
     return TextButton(
       onPressed: () {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
           return HistorySO(
             namePP: widget.namePP!,
             idCustomer: widget.promotion!.idCustomer!,
@@ -407,7 +407,7 @@ class CardLinesAdapterState extends State<CardLinesAdapter> {
         padding: const EdgeInsets.all(5),
         child: Center(
           child: Text(
-            "View Sales History",
+            "Sales History",
             style: TextStyle(
               color: colorNetral,
               fontSize: 14,

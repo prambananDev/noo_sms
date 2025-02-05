@@ -1,8 +1,7 @@
+import 'dart:async';
+import 'package:async/async.dart';
 import 'dart:convert';
 import 'dart:io';
-// ignore: unnecessary_import
-import 'dart:typed_data';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,13 +13,18 @@ import 'package:noo_sms/assets/constant/preview_cust_form/preview_controller.dar
 import 'package:noo_sms/models/customer_form.dart';
 import 'package:noo_sms/models/draft_model.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
+import 'package:noo_sms/view/dashboard/dashboard_noo.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:signature/signature.dart';
 
-class CustomerFormController extends GetxController {
+class CustomerFormController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   static CustomerFormController get to => Get.find();
+
+  late TabController tabController;
 
   final String usernameAuth = 'test';
   final String passwordAuth = 'test456';
@@ -29,9 +33,9 @@ class CustomerFormController extends GetxController {
   String? bu;
   String? codeSO;
   final isEditMode = false.obs;
-  final StatusModel? editData;
+  final NOOModel? editData;
   final _picker = ImagePicker();
-  final _deviceInfo = DeviceInfoPlugin();
+  final RxBool useKtpAddressForTax = false.obs;
 
   String longitudeData = "";
   String latitudeData = "";
@@ -42,6 +46,8 @@ class CustomerFormController extends GetxController {
   String state = "";
   String zipCode = "";
   String salesmanId = "";
+  String village = "";
+  String district = "";
 
   final Rx<Uint8List?> _imageKTPWeb = Rx<Uint8List?>(null);
   final Rx<File?> _imageKTP = Rx<File?>(null);
@@ -60,8 +66,18 @@ class CustomerFormController extends GetxController {
   final RxString businessPhotoInsideFromServer = ''.obs;
   final RxString competitorTopFromServer = ''.obs;
   final RxString signatureSalesFromServer = ''.obs;
+  final RxString signatureCustomersFromServer = ''.obs;
+  final SignatureController signatureSalesController = SignatureController(
+    penStrokeWidth: 1,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
+  final SignatureController signatureCustomerController = SignatureController(
+    penStrokeWidth: 1,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
 
-  // Getters for images
   File? get imageKTP => _imageKTP.value;
   File? get imageNPWP => _imageNPWP.value;
   File? get imageSIUP => _imageSIUP.value;
@@ -151,21 +167,50 @@ class CustomerFormController extends GetxController {
   CustomerFormController({this.editData});
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    tabController = TabController(length: 4, vsync: this);
     basicAuth =
         'Basic ${base64Encode(utf8.encode('$usernameAuth:$passwordAuth'))}';
-    if (editData != null) {
-      isEditMode.value = true;
-      _fillFormData(editData!);
-    }
-    initializeData();
 
-    loadLongLatFromSharedPrefs();
+    await initializeData();
+    companyNameController.addListener(_onCompanyNameChanged);
+    ktpAddressController.addListener(_updateTaxAddress);
+    customerNameController.addListener(_updateTaxName);
+  }
+
+  @override
+  void dispose() {
+    companyNameController.removeListener(_onCompanyNameChanged);
+    ktpAddressController.removeListener(_updateTaxAddress);
+    customerNameController.removeListener(_updateTaxName);
+    super.dispose();
+  }
+
+  void _onCompanyNameChanged() {
+    taxNameController.text = companyNameController.text;
+    deliveryNameController.text = companyNameController.text;
+    update();
+  }
+
+  void _updateTaxAddress() {
+    if (useKtpAddressForTax.value) {
+      taxStreetController.text = ktpAddressController.text;
+    }
+  }
+
+  void _updateTaxName() {
+    if (useKtpAddressForTax.value) {
+      taxNameController.text = customerNameController.text;
+    }
   }
 
   Future<void> initializeData() async {
-    await loadSharedPreferences();
+    autofill();
+    await Future.wait([
+      loadLongLatFromSharedPrefs(),
+      loadSharedPreferences(),
+    ]);
     await Future.wait([
       fetchSalesOffices(),
       fetchBusinessUnits(),
@@ -174,11 +219,17 @@ class CustomerFormController extends GetxController {
       fetchCategory1(),
       fetchCategory2(),
       fetchSegment(),
-      fetchSubSegment(),
       fetchClass(),
       fetchCompanyStatus(),
       fetchCurrency(),
     ]);
+
+    if (editData != null) {
+      isEditMode.value = true;
+      _fillFormData(editData!);
+    } else {
+      autofill();
+    }
 
     if (!Get.isRegistered<PreviewController>()) {
       Get.put(PreviewController());
@@ -186,10 +237,11 @@ class CustomerFormController extends GetxController {
 
     longitudeControllerDelivery.text = longitudeData;
     latitudeControllerDelivery.text = latitudeData;
+
     update();
   }
 
-  void _fillFormData(StatusModel data) async {
+  void _fillFormData(NOOModel data) async {
     customerNameController.text = data.custName;
     brandNameController.text = data.brandName;
     contactPersonController.text = data.contactPerson;
@@ -208,6 +260,7 @@ class CustomerFormController extends GetxController {
           .firstWhereOrNull((so) => so.name == data.salesOffice)
           ?.name;
     }
+
     if (businessUnits.isNotEmpty) {
       selectedBusinessUnit = businessUnits
           .firstWhereOrNull((bu) => bu.name == data.businessUnit)
@@ -312,23 +365,8 @@ class CustomerFormController extends GetxController {
     emailAddressController.clear();
     websiteController.clear();
     companyNameController.clear();
-    streetCompanyController.clear();
-    kelurahanController.clear();
-    kecamatanController.clear();
-    cityController.clear();
-    provinceController.clear();
-    countryController.clear();
-    zipCodeController.clear();
     taxNameController.clear();
-    taxStreetController.clear();
     deliveryNameController.clear();
-    streetCompanyControllerDelivery.clear();
-    kelurahanControllerDelivery.clear();
-    kecamatanControllerDelivery.clear();
-    cityControllerDelivery.clear();
-    provinceControllerDelivery.clear();
-    countryControllerDelivery.clear();
-    zipCodeControllerDelivery.clear();
     deliveryNameController2.clear();
     streetCompanyControllerDelivery2.clear();
     kelurahanControllerDelivery2.clear();
@@ -339,6 +377,8 @@ class CustomerFormController extends GetxController {
     zipCodeControllerDelivery2.clear();
     longitudeControllerDelivery.clear();
     latitudeControllerDelivery.clear();
+    signatureCustomerController.clear();
+    signatureSalesController.clear();
     selectedSalesOffice = null;
     selectedBusinessUnit = null;
     selectedCategory = null;
@@ -444,7 +484,6 @@ class CustomerFormController extends GetxController {
       }
     }
 
-    // Load location data
     longitudeControllerDelivery.text = draft.longitude ?? '';
     latitudeControllerDelivery.text = draft.latitude ?? '';
 
@@ -462,10 +501,13 @@ class CustomerFormController extends GetxController {
     update();
   }
 
-  Map<String, dynamic> prepareSubmitData() {
+  Future<Map<String, dynamic>> prepareSubmitData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? userId = prefs.getInt("userid");
+
     return {
-      "CustName": customerNameController.text,
-      "BrandName": brandNameController.text,
+      "CustName": customerNameController.text.trim(),
+      "BrandName": brandNameController.text.trim(),
       "SalesOffice": selectedSalesOffice,
       "BusinessUnit": selectedBusinessUnit,
       "Category": selectedCategory,
@@ -478,26 +520,27 @@ class CustomerFormController extends GetxController {
       "Currency": selectedCurrency,
       "PriceGroup": selectedPriceGroup,
       "PaymMode": selectedPaymentMode,
-      "ContactPerson": contactPersonController.text,
-      "KTP": ktpController.text,
-      "KTPAddress": ktpAddressController.text,
-      "NPWP": npwpController.text,
-      "PhoneNo": phoneController.text,
-      "FaxNo": faxController.text,
-      "EmailAddress": emailAddressController.text,
-      "Website": websiteController.text,
+      "ContactPerson": contactPersonController.text.trim(),
+      "KTP": ktpController.text.trim(),
+      "KTPAddress": ktpAddressController.text.trim(),
+      "NPWP": npwpController.text.trim(),
+      "PhoneNo": phoneController.text.trim(),
+      "FaxNo": faxController.text.trim(),
+      "EmailAddress": emailAddressController.text.trim(),
+      "Website": websiteController.text.trim(),
       "FotoNPWP": npwpFromServer.value,
       "FotoKTP": ktpFromServer.value,
       "FotoSIUP": siupFromServer.value,
-      "CustSignature": signatureSalesFromServer.value,
+      "CustSignature": signatureCustomersFromServer.value,
       "SalesSignature": signatureSalesFromServer.value,
       "Long": longitudeControllerDelivery.text,
       "Lat": latitudeControllerDelivery.text,
       "FotoGedung1": businessPhotoFrontFromServer.value,
       "FotoGedung2": businessPhotoInsideFromServer.value,
       "FotoGedung3": sppkpFromServer.value,
-      "FotoCompetitorTop": competitorTopFromServer.value,
-      // "CreatedBy": idUserFromLogin,
+      if (competitorTopFromServer.value.isNotEmpty)
+        "FotoCompetitorTop": competitorTopFromServer.value,
+      "CreatedBy": userId.toString(),
       "CompanyAddresses": [
         {
           "Name": companyNameController.text,
@@ -542,35 +585,71 @@ class CustomerFormController extends GetxController {
           "ZipCode": zipCodeControllerDelivery2.text.isEmpty
               ? 0
               : int.parse(zipCodeControllerDelivery2.text)
-        },
+        }
       ]
     };
   }
 
   Future<void> handleSubmit() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String basicAuth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+    try {
+      if (!await _uploadSignatures()) return;
+      final requestBody = await prepareSubmitData();
+      final response = await _sendRequest(requestBody);
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'Customer updated successfully');
+        clearForm();
+        DashboardNooState.tabController.animateTo(1);
+      } else {
+        throw Exception('Failed to update customer: ${response.body}');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Submit failed: ${e.toString()}',
+        duration: const Duration(seconds: 5),
+        snackPosition: SnackPosition.TOP,
+      );
+    }
+  }
 
-    final requestBody = prepareSubmitData();
+  Future<bool> _uploadSignatures() async {
+    final signatureSalesImage = await signatureSalesController.toPngBytes();
+    final signatureCustomerImage =
+        await signatureCustomerController.toPngBytes();
 
-    final response = await http.post(
-      Uri.parse('$baseURLDevelopment/NOOCustTables'),
-      headers: {
-        'authorization': basicAuth,
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(requestBody),
+    if (signatureSalesImage == null || signatureCustomerImage == null) {
+      Get.snackbar('Error', 'Please provide both signatures');
+      return false;
+    }
+
+    await _handleSignature(
+      'SIGNATURESALES',
+      signatureSalesImage,
+      signatureSalesFromServer,
     );
 
-    await prefs.setString("responseBody", response.body);
-    await prefs.setInt("statusCode", response.statusCode);
+    await _handleSignature(
+      'SIGNATURECUSTOMER',
+      signatureCustomerImage,
+      signatureCustomersFromServer,
+    );
 
-    if (response.statusCode == 200) {
-      Get.snackbar('Success', 'Customer updated successfully');
-      clearForm();
-    } else {
-      throw Exception('Failed to update customer');
-    }
+    return true;
+  }
+
+  Future<http.Response> _sendRequest(Map<String, dynamic> requestBody) async {
+    final url = Uri.parse("${baseURLDevelopment}NOOCustTables");
+    final headers = {
+      'authorization': 'Basic ${base64Encode(utf8.encode('test:test456'))}',
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+    };
+
+    return await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(requestBody),
+    );
   }
 
   Future<void> loadSharedPreferences() async {
@@ -591,10 +670,31 @@ class CustomerFormController extends GetxController {
     longitudeData = (prefs.getString("getLongitude") ?? "");
     latitudeData = (prefs.getString("getLatitude") ?? "");
     addressDetail = (prefs.getString("getAddressDetail") ?? "");
+    village = (prefs.getString("getSubLocality") ?? "");
+    district = (prefs.getString("getLocality") ?? "");
+  }
+
+  void autofill() {
+    streetCompanyController.text = streetName;
+    kelurahanController.text = village;
+    kecamatanController.text = district;
+    cityController.text = city;
+    provinceController.text = state;
+    countryController.text = countrys;
+    zipCodeController.text = zipCode;
+    taxStreetController.text = addressDetail;
+    streetCompanyControllerDelivery.text = streetName;
+    kelurahanControllerDelivery.text = village;
+    kecamatanControllerDelivery.text = district;
+    cityControllerDelivery.text = city;
+    provinceControllerDelivery.text = state;
+    countryControllerDelivery.text = countrys;
+    zipCodeControllerDelivery.text = zipCode;
+    cityControllerDelivery.text = city;
   }
 
   Future<void> fetchSalesOffices() async {
-    final url = Uri.parse("$baseURLDevelopment/ViewSO?SO=$so");
+    final url = Uri.parse("${baseURLDevelopment}ViewSO?SO=$so");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     debugPrint(response.body);
     if (response.statusCode == 200) {
@@ -605,8 +705,9 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchBusinessUnits() async {
-    final url = Uri.parse("$baseURLDevelopment/ViewBU?BU=$bu");
+    final url = Uri.parse("${baseURLDevelopment}ViewBU?BU=$bu");
     final response = await http.get(url, headers: {'authorization': basicAuth});
+
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
       businessUnits.value =
@@ -615,7 +716,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchAXRegionals() async {
-    final url = Uri.parse("$baseURLDevelopment/AX_Regional");
+    final url = Uri.parse("${baseURLDevelopment}AX_Regional");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -625,7 +726,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchPaymentMode() async {
-    final url = Uri.parse("$baseURLDevelopment/AX_CustPaymMode");
+    final url = Uri.parse("${baseURLDevelopment}AX_CustPaymMode");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -636,7 +737,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchCategory1() async {
-    final url = Uri.parse("$baseURLDevelopment/AX_Category1");
+    final url = Uri.parse("${baseURLDevelopment}AX_Category1");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -646,7 +747,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchCategory2() async {
-    final url = Uri.parse("$baseURLDevelopment/CustCategory");
+    final url = Uri.parse("${baseURLDevelopment}CustCategory");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -656,7 +757,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchSegment() async {
-    final url = Uri.parse("$baseURLDevelopment/CustSegment?bu=$bu");
+    final url = Uri.parse("${baseURLDevelopment}CustSegment?bu=$bu");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -666,17 +767,29 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchSubSegment() async {
-    final url = Uri.parse("$baseURLDevelopment/CustSubSegment");
+    selectedSubSegment = null;
+    update();
+    final url = Uri.parse("${baseURLDevelopment}CustSubSegment");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      subSegment = data.map((json) => SubSegment.fromJson(json)).toList();
+      List rawData = jsonDecode(response.body);
+      List filteredData = rawData
+          .where((element) => element["SEGMENTID"] == selectedSegment)
+          .toList();
+
+      subSegment =
+          filteredData.map((json) => SubSegment.fromJson(json)).toList();
+
+      if (selectedSubSegment != null &&
+          !subSegment.any((item) => item.subSegmentId == selectedSubSegment)) {
+        selectedSubSegment = null;
+      }
       update();
     }
   }
 
   Future<void> fetchClass() async {
-    final url = Uri.parse("$baseURLDevelopment/CustClass");
+    final url = Uri.parse("${baseURLDevelopment}CustClass");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -686,7 +799,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchCompanyStatus() async {
-    final url = Uri.parse("$baseURLDevelopment/CustCompanyChain");
+    final url = Uri.parse("${baseURLDevelopment}CustCompanyChain");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -696,7 +809,7 @@ class CustomerFormController extends GetxController {
   }
 
   Future<void> fetchCurrency() async {
-    final url = Uri.parse("$baseURLDevelopment/Currency");
+    final url = Uri.parse("${baseURLDevelopment}Currency");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -707,7 +820,7 @@ class CustomerFormController extends GetxController {
 
   Future<void> fetchPriceGroup() async {
     final url =
-        Uri.parse("$baseURLDevelopment/CustPriceGroup?so=$codeSO&bu=$bu");
+        Uri.parse("${baseURLDevelopment}CustPriceGroup?so=$codeSO&bu=$bu");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -788,7 +901,7 @@ class CustomerFormController extends GetxController {
       };
 
       final response = await http.put(
-        Uri.parse('$baseURLDevelopment/NOOCustTables/${editData!.id}'),
+        Uri.parse('${baseURLDevelopment}NOOCustTables/${editData!.id}'),
         headers: {
           'authorization': basicAuth,
           'Content-Type': 'application/json',
@@ -812,7 +925,8 @@ class CustomerFormController extends GetxController {
     if (kIsWeb) {
       await _handleWebImage('KTP');
     } else {
-      await _handleMobileImage('KTP', ImageSource.camera, _imageKTP);
+      await _handleMobileImage(
+          'KTP', ImageSource.camera, _imageKTP, ktpFromServer);
     }
   }
 
@@ -820,83 +934,71 @@ class CustomerFormController extends GetxController {
     if (kIsWeb) {
       await _handleWebImage('KTP');
     } else {
-      await _handleMobileImage('KTP', ImageSource.gallery, _imageKTP);
+      await _handleMobileImage(
+          'KTP', ImageSource.gallery, _imageKTP, ktpFromServer);
     }
   }
 
   Future<void> getImageNPWPFromCamera() async {
-    await _handleMobileImage('NPWP', ImageSource.camera, _imageNPWP);
+    await _handleMobileImage(
+        'NPWP', ImageSource.camera, _imageNPWP, npwpFromServer);
   }
 
   Future<void> getImageNPWPFromGallery() async {
-    await _handleMobileImage('NPWP', ImageSource.gallery, _imageNPWP);
+    await _handleMobileImage(
+        'NPWP', ImageSource.gallery, _imageNPWP, npwpFromServer);
   }
 
   Future<void> getImageSIUPFromCamera() async {
-    await _handleMobileImage('SIUP', ImageSource.camera, _imageSIUP);
+    await _handleMobileImage(
+        'SIUP', ImageSource.camera, _imageSIUP, siupFromServer);
   }
 
   Future<void> getImageSIUPFromGallery() async {
-    await _handleMobileImage('SIUP', ImageSource.gallery, _imageSIUP);
+    await _handleMobileImage(
+        'SIUP', ImageSource.gallery, _imageSIUP, siupFromServer);
   }
 
   Future<void> getImageSPPKP() async {
-    await _handleMobileImage('SPPKP', ImageSource.camera, _imageSPPKP);
+    await _handleMobileImage(
+        'SPPKP', ImageSource.camera, _imageSPPKP, sppkpFromServer);
   }
 
   Future<void> getImageSPPKPFromGallery() async {
-    await _handleMobileImage('SPPKP', ImageSource.gallery, _imageSPPKP);
+    await _handleMobileImage(
+        'SPPKP', ImageSource.gallery, _imageSPPKP, sppkpFromServer);
   }
 
   Future<void> getImageBusinessPhotoFrontFromCamera() async {
-    await _handleMobileImage(
-        'BUSINESSPHOTOFRONT', ImageSource.camera, _imageBusinessPhotoFront);
+    await _handleMobileImage('BUSINESSPHOTOFRONT', ImageSource.camera,
+        _imageBusinessPhotoFront, businessPhotoFrontFromServer);
   }
 
   Future<void> getImageBusinessPhotoFrontFromGallery() async {
-    await _handleMobileImage(
-        'BUSINESSPHOTOFRONT', ImageSource.gallery, _imageBusinessPhotoFront);
+    await _handleMobileImage('BUSINESSPHOTOFRONT', ImageSource.gallery,
+        _imageBusinessPhotoFront, businessPhotoFrontFromServer);
   }
 
   Future<void> getImageBusinessPhotoInsideFromCamera() async {
-    await _handleMobileImage(
-        'BUSINESSPHOTOINSIDE', ImageSource.camera, _imageBusinessPhotoInside);
+    await _handleMobileImage('BUSINESSPHOTOINSIDE', ImageSource.camera,
+        _imageBusinessPhotoInside, businessPhotoInsideFromServer);
   }
 
   Future<void> getImageBusinessPhotoInsideFromGallery() async {
-    await _handleMobileImage(
-        'BUSINESSPHOTOINSIDE', ImageSource.gallery, _imageBusinessPhotoInside);
+    await _handleMobileImage('BUSINESSPHOTOINSIDE', ImageSource.gallery,
+        _imageBusinessPhotoInside, businessPhotoInsideFromServer);
   }
 
   Future<void> getImageCompetitorTopFromCamera() async {
-    await _handleMobileImage(
-        'COMPETITORTOP', ImageSource.camera, _imageCompetitorTop);
+    await _handleMobileImage('COMPETITORTOP', ImageSource.camera,
+        _imageCompetitorTop, competitorTopFromServer);
   }
 
   Future<void> getImageCompetitorTopFromGallery() async {
-    await _handleMobileImage(
-        'COMPETITORTOP', ImageSource.gallery, _imageCompetitorTop);
+    await _handleMobileImage('COMPETITORTOP', ImageSource.gallery,
+        _imageCompetitorTop, competitorTopFromServer);
   }
 
-  // Upload Methods
-  Future<void> uploadKTP(File imageFile) async =>
-      await _uploadImage(imageFile, 'KTP', ktpFromServer);
-  Future<void> uploadNPWP(File imageFile) async =>
-      await _uploadImage(imageFile, 'NPWP', npwpFromServer);
-  Future<void> uploadSIUP(File imageFile) async =>
-      await _uploadImage(imageFile, 'SIUP', siupFromServer);
-  Future<void> uploadSPPKP(File imageFile) async =>
-      await _uploadImage(imageFile, 'SPPKP', sppkpFromServer);
-  Future<void> uploadBusinessPhotoFront(File imageFile) async =>
-      await _uploadImage(
-          imageFile, 'BUSINESSPHOTOFRONT', businessPhotoFrontFromServer);
-  Future<void> uploadBusinessPhotoInside(File imageFile) async =>
-      await _uploadImage(
-          imageFile, 'BUSINESSPHOTOINSIDE', businessPhotoInsideFromServer);
-  Future<void> uploadCompetitorTop(File imageFile) async =>
-      await _uploadImage(imageFile, 'COMPETITORTOP', competitorTopFromServer);
-
-  // Private Helper Methods
   Future<void> _handleWebImage(String type) async {
     final pickedFile =
         await _picker.pickImage(source: ImageSource.camera, imageQuality: 20);
@@ -906,13 +1008,30 @@ class CustomerFormController extends GetxController {
     }
   }
 
-  Future<void> _handleMobileImage(
-      String type, ImageSource source, Rx<File?> imageState) async {
-    // if (!await _checkPermissions()) {
-    //   Get.snackbar('Error', 'Storage permissions not granted');
-    //   return;
-    // }
+  Future<void> _handleSignature(
+      String type, Uint8List imageFile, RxString imageFromServerState) async {
+    final username = await _getUsername();
+    if (username == null) return;
 
+    final newFile =
+        "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_$username.jpg";
+    final uri = Uri.parse("${baseURLDevelopment}Upload");
+
+    final request = http.MultipartRequest("POST", uri)
+      ..files.add(
+          http.MultipartFile.fromBytes('file', imageFile, filename: newFile));
+
+    final response = await http.Response.fromStream(await request.send());
+
+    if (response.statusCode == 200) {
+      imageFromServerState.value = response.body.replaceAll("\"", "");
+    } else {
+      throw Exception('Failed to upload signature: ${response.statusCode}');
+    }
+  }
+
+  Future<void> _handleMobileImage(String type, ImageSource source,
+      Rx<File?> imageState, RxString imageFromServerState) async {
     final pickedFile =
         await _picker.pickImage(source: source, imageQuality: 20);
     if (pickedFile == null) return;
@@ -925,50 +1044,24 @@ class CustomerFormController extends GetxController {
 
     final newFile = await File(pickedFile.path)
         .copy('$directory${type}_${dateNow}_${username}_.jpg');
-    imageState.value = newFile;
-  }
 
-  Future<void> _uploadImage(
-      File imageFile, String type, RxString serverResponse) async {
-    try {
-      final stream = http.ByteStream((imageFile.openRead()));
-      final length = await imageFile.length();
-      final username = await _getUsername();
-      final uri = Uri.parse('$baseURLDevelopment/Upload');
+    var stream = http.ByteStream(DelegatingStream.typed(newFile.openRead()));
+    var length = await newFile.length();
+    var uri = Uri.parse("${baseURLDevelopment}Upload");
+    var request = http.MultipartRequest("POST", uri);
+    var multipartFile = http.MultipartFile('file', stream, length,
+        filename: basename(newFile.path));
+    request.files.add(multipartFile);
+    var response = await request.send();
 
-      final request = http.MultipartRequest("POST", uri)
-        ..files.add(http.MultipartFile('file', stream, length,
-            filename: basename(imageFile.path)));
+    response.stream.transform(utf8.decoder).listen((value) {
+      String imageFromServer =
+          "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_${username}_.jpg";
+      imageFromServer = value.replaceAll("\"", "");
 
-      final response = await request.send();
-
-      response.stream.transform(utf8.decoder).listen((value) {
-        final fileName =
-            "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_${username}_.jpg";
-        serverResponse.value = value.replaceAll("\"", "");
-      });
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to upload image: $e');
-    }
-  }
-
-  Future<bool> _checkPermissions() async {
-    bool storage = true;
-    bool videos = true;
-    bool photos = true;
-
-    final androidInfo = await _deviceInfo.androidInfo;
-    if (androidInfo.version.sdkInt <= 33) {
-      videos = await Permission.videos.status.isGranted;
-      photos = await Permission.photos.status.isGranted;
-    } else {
-      storage = await Permission.storage.status.isGranted;
-    }
-
-    if (storage && videos && photos) {
-      return await Permission.storage.request().isGranted;
-    }
-    return false;
+      imageFromServerState.value = imageFromServer;
+      imageState.value = newFile;
+    });
   }
 
   Future<void> requestPermissions() async {

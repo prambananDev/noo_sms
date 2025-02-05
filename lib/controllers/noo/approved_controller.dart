@@ -4,12 +4,10 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
-import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/models/approval_status.dart';
 import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/approved/approved_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:signature/signature.dart';
 
 class ApprovedController extends GetxController {
   final String usernameAuth = 'test';
@@ -38,12 +36,21 @@ class ApprovedController extends GetxController {
     getSharedPrefs();
     basicAuth =
         'Basic ${base64Encode(utf8.encode('$usernameAuth:$passwordAuth'))}';
+    fetchData();
+    scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      loadMore();
+    }
   }
 
   Future<void> fetchData({bool refresh = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt("iduser")?.toString();
-    // final String? role = prefs.getString("Role");
+    final userId = prefs.getInt("userid")?.toString();
+
     if (refresh) {
       page.value = 1;
       hasMoreData.value = true;
@@ -54,6 +61,8 @@ class ApprovedController extends GetxController {
 
     final response = await http
         .get(Uri.parse(urlGetApproved), headers: {'authorization': basicAuth});
+    debugPrint(userId);
+    debugPrint(urlGetApproved);
     debugPrint(response.body);
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
@@ -101,7 +110,6 @@ class ApprovedController extends GetxController {
 
       var response = await request.send();
       if (response.statusCode == 200) {
-        String result = await response.stream.bytesToString();
         Get.snackbar(
           'Success',
           'Signature uploaded successfully',
@@ -121,7 +129,7 @@ class ApprovedController extends GetxController {
 
   Future<void> getSharedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    idUser.value = prefs.getInt("iduser") ?? 0;
+    idUser.value = prefs.getInt("userid") ?? 0;
   }
 
   void navigateToDetail(int id) {
@@ -134,12 +142,19 @@ class ApprovedController extends GetxController {
     if (isLoadingMore.value || !hasMoreData.value) return;
 
     try {
-      isLoadingMore(true);
+      isLoadingMore.value = true;
       page.value++;
       await fetchData();
     } finally {
-      isLoadingMore(false);
+      isLoadingMore.value = false;
     }
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    super.onClose();
   }
 
   Future<void> refreshData() async {

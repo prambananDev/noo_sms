@@ -18,6 +18,10 @@ class CustomDropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final uniqueItems = items.toSet().toList();
+    final valueExists =
+        value == null || uniqueItems.any((item) => item['name'] == value);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -30,7 +34,7 @@ class CustomDropdownField extends StatelessWidget {
           Expanded(
             flex: 2,
             child: DropdownButtonFormField<String>(
-              value: value,
+              value: valueExists ? value : null,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               isExpanded: true,
               menuMaxHeight: MediaQuery.of(context).size.height * 0.5,
@@ -41,7 +45,7 @@ class CustomDropdownField extends StatelessWidget {
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
-              items: items.map((item) {
+              items: uniqueItems.map((item) {
                 return DropdownMenuItem<String>(
                   value: item['name'],
                   child: Text(

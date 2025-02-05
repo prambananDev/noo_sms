@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/lines.dart';
 import 'package:noo_sms/models/promotion.dart';
@@ -30,12 +29,12 @@ class HistoryLinesController extends GetxController {
     }
     model.id = id;
     model.disc = disc;
-    model.fromDate = fromDate == null
-        ? null
-        : DateFormat('MM-dd-yyyy').format(fromDate).toString();
-    model.toDate = toDate == null
-        ? null
-        : DateFormat('MM-dd-yyyy').format(toDate).toString();
+    // model.fromDate = fromDate == null
+    //     ? null
+    //     : DateFormat('MM-dd-yyyy').format(fromDate).toString();
+    // model.toDate = toDate == null
+    //     ? null
+    //     : DateFormat('MM-dd-yyyy').format(toDate).toString();
     listDisc.add(model);
     List<Map> listResult = listDisc.map((f) => f.toJson()).toList();
     result = jsonEncode(listResult);
@@ -108,18 +107,8 @@ class HistoryLinesController extends GetxController {
         success = true; // Operation was successful
       });
     } catch (onError) {
-      // Handle error
-
-      // Fluttertoast.showToast(
-      //     msg: 'Error : $onError',
-      //     toastLength: Toast.LENGTH_LONG,
-      //     gravity: ToastGravity.CENTER,
-      //     timeInSecForIosWeb: 5,
-      //     backgroundColor: Colors.red[500],
-      //     textColor: Colors.black,
-      //     fontSize: ScreenUtil().setSp(16));
       success = false; // Operation failed
     }
-    return success; // Return the outcome of the operation
+    return success;
   }
 }

@@ -28,7 +28,7 @@ class CustomDropdown<T> extends StatelessWidget {
       }).toList(),
       hint: Text(
         hintText,
-        style: const TextStyle(fontSize: 12),
+        style: const TextStyle(fontSize: 16),
       ),
       onChanged: onChanged,
       isExpanded: isExpanded,

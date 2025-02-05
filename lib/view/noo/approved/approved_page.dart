@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/approved_controller.dart';
 import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/approved/approved_detail.dart';
@@ -34,21 +35,8 @@ class ApprovedViewState extends State<ApprovedView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      backgroundColor: colorNetral,
       body: _buildBody(),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white60,
-      title: const Text(
-        "Pending Approved",
-        style: TextStyle(
-          color: Colors.blue,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 
@@ -97,45 +85,60 @@ class ApprovedViewState extends State<ApprovedView> {
   }
 
   Widget _buildApprovalCard(ApprovalModel approval, int index) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow("Customer Name", approval.custName),
-            _buildInfoRow("Date", _formatDate(approval.createdDate.toString())),
-            _buildStatusBadge(approval.status),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _buildDetailsButton(approval),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text(
-            "$label: ",
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 1,
           ),
-          Expanded(
-            child: Text(
-              value ?? '-',
-              style: const TextStyle(fontSize: 14),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInfoRow("Customer Name", approval.custName),
+              _buildInfoRow(
+                  "Date", _formatDate(approval.createdDate.toString())),
+              _buildStatusRow("Status", approval.status),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.075,
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: GestureDetector(
+              onTap: () {
+                Get.to(
+                  ApprovalDetailView(
+                    id: approval.id,
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorAccent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Text(
+                  "Detail",
+                  style: TextStyle(
+                    color: colorNetral,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -143,21 +146,66 @@ class ApprovedViewState extends State<ApprovedView> {
     );
   }
 
-  Widget _buildStatusBadge(String? status) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status),
-        borderRadius: BorderRadius.circular(12),
+  Widget _buildInfoRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2, // Adjust flex values as needed
+            child: Text(
+              "$label : ",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3, // Adjust flex values as needed
+            child: Text(
+              value ?? '-',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis, // Handle overflow
+            ),
+          ),
+        ],
       ),
-      child: Text(
-        status ?? 'Unknown',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
+    );
+  }
+
+  Widget _buildStatusRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2, // Adjust flex values as needed
+            child: Text(
+              "$label : ",
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3, // Adjust flex values as needed
+            child: Text(
+              value ?? '-',
+              style: TextStyle(
+                fontSize: 16,
+                color: _getStatusColor(value),
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis, // Handle overflow
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -175,24 +223,6 @@ class ApprovedViewState extends State<ApprovedView> {
     }
   }
 
-  Widget _buildDetailsButton(ApprovalModel approval) {
-    return ElevatedButton.icon(
-      onPressed: () {
-        Get.to(
-          ApprovalDetailView(
-            id: approval.id,
-          ),
-        );
-      },
-      icon: const Icon(Icons.visibility),
-      label: const Text('View Details'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
-
   String _formatDate(String? date) {
     if (date == null) return '-';
     try {
@@ -201,77 +231,5 @@ class ApprovedViewState extends State<ApprovedView> {
     } catch (e) {
       return date;
     }
-  }
-}
-
-class _ApprovedCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  final VoidCallback onTapDetail;
-
-  const _ApprovedCard({
-    Key? key,
-    required this.data,
-    required this.onTapDetail,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(7),
-      child: Card(
-        elevation: 3,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildInfoSection(),
-            _buildActionButtons(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoSection() {
-    return Column(
-      children: [
-        _buildInfoItem("Name", data["CustName"]),
-        _buildInfoItem("Date", data["CreatedDate"]),
-        _buildInfoItem("Status", data["Status"] ?? ""),
-      ],
-    );
-  }
-
-  Widget _buildInfoItem(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      alignment: Alignment.centerLeft,
-      child: Text(
-        "$label : $value",
-        textAlign: TextAlign.left,
-        style: TextStyle(
-          color: Colors.blue,
-          fontSize: 12,
-          fontWeight: label == "Status" ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        InkWell(
-          onTap: onTapDetail,
-          child: Container(
-            height: 30,
-            child: const Text(
-              "Detail",
-              style: TextStyle(color: Colors.blue),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }

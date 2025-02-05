@@ -6,5 +6,5 @@ Color colorAccent = const Color(0xFF08347A);
 Color colorError = Colors.redAccent[400]!;
 Color colorWarning = Colors.yellow[300]!;
 Color colorBlack = Colors.black;
-Color colorNetral = Colors.white;
+Color colorNetral = const Color.fromRGBO(255, 255, 255, 1);
 Color colorGray = const Color.fromRGBO(170, 170, 170, 0.7);

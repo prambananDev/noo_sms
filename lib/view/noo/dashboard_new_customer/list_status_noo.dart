@@ -47,7 +47,6 @@ class StatusPage extends StatelessWidget {
                 },
               ),
             ),
-            // Only show Load More button if there's more data to load
             if (controller.hasMoreData.value)
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -70,7 +69,7 @@ class StatusPage extends StatelessWidget {
     );
   }
 
-  Widget _buildListItem(BuildContext context, StatusModel item) {
+  Widget _buildListItem(BuildContext context, NOOModel item) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(8),
@@ -135,7 +134,7 @@ class StatusPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCustomerInfoRow(StatusModel item) {
+  Widget _buildCustomerInfoRow(NOOModel item) {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: Row(
@@ -145,7 +144,7 @@ class StatusPage extends StatelessWidget {
               "Name : ",
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 12,
+                fontSize: 16,
               ),
             ),
           ),
@@ -153,7 +152,7 @@ class StatusPage extends StatelessWidget {
             item.custName,
             style: const TextStyle(
               color: Colors.black,
-              fontSize: 12,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -162,7 +161,7 @@ class StatusPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDateStatusRow(StatusModel item) {
+  Widget _buildDateStatusRow(NOOModel item) {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: Row(
@@ -171,7 +170,7 @@ class StatusPage extends StatelessWidget {
             child: Text(
               "Date : ",
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 16,
                 color: Colors.black,
               ),
             ),
@@ -179,7 +178,7 @@ class StatusPage extends StatelessWidget {
           Text(
             _formatDate(item.createdDate),
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 16,
               color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
@@ -199,7 +198,7 @@ class StatusPage extends StatelessWidget {
     }
   }
 
-  Widget _buildStatusInfo(StatusModel item) {
+  Widget _buildStatusInfo(NOOModel item) {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: Row(
@@ -208,7 +207,7 @@ class StatusPage extends StatelessWidget {
             child: Text(
               "CustStatus : ",
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 16,
                 color: Colors.black,
               ),
             ),
@@ -216,7 +215,7 @@ class StatusPage extends StatelessWidget {
           Text(
             item.custStatus,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 16,
               color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
@@ -226,7 +225,7 @@ class StatusPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusItem(StatusModel item) {
+  Widget _buildStatusItem(NOOModel item) {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: Row(
@@ -235,7 +234,7 @@ class StatusPage extends StatelessWidget {
             child: Text(
               "Status : ",
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 16,
                 color: Colors.black,
               ),
             ),

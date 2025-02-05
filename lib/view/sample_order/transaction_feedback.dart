@@ -102,7 +102,6 @@ class FeedbackPageState extends State<FeedbackPage> {
 
   Future<void> submitFeedback() async {
     try {
-      // Upload image if it exists and not uploaded yet
       if (_selectedImage != null && _uploadedImage == null) {
         await uploadImageIfNeeded(widget.salesId);
       }
@@ -110,8 +109,11 @@ class FeedbackPageState extends State<FeedbackPage> {
       widget.inputPagePresenter.feedList.value.selectedChoice = _selectedFeed;
       widget.inputPagePresenter.feedbackTextEditingControllerRx.value.text =
           _textController.text;
-
       await widget.inputPagePresenter.submitFeedback(widget.index);
+
+      // DashboardOrderSampleState.tabController.animateTo(3);
+
+      Navigator.of(context).pop();
     } catch (e) {
       Get.snackbar(
         "Error",
@@ -141,7 +143,7 @@ class FeedbackPageState extends State<FeedbackPage> {
                     child: DropdownButtonFormField<IdAndValue<String>>(
                       hint: const Text(
                         "Select Feedback",
-                        style: TextStyle(fontSize: 12),
+                        style: TextStyle(fontSize: 16),
                       ),
                       value: _selectedFeed,
                       items: widget.inputPagePresenter.feedList.value.choiceList
@@ -203,7 +205,7 @@ class FeedbackPageState extends State<FeedbackPage> {
                             );
                           },
                           colorIcon: Colors.white,
-                          nameButton: "Upload Photo",
+                          nameButton: "Upload",
                         ),
                       ),
                     ),

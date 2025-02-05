@@ -1,4 +1,4 @@
-class StatusModel {
+class NOOModel {
   final int id;
   final String custName;
   final String custId;
@@ -60,7 +60,7 @@ class StatusModel {
   final String? paymentTerm;
   final String? creditLimit;
 
-  StatusModel({
+  NOOModel({
     required this.id,
     required this.custName,
     required this.custId,
@@ -123,8 +123,8 @@ class StatusModel {
     this.creditLimit,
   });
 
-  factory StatusModel.fromJson(Map<String, dynamic> json) {
-    return StatusModel(
+  factory NOOModel.fromJson(Map<String, dynamic> json) {
+    return NOOModel(
       id: json['id'] ?? 0,
       custName: json['CustName']?.toString() ?? '',
       custId: json['CustId']?.toString() ?? '',

@@ -25,7 +25,7 @@ class ImageUploadCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Container(
+      child: SizedBox(
         height: 200,
         width: 150,
         child: ListView(

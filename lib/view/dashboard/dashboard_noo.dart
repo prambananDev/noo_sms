@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
+import 'package:noo_sms/view/noo/approval/approval_page.dart';
+import 'package:noo_sms/view/noo/approved/approved_page.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/list_status_noo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardNoo extends StatefulWidget {
   final int? initialIndex;
@@ -15,25 +18,35 @@ class DashboardNoo extends StatefulWidget {
 }
 
 class DashboardNooState extends State<DashboardNoo>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+    with TickerProviderStateMixin {
+  static late TabController tabController;
   CustomerFormController? controller;
+  String? role;
+  final customerFormController = Get.put(CustomerFormController());
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: 2,
+    tabController = TabController(
+      length: 4,
       vsync: this,
       initialIndex: widget.initialIndex ?? 0,
     );
     initializeController();
+    getSharedPrefs();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> getSharedPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      role = prefs.getString("Role");
+    });
   }
 
   void initializeController() {
@@ -43,62 +56,87 @@ class DashboardNooState extends State<DashboardNoo>
     controller = Get.put(CustomerFormController());
   }
 
+  Future<bool> _onWillPop() async {
+    if (Get.previousRoute.isNotEmpty) {
+      Get.back();
+    } else {
+      Get.offAllNamed('/dashboard');
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScopeNode currentFocus = FocusScope.of(context);
-        if (!currentFocus.hasPrimaryFocus) {
-          currentFocus.unfocus();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: colorNetral,
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: colorAccent,
-          title: Text(
-            'NOO Dashboard',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: colorNetral),
+    return Scaffold(
+      backgroundColor: colorNetral,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: colorAccent,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 35,
           ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
-            child: Container(
-              color: colorNetral,
-              child: TabBar(
-                indicatorColor: colorAccent,
-                labelColor: colorAccent,
-                unselectedLabelColor: colorAccent,
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: colorAccent,
-                      width: 2,
-                    ),
+          onPressed: () async {
+            await _onWillPop();
+          },
+        ),
+        title: Text(
+          'NOO Dashboard',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colorNetral,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: Container(
+            color: colorNetral,
+            child: TabBar(
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+              ),
+              indicatorColor: colorAccent,
+              labelColor: colorAccent,
+              unselectedLabelColor: colorAccent,
+              controller: tabController,
+              indicator: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: colorAccent,
+                    width: 2,
                   ),
                 ),
-                tabs: const [
-                  Tab(text: "New"),
-                  Tab(text: "List NOO"),
-                ],
               ),
+              tabs: const [
+                Tab(text: "New"),
+                Tab(text: "List NOO"),
+                Tab(text: "Pending"),
+                Tab(text: "Approved"),
+              ],
             ),
           ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            GetBuilder<CustomerFormController>(
-              init: controller,
-              builder: (ctrl) => const CustomerForm(editData: null),
+      ),
+      body: TabBarView(
+        controller: tabController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          GetBuilder<CustomerFormController>(
+            init: controller,
+            builder: (ctrl) => CustomerForm(
+              editData: null,
+              controller: customerFormController,
             ),
-            const StatusPage(),
-          ],
-        ),
+          ),
+          const StatusPage(),
+          ApprovalPage(role: role),
+          const ApprovedView(),
+        ],
       ),
     );
   }

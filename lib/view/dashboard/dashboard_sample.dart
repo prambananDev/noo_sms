@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/controllers/sample_order/transaction_approved_controller.dart';
 import 'package:noo_sms/view/sample_order/transaction_approved.dart';
 import 'package:noo_sms/view/sample_order/transaction_history.dart';
 import 'package:noo_sms/view/sample_order/transaction_pending.dart';
@@ -16,21 +18,29 @@ class DashboardOrderSample extends StatefulWidget {
 
 class DashboardOrderSampleState extends State<DashboardOrderSample>
     with TickerProviderStateMixin {
-  late TabController _tabController;
+  static late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
+    tabController = TabController(
       length: 4,
       vsync: this,
       initialIndex: widget.initialIndex ?? 0,
     );
+    tabController.addListener(() {
+      if (tabController.indexIsChanging) {
+        if (Get.isRegistered<TransactionApprovedController>()) {
+          Get.find<TransactionApprovedController>().tabIndex.value =
+              tabController.index;
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    tabController.dispose();
     super.dispose();
   }
 
@@ -50,6 +60,20 @@ class DashboardOrderSampleState extends State<DashboardOrderSample>
         appBar: AppBar(
             centerTitle: true,
             backgroundColor: colorAccent,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.chevron_left,
+                color: Colors.white,
+                size: 35,
+              ),
+              onPressed: () async {
+                if (Get.previousRoute.isNotEmpty) {
+                  Get.back();
+                } else {
+                  await Get.offAllNamed('/dashboard');
+                }
+              },
+            ),
             title: Text(
               'Product Sample Order',
               style: TextStyle(
@@ -62,9 +86,10 @@ class DashboardOrderSampleState extends State<DashboardOrderSample>
               child: Container(
                 color: colorNetral,
                 child: TabBar(
-                  controller: _tabController,
+                  controller: tabController,
                   labelStyle: const TextStyle(
                     fontWeight: FontWeight.w500,
+                    fontSize: 16,
                   ),
                   indicatorColor: colorAccent,
                   labelColor: colorAccent,
@@ -77,12 +102,11 @@ class DashboardOrderSampleState extends State<DashboardOrderSample>
                       ),
                     ),
                   ),
-                  isScrollable: true,
                   tabs: const [
-                    Tab(text: "Create Order Sample"),
-                    Tab(text: "History Order Sample"),
-                    Tab(text: "Pending Order Sample"),
-                    Tab(text: "Approved Order Sample"),
+                    Tab(text: "Create"),
+                    Tab(text: "History"),
+                    Tab(text: "Pending"),
+                    Tab(text: "Approved"),
                   ],
                 ),
               ),
@@ -91,7 +115,7 @@ class DashboardOrderSampleState extends State<DashboardOrderSample>
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           child: TabBarView(
-            controller: _tabController,
+            controller: tabController,
             children: const [
               TransactionSample(),
               TransactionHistorySampleView(),

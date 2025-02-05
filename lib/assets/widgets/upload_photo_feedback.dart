@@ -22,14 +22,14 @@ class DynamicBottomFeedback extends StatelessWidget {
         children: [
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.of(context).pop;
               onGalleryTap(salesId, ImageSource.camera);
             },
             child: const Text("Camera"),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.of(context).pop;
               onCameraTap(salesId, ImageSource.gallery);
             },
             child: const Text("Gallery"),

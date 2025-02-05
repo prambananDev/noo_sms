@@ -15,6 +15,16 @@ class DraftPage extends GetView<DraftController> {
       appBar: AppBar(
         automaticallyImplyLeading: true,
         backgroundColor: colorAccent,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 35,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text(
           "NOO Draft",
           style: TextStyle(
@@ -62,7 +72,10 @@ class DraftPage extends GetView<DraftController> {
 
                     customerFormController.loadFromDraft(draft);
 
-                    Get.to(() => const CustomerForm(isFromDraft: true));
+                    Get.to(() => CustomerForm(
+                          isFromDraft: true,
+                          controller: customerFormController,
+                        ));
                   },
                   child: Container(
                       decoration: BoxDecoration(
@@ -75,7 +88,7 @@ class DraftPage extends GetView<DraftController> {
                         "Details",
                         style: TextStyle(
                           color: colorNetral,
-                          fontSize: 12,
+                          fontSize: 16,
                         ),
                       )),
                 ),
@@ -96,7 +109,7 @@ class DraftPage extends GetView<DraftController> {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.black,
-            fontSize: 12,
+            fontSize: 16,
           ),
         ),
         Expanded(
@@ -105,7 +118,7 @@ class DraftPage extends GetView<DraftController> {
             textAlign: TextAlign.end,
             style: const TextStyle(
               color: Colors.black,
-              fontSize: 12,
+              fontSize: 16,
             ),
           ),
         ),

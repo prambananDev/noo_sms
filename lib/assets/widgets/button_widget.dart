@@ -37,7 +37,7 @@ class ButtonOrderSample extends StatelessWidget {
           nameButton,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
