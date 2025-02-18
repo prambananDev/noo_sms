@@ -92,7 +92,7 @@ class PreviewController extends GetxController {
   String? get selectedBusinessUnit =>
       customerFormController.selectedBusinessUnit;
   String? get selectedCategory => customerFormController.selectedCategory;
-  String? get selectedCategory2 => customerFormController.selectedCategory2;
+  String? get selectedCategory1 => customerFormController.selectedCategory1;
   String? get selectedAXRegional => customerFormController.selectedAXRegional;
   String? get selectedPaymentMode => customerFormController.selectedPaymentMode;
   String? get selectedSegment => customerFormController.selectedSegment;

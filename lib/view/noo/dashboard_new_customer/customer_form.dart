@@ -37,16 +37,28 @@ class CustomerFormState extends State<CustomerForm> {
   @override
   void initState() {
     super.initState();
-    controller = Get.find<CustomerFormController>();
-    controller = Get.put(CustomerFormController());
-    controller.initializeData();
+    controller = Get.isRegistered<CustomerFormController>()
+        ? Get.find<CustomerFormController>()
+        : Get.put(CustomerFormController());
+
     controller.requestPermissions();
+    if (widget.editData != null) {
+      controller.isEditMode.value = true;
+    }
   }
 
   @override
   void dispose() {
+    controller.clearForm();
+    controller.isEditMode.value = false;
     Get.delete<CustomerFormController>();
     super.dispose();
+  }
+
+  void handleBack() {
+    controller.clearForm();
+    controller.isEditMode.value = false;
+    Navigator.pop(context);
   }
 
   Widget _buildFront() {
@@ -97,14 +109,14 @@ class CustomerFormState extends State<CustomerForm> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (widget.isFromDraft || controller.isEditMode.value)
+                    if (widget.isFromDraft || widget.editData != null)
                       IconButton(
                         icon: const Icon(
                           Icons.chevron_left,
                           color: Colors.black,
                           size: 35,
                         ),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: handleBack,
                       ),
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
@@ -169,7 +181,7 @@ class CustomerFormState extends State<CustomerForm> {
                   label: "Category 1",
                   value: controller.selectedCategory,
                   validationText: "Please select Category 1",
-                  items: controller.category1
+                  items: controller.category
                       .map((cat) => {'name': cat.name})
                       .toList(),
                   onChanged: (value) {
@@ -181,14 +193,15 @@ class CustomerFormState extends State<CustomerForm> {
                 ),
                 CustomDropdownField(
                   label: "Category 2",
-                  value: controller.selectedCategory2,
+                  value: controller.selectedCategory1,
                   validationText: "Please select Category 2",
-                  items: controller.category2
+                  items: controller.category1
                       .map((cat) => {'name': cat.master})
                       .toList(),
                   onChanged: (value) {
                     setState(() {
-                      controller.selectedCategory2 = value;
+                      controller.selectedCategory1 = value;
+                      controller.update();
                     });
                   },
                 ),
@@ -646,7 +659,7 @@ class CustomerFormState extends State<CustomerForm> {
                   ),
                 ),
                 SizedBox(
-                  height: 120,
+                  height: MediaQuery.of(context).size.height * 0.3,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -654,6 +667,7 @@ class CustomerFormState extends State<CustomerForm> {
                             title: 'KTP',
                             image: controller.imageKTP,
                             webImage: controller.imageKTPWeb,
+                            imageUrl: controller.ktpImageUrl,
                             onCameraPress: controller.getImageKTPFromCamera,
                             onGalleryPress: controller.getImageKTPFromGallery,
                             heroTagCamera: 'ktpCamera',
@@ -663,6 +677,7 @@ class CustomerFormState extends State<CustomerForm> {
                       Obx(() => ImageUploadCard(
                             title: 'NPWP',
                             image: controller.imageNPWP,
+                            imageUrl: controller.npwpImageUrl,
                             onCameraPress: controller.getImageNPWPFromCamera,
                             onGalleryPress: controller.getImageNPWPFromGallery,
                             heroTagCamera: 'npwpCamera',
@@ -672,6 +687,7 @@ class CustomerFormState extends State<CustomerForm> {
                       Obx(() => ImageUploadCard(
                             title: 'NIB',
                             image: controller.imageSIUP,
+                            imageUrl: controller.siupImageUrl,
                             onCameraPress: controller.getImageSIUPFromCamera,
                             onGalleryPress: controller.getImageSIUPFromGallery,
                             heroTagCamera: 'siupCamera',
@@ -681,6 +697,7 @@ class CustomerFormState extends State<CustomerForm> {
                       Obx(() => ImageUploadCard(
                             title: 'SPPKP',
                             image: controller.imageSPPKP,
+                            imageUrl: controller.sppkpImageUrl,
                             onCameraPress: controller.getImageSPPKP,
                             onGalleryPress: controller.getImageSPPKPFromGallery,
                             heroTagCamera: 'sppkpCamera',
@@ -690,6 +707,7 @@ class CustomerFormState extends State<CustomerForm> {
                       Obx(() => ImageUploadCard(
                             title: 'Front View',
                             image: controller.imageBusinessPhotoFront,
+                            imageUrl: controller.frontImageUrl,
                             onCameraPress:
                                 controller.getImageBusinessPhotoFrontFromCamera,
                             onGalleryPress: controller
@@ -701,6 +719,7 @@ class CustomerFormState extends State<CustomerForm> {
                       Obx(() => ImageUploadCard(
                             title: 'Inside View',
                             image: controller.imageBusinessPhotoInside,
+                            imageUrl: controller.insideImageUrl,
                             onCameraPress: controller
                                 .getImageBusinessPhotoInsideFromCamera,
                             onGalleryPress: controller
@@ -710,8 +729,9 @@ class CustomerFormState extends State<CustomerForm> {
                           )),
                       const SizedBox(width: 5),
                       Obx(() => ImageUploadCard(
-                            title: 'Competitor TOP(Optional)',
+                            title: 'Competitor TOP (Optional)',
                             image: controller.imageCompetitorTop,
+                            imageUrl: controller.competitorImageUrl,
                             onCameraPress:
                                 controller.getImageCompetitorTopFromCamera,
                             onGalleryPress:
@@ -754,7 +774,7 @@ class CustomerFormState extends State<CustomerForm> {
                 ),
                 Signature(
                   controller: controller.signatureSalesController,
-                  height: 150,
+                  height: MediaQuery.of(context).size.height * 0.3,
                   width: double.infinity,
                   backgroundColor: Colors.grey[200]!,
                 ),
@@ -784,7 +804,7 @@ class CustomerFormState extends State<CustomerForm> {
                 ),
                 Signature(
                   controller: controller.signatureCustomerController,
-                  height: 150,
+                  height: MediaQuery.of(context).size.height * 0.3,
                   width: double.infinity,
                   backgroundColor: Colors.grey[200]!,
                 ),

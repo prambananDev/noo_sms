@@ -47,7 +47,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
   }
 
   bool valueSelectAll = false;
-  var dataHeader;
+  List<dynamic>? dataHeader;
   bool startApp = false;
   Future<void> listHistorySO() async {
     await Future.delayed(const Duration(seconds: 1));
@@ -114,25 +114,25 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
                                 TextResultCard(
                                   title: "No. PP",
                                   value: dataHeader != null
-                                      ? _safeString(dataHeader[0]["nomorPP"])
+                                      ? _safeString(dataHeader?[0]["nomorPP"])
                                       : '',
                                 ),
                                 TextResultCard(
                                   title: "PP. Type",
                                   value: dataHeader != null
-                                      ? _safeString(dataHeader[0]["type"])
+                                      ? _safeString(dataHeader?[0]["type"])
                                       : '',
                                 ),
                                 TextResultCard(
                                   title: "Customer",
                                   value: dataHeader != null
-                                      ? _safeString(dataHeader[0]["customer"])
+                                      ? _safeString(dataHeader?[0]["customer"])
                                       : '',
                                 ),
                                 TextResultCard(
                                   title: "Note",
                                   value: dataHeader != null
-                                      ? _safeString(dataHeader[0]["note"])
+                                      ? _safeString(dataHeader?[0]["note"])
                                       : '',
                                 ),
                                 Consumer<LinesProvider>(
@@ -140,10 +140,10 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
                                       TextFormField(
                                     readOnly: true,
                                     initialValue: dataHeader != null &&
-                                            dataHeader.isNotEmpty &&
-                                            dataHeader[0]["fromDate"] != null
+                                            dataHeader!.isNotEmpty &&
+                                            dataHeader?[0]["fromDate"] != null
                                         ? formatDisplayDate(
-                                            dataHeader[0]["fromDate"])
+                                            dataHeader?[0]["fromDate"])
                                         : '',
                                     keyboardType: TextInputType.datetime,
                                     decoration: InputDecoration(
@@ -170,10 +170,10 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
                                         TextFormField(
                                       readOnly: true,
                                       initialValue: dataHeader != null &&
-                                              dataHeader.isNotEmpty &&
-                                              dataHeader[0]["toDate"] != null
+                                              dataHeader!.isNotEmpty &&
+                                              dataHeader?[0]["toDate"] != null
                                           ? formatDisplayDate(
-                                              dataHeader[0]["toDate"])
+                                              dataHeader?[0]["toDate"])
                                           : '',
                                       keyboardType: TextInputType.datetime,
                                       decoration: InputDecoration(

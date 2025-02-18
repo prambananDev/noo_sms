@@ -111,7 +111,9 @@ class FeedbackPageState extends State<FeedbackPage> {
           _textController.text;
       await widget.inputPagePresenter.submitFeedback(widget.index);
 
-      // DashboardOrderSampleState.tabController.animateTo(3);
+      if (Get.isRegistered<TransactionHistorySampleController>()) {
+        Get.find<TransactionHistorySampleController>().refreshData();
+      }
 
       Navigator.of(context).pop();
     } catch (e) {

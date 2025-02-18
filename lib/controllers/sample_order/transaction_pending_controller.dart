@@ -2,18 +2,31 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_approved_controller.dart';
 import 'package:noo_sms/models/approval.dart';
+import 'package:noo_sms/models/id_valaue.dart';
+import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropdown_state.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransactionPendingController extends GetxController {
   var approvalList = <Approval>[].obs;
+  Rx<TextEditingController> principalNameTextEditingControllerRx =
+      TextEditingController().obs;
+  final RxBool isClaim = false.obs;
+  final Rx<InputPageDropdownState<IdAndValue<String>>> principalList =
+      InputPageDropdownState<IdAndValue<String>>(
+    choiceList: [],
+    selectedChoice: null,
+    loadingState: 0,
+  ).obs;
 
   @override
   void onInit() {
     super.onInit();
+    _loadPrincipal();
     fetchApprovals();
   }
 
@@ -40,6 +53,38 @@ class TransactionPendingController extends GetxController {
     } catch (e) {
       approvalList.clear();
     }
+  }
+
+  Future<void> _loadPrincipal() async {
+    var urlGetPrincipal = "http://sms.prb.co.id/sample/SamplePrincipals";
+    final response = await get(Uri.parse(urlGetPrincipal));
+    var listData = jsonDecode(response.body);
+
+    List<IdAndValue<String>> mappedList =
+        listData.map<IdAndValue<String>>((element) {
+      return IdAndValue<String>(
+        id: element["Value"].toString(),
+        value: element["Text"],
+      );
+    }).toList();
+    mappedList.insert(0, IdAndValue(id: '0', value: 'New Principal'));
+
+    principalList.value = InputPageDropdownState<IdAndValue<String>>(
+      choiceList: mappedList,
+      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+      loadingState: 2,
+    );
+
+    update();
+  }
+
+  void changePrincipal(IdAndValue<String>? newValue) {
+    principalList.value = InputPageDropdownState<IdAndValue<String>>(
+      choiceList: principalList.value.choiceList,
+      selectedChoice: newValue,
+      loadingState: 2,
+    );
+    update();
   }
 
   void showApprovalDetail(BuildContext context, int id,
@@ -86,6 +131,11 @@ class TransactionPendingController extends GetxController {
       "idEmp": idEmp,
       "status": status,
       "message": message,
+      "isClaimed": isClaim.value ? 1 : 0,
+      "samplePrincipal": principalList.value.selectedChoice?.id ?? '',
+      "samplePrincipalNew": principalList.value.selectedChoice?.id == '0'
+          ? principalNameTextEditingControllerRx.value.text
+          : null,
       "lines": lines,
     };
 

@@ -20,7 +20,7 @@ class HistorySO extends StatefulWidget {
 }
 
 class HistorySOState extends State<HistorySO> {
-  var _listHistory;
+  late List<dynamic> _listHistory;
   late GlobalKey<RefreshIndicatorState> refreshKey;
   late int code;
 

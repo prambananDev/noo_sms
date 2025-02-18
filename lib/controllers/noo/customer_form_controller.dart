@@ -31,7 +31,7 @@ class CustomerFormController extends GetxController
   late String basicAuth;
   String? so;
   String? bu;
-  String? codeSO;
+
   final isEditMode = false.obs;
   final NOOModel? editData;
   final _picker = ImagePicker();
@@ -142,8 +142,8 @@ class CustomerFormController extends GetxController
   RxList<BusinessUnit> businessUnits = <BusinessUnit>[].obs;
   RxList<AXRegional> axRegionals = <AXRegional>[].obs;
   List<CustomerPaymentMode> paymentMode = [];
-  List<Category1> category1 = [];
-  List<Category2> category2 = [];
+  List<Category1> category = [];
+  List<Category2> category1 = [];
   List<Segment> segment = [];
   List<SubSegment> subSegment = [];
   List<ClassModel> classList = [];
@@ -152,9 +152,10 @@ class CustomerFormController extends GetxController
   List<PriceGroup> priceGroup = [];
 
   String? selectedSalesOffice;
+  String? selectedSalesOfficeCode;
   String? selectedBusinessUnit;
   String? selectedCategory;
-  String? selectedCategory2;
+  String? selectedCategory1;
   String? selectedAXRegional;
   String? selectedPaymentMode;
   String? selectedSegment;
@@ -163,6 +164,13 @@ class CustomerFormController extends GetxController
   String? selectedCompanyStatus;
   String? selectedCurrency;
   String? selectedPriceGroup;
+  String? ktpImageUrl;
+  String? npwpImageUrl;
+  String? siupImageUrl;
+  String? sppkpImageUrl;
+  String? frontImageUrl;
+  String? insideImageUrl;
+  String? competitorImageUrl;
 
   CustomerFormController({this.editData});
 
@@ -207,6 +215,7 @@ class CustomerFormController extends GetxController
 
   Future<void> initializeData() async {
     autofill();
+
     await Future.wait([
       loadLongLatFromSharedPrefs(),
       loadSharedPreferences(),
@@ -216,17 +225,20 @@ class CustomerFormController extends GetxController
       fetchBusinessUnits(),
       fetchAXRegionals(),
       fetchPaymentMode(),
+      fetchCategory(),
       fetchCategory1(),
-      fetchCategory2(),
       fetchSegment(),
+      fetchSubSegment(),
       fetchClass(),
       fetchCompanyStatus(),
       fetchCurrency(),
+      fetchPaymentMode(),
     ]);
 
     if (editData != null) {
-      isEditMode.value = true;
-      _fillFormData(editData!);
+      selectedCategory = editData!.category;
+      selectedCategory1 = editData!.category1;
+      fillFormData(editData!);
     } else {
       autofill();
     }
@@ -241,7 +253,7 @@ class CustomerFormController extends GetxController
     update();
   }
 
-  void _fillFormData(NOOModel data) async {
+  void fillFormData(NOOModel data) async {
     customerNameController.text = data.custName;
     brandNameController.text = data.brandName;
     contactPersonController.text = data.contactPerson;
@@ -253,68 +265,40 @@ class CustomerFormController extends GetxController
     emailAddressController.text = data.emailAddress;
     websiteController.text = data.website;
 
-    await initializeData();
+    selectedSalesOffice = data.salesOffice;
 
-    if (salesOffices.isNotEmpty) {
-      selectedSalesOffice = salesOffices
-          .firstWhereOrNull((so) => so.name == data.salesOffice)
-          ?.name;
-    }
+    selectedBusinessUnit = data.businessUnit;
+    selectedAXRegional = data.regional;
+    selectedSegment = data.segment;
 
-    if (businessUnits.isNotEmpty) {
-      selectedBusinessUnit = businessUnits
-          .firstWhereOrNull((bu) => bu.name == data.businessUnit)
-          ?.name;
-    }
-    if (category1.isNotEmpty) {
+    if (data.category != null) {
       selectedCategory =
-          category1.firstWhereOrNull((cat) => cat.name == data.category)?.name;
+          category.firstWhereOrNull((cat) => cat.name == data.category)?.name;
     }
-    if (category2.isNotEmpty) {
-      selectedCategory2 = category2
+
+    if (data.category1 != null) {
+      selectedCategory1 = category1
           .firstWhereOrNull((cat) => cat.master == data.category1)
           ?.master;
     }
-    if (axRegionals.isNotEmpty) {
-      selectedAXRegional = axRegionals
-          .firstWhereOrNull((reg) => reg.regional == data.regional)
-          ?.regional;
+
+    if (data.segment != null) {
+      await fetchSubSegment();
+      selectedSubSegment = data.subSegment;
     }
-    if (segment.isNotEmpty) {
-      selectedSegment = segment
-          .firstWhereOrNull((seg) => seg.segmentId == data.segment)
-          ?.segmentId;
+
+    selectedClass = data.classField;
+    selectedCompanyStatus = data.companyStatus;
+    selectedCurrency = data.currency;
+    if (data.salesOffice != null) {
+      final selectedOffice = salesOffices
+          .firstWhereOrNull((office) => office.name == data.salesOffice);
+      selectedSalesOfficeCode = selectedOffice?.code;
+      await fetchPriceGroup();
+      selectedPriceGroup = data.priceGroup;
     }
-    if (subSegment.isNotEmpty) {
-      selectedSubSegment = subSegment
-          .firstWhereOrNull((sub) => sub.subSegmentId == data.subSegment)
-          ?.subSegmentId;
-    }
-    if (classList.isNotEmpty) {
-      selectedClass = classList
-          .firstWhereOrNull((cls) => cls.className == data.classField)
-          ?.className;
-    }
-    if (companyStatus.isNotEmpty) {
-      selectedCompanyStatus = companyStatus
-          .firstWhereOrNull((cs) => cs.chainId == data.companyStatus)
-          ?.chainId;
-    }
-    if (currency.isNotEmpty) {
-      selectedCurrency = currency
-          .firstWhereOrNull((cur) => cur.currencyCode == data.currency)
-          ?.currencyCode;
-    }
-    if (priceGroup.isNotEmpty) {
-      selectedPriceGroup = priceGroup
-          .firstWhereOrNull((pg) => pg.groupId == data.priceGroup)
-          ?.groupId;
-    }
-    if (paymentMode.isNotEmpty) {
-      selectedPaymentMode = paymentMode
-          .firstWhereOrNull((pm) => pm.paymentMode == data.paymentMode)
-          ?.paymentMode;
-    }
+
+    selectedPaymentMode = data.paymentMode;
 
     if (data.companyAddresses != null) {
       companyNameController.text = data.companyAddresses?.name ?? '';
@@ -347,8 +331,55 @@ class CustomerFormController extends GetxController
           data.deliveryAddresses?.zipCode.toString() ?? '';
     }
 
-    // longitudeControllerDelivery.text = longitudeData;
-    // latitudeControllerDelivery.text = latitudeData;
+    if (data.fotoKTP?.isNotEmpty == true) {
+      ktpImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoKTP}";
+      ktpFromServer.value = data.fotoKTP!;
+    }
+
+    if (data.fotoNPWP?.isNotEmpty == true) {
+      npwpImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoNPWP}";
+      npwpFromServer.value = data.fotoNPWP!;
+    }
+
+    if (data.fotoSIUP?.isNotEmpty == true) {
+      siupImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoSIUP}";
+      siupFromServer.value = data.fotoSIUP!;
+    }
+
+    if (data.fotoGedung3?.isNotEmpty == true) {
+      sppkpImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoGedung3}";
+      sppkpFromServer.value = data.fotoGedung3!;
+    }
+
+    if (data.fotoGedung1?.isNotEmpty == true) {
+      frontImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoGedung1}";
+      businessPhotoFrontFromServer.value = data.fotoGedung1!;
+    }
+
+    if (data.fotoGedung2?.isNotEmpty == true) {
+      insideImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoGedung2}";
+      businessPhotoInsideFromServer.value = data.fotoGedung2!;
+    }
+
+    if (data.fotoCompetitorTop?.isNotEmpty == true) {
+      competitorImageUrl =
+          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoCompetitorTop}";
+      competitorTopFromServer.value = data.fotoCompetitorTop!;
+    }
+
+    longitudeControllerDelivery.text = data.long ?? '';
+    latitudeControllerDelivery.text = data.lat ?? '';
+    debugPrint(latitudeControllerDelivery.text);
+    // longitudeControllerDelivery.text = data.lat ?? '';
+    // // latitudeControllerDelivery.text = data.long ?? '';
+
+    // debugPrint(latitudeControllerDelivery.text);
 
     update();
   }
@@ -382,7 +413,7 @@ class CustomerFormController extends GetxController
     selectedSalesOffice = null;
     selectedBusinessUnit = null;
     selectedCategory = null;
-    selectedCategory2 = null;
+    selectedCategory1 = null;
     selectedAXRegional = null;
     selectedSegment = null;
     selectedSubSegment = null;
@@ -409,7 +440,7 @@ class CustomerFormController extends GetxController
     selectedSalesOffice = draft.salesOffice;
     selectedBusinessUnit = draft.businessUnit;
     selectedCategory = draft.category;
-    selectedCategory2 = draft.category1;
+    selectedCategory1 = draft.category1;
     selectedAXRegional = draft.regional;
     selectedSegment = draft.segment;
     selectedSubSegment = draft.subSegment;
@@ -511,7 +542,7 @@ class CustomerFormController extends GetxController
       "SalesOffice": selectedSalesOffice,
       "BusinessUnit": selectedBusinessUnit,
       "Category": selectedCategory,
-      "Category1": selectedCategory2,
+      "Category1": selectedCategory1,
       "Regional": selectedAXRegional,
       "Segment": selectedSegment,
       "SubSegment": selectedSubSegment,
@@ -639,6 +670,7 @@ class CustomerFormController extends GetxController
 
   Future<http.Response> _sendRequest(Map<String, dynamic> requestBody) async {
     final url = Uri.parse("${baseURLDevelopment}NOOCustTables");
+
     final headers = {
       'authorization': 'Basic ${base64Encode(utf8.encode('test:test456'))}',
       'Content-Type': 'application/json; charset=UTF-8',
@@ -656,6 +688,7 @@ class CustomerFormController extends GetxController
     SharedPreferences prefs = await SharedPreferences.getInstance();
     so = prefs.getString('SO');
     bu = prefs.getString('BU');
+
     update();
   }
 
@@ -736,29 +769,33 @@ class CustomerFormController extends GetxController
     }
   }
 
-  Future<void> fetchCategory1() async {
+  Future<void> fetchCategory() async {
     final url = Uri.parse("${baseURLDevelopment}AX_Category1");
     final response = await http.get(url, headers: {'authorization': basicAuth});
+
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
-      category1 = data.map((json) => Category1.fromJson(json)).toList();
+      category = data.map((json) => Category1.fromJson(json)).toList();
       update();
     }
   }
 
-  Future<void> fetchCategory2() async {
+  Future<void> fetchCategory1() async {
     final url = Uri.parse("${baseURLDevelopment}CustCategory");
     final response = await http.get(url, headers: {'authorization': basicAuth});
+
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
-      category2 = data.map((json) => Category2.fromJson(json)).toList();
+      category1 = data.map((json) => Category2.fromJson(json)).toList();
       update();
     }
   }
 
   Future<void> fetchSegment() async {
     final url = Uri.parse("${baseURLDevelopment}CustSegment?bu=$bu");
+
     final response = await http.get(url, headers: {'authorization': basicAuth});
+
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
       segment = data.map((json) => Segment.fromJson(json)).toList();
@@ -771,6 +808,7 @@ class CustomerFormController extends GetxController
     update();
     final url = Uri.parse("${baseURLDevelopment}CustSubSegment");
     final response = await http.get(url, headers: {'authorization': basicAuth});
+
     if (response.statusCode == 200) {
       List rawData = jsonDecode(response.body);
       List filteredData = rawData
@@ -819,28 +857,47 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchPriceGroup() async {
-    final url =
-        Uri.parse("${baseURLDevelopment}CustPriceGroup?so=$codeSO&bu=$bu");
+    if (selectedSalesOfficeCode == null) {
+      return;
+    }
+
+    final url = Uri.parse(
+        "${baseURLDevelopment}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
     final response = await http.get(url, headers: {'authorization': basicAuth});
+
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
       priceGroup = data.map((json) => PriceGroup.fromJson(json)).toList();
+
       update();
     }
   }
 
-  void onSalesOfficeSelected(String? value) async {
+  Future<void> onSalesOfficeSelected(String? value) async {
     selectedSalesOffice = value;
+
     if (value != null) {
-      final selectedOffice = salesOffices.firstWhere(
-        (office) => office.name == value,
-        orElse: () => SalesOffice(name: '', code: ''),
-      );
-      codeSO = selectedOffice.code;
-      selectedPriceGroup = null;
-      await fetchPriceGroup();
+      final selectedOffice =
+          salesOffices.firstWhereOrNull((office) => office.name == value);
+
+      if (selectedOffice != null) {
+        selectedSalesOfficeCode = selectedOffice.code;
+
+        await fetchPriceGroup();
+
+        if (editData != null && selectedPriceGroup == null) {
+          selectedPriceGroup = editData!.priceGroup;
+        }
+      }
+
+      if (editData != null) {
+        selectedBusinessUnit = businessUnits
+            .firstWhereOrNull((bu) => bu.name == editData!.businessUnit)
+            ?.name;
+      }
+
+      update();
     }
-    update();
   }
 
   Future<bool> updateCustomer() async {
@@ -852,7 +909,7 @@ class CustomerFormController extends GetxController
         "SalesOffice": selectedSalesOffice,
         "BusinessUnit": selectedBusinessUnit,
         "Category": selectedCategory,
-        "Category1": selectedCategory2,
+        "Category1": selectedCategory1,
         "Regional": selectedAXRegional,
         "Segment": selectedSegment,
         "SubSegment": selectedSubSegment,

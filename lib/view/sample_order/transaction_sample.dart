@@ -26,24 +26,31 @@ class _TransactionPageState extends State<TransactionSample> {
 
   final FocusNode _qtyAddFocusNode = FocusNode();
   final FocusNode _descriptionFocusNode = FocusNode();
+  final FocusNode _customerNameFocusNode = FocusNode();
   final FocusNode _customerPICFocusNode = FocusNode();
   final FocusNode _customerPhoneFocusNode = FocusNode();
   final FocusNode _customerAddressFocusNode = FocusNode();
-  final FocusNode _principalNameFocusNode = FocusNode();
+
+  final FocusNode _invoiceIdFocusNode = FocusNode();
+  final FocusNode _salesIdFocusNode = FocusNode();
 
   void _closeKeyboard() {
     _qtyAddFocusNode.unfocus();
     _descriptionFocusNode.unfocus();
+    _customerNameFocusNode.unfocus();
     _customerPICFocusNode.unfocus();
     _customerPhoneFocusNode.unfocus();
     _customerAddressFocusNode.unfocus();
-    _principalNameFocusNode.unfocus();
+
+    _invoiceIdFocusNode.unfocus();
+    _salesIdFocusNode.unfocus();
   }
 
   @override
   void initState() {
     super.initState();
     _addListeners();
+    inputPagePresenter.requestPermissions();
   }
 
   void _addListeners() {
@@ -65,7 +72,7 @@ class _TransactionPageState extends State<TransactionSample> {
     for (var focusNode in qtyFocusNodes) {
       focusNode.dispose();
     }
-    // Only remove prospect-related listeners
+
     inputPagePresenter.custNameTextEditingControllerRx.value
         .removeListener(_updateProspectValidity);
     inputPagePresenter.custPicTextEditingControllerRx.value
@@ -76,10 +83,13 @@ class _TransactionPageState extends State<TransactionSample> {
         .removeListener(_updateProspectValidity);
 
     _descriptionFocusNode.dispose();
+    _customerNameFocusNode.dispose();
     _customerPICFocusNode.dispose();
     _customerPhoneFocusNode.dispose();
     _customerAddressFocusNode.dispose();
-    _principalNameFocusNode.dispose();
+
+    _invoiceIdFocusNode.dispose();
+    _salesIdFocusNode.dispose();
     super.dispose();
   }
 
@@ -98,18 +108,17 @@ class _TransactionPageState extends State<TransactionSample> {
   bool _isAddItemEnabled() {
     bool isPurposeDescriptionFilled = inputPagePresenter
         .purposeDescTextEditingControllerRx.value.text.isNotEmpty;
-    bool isPrincipalNameFilled = !inputPagePresenter.isClaim.value ||
-        (inputPagePresenter.isClaim.value &&
-            inputPagePresenter.principalList.value.selectedChoice?.id != '0') ||
-        (inputPagePresenter
-            .principalNameTextEditingControllerRx.value.text.isNotEmpty);
+    // bool isPrincipalNameFilled = !inputPagePresenter.isClaim.value ||
+    //     (inputPagePresenter.isClaim.value &&
+    //         inputPagePresenter.principalList.value.selectedChoice?.id != '0') ||
+    //     (inputPagePresenter
+    //         .principalNameTextEditingControllerRx.value.text.isNotEmpty);
 
     bool isCommercial =
         inputPagePresenter.typesList.value.selectedChoice?.value ==
             'Commercial';
 
-    return isPurposeDescriptionFilled &&
-        (isCommercial ? isPrincipalNameFilled : true);
+    return isPurposeDescriptionFilled && isCommercial == true;
   }
 
   void _addItem() {
@@ -409,8 +418,10 @@ class _TransactionPageState extends State<TransactionSample> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  _closeKeyboard();
-                  inputPagePresenter.changeSampleType(value);
+                  setState(() {
+                    _closeKeyboard();
+                    inputPagePresenter.changeSampleType(value);
+                  });
                 },
                 onTap: () {
                   FocusScope.of(context).unfocus();
@@ -477,6 +488,9 @@ class _TransactionPageState extends State<TransactionSample> {
                     controller: inputPagePresenter
                         .purposeDescTextEditingControllerRx.value,
                     maxLines: null,
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                     decoration: InputDecoration(
                       hintText: 'Submit description here',
                       hintStyle: const TextStyle(fontSize: 16),
@@ -553,7 +567,7 @@ class _TransactionPageState extends State<TransactionSample> {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.only(top: 4, bottom: 16.0),
                           child: TextField(
-                            focusNode: _customerPICFocusNode,
+                            focusNode: _customerNameFocusNode,
                             controller: inputPagePresenter
                                 .custNameTextEditingControllerRx.value,
                             maxLines: null,
@@ -578,7 +592,7 @@ class _TransactionPageState extends State<TransactionSample> {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.only(top: 4, bottom: 16.0),
                           child: TextField(
-                            focusNode: _customerPhoneFocusNode,
+                            focusNode: _customerPICFocusNode,
                             controller: inputPagePresenter
                                 .custPicTextEditingControllerRx.value,
                             maxLines: 1,
@@ -603,7 +617,7 @@ class _TransactionPageState extends State<TransactionSample> {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.only(top: 4, bottom: 16.0),
                           child: TextField(
-                            focusNode: _customerAddressFocusNode,
+                            focusNode: _customerPhoneFocusNode,
                             controller: inputPagePresenter
                                 .custPhoneTextEditingControllerRx.value,
                             maxLines: 1,
@@ -671,125 +685,167 @@ class _TransactionPageState extends State<TransactionSample> {
                           },
                         ),
                       ],
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          "Sales ID AX",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                        child: TextField(
+                          keyboardType: TextInputType.text,
+                          focusNode: _salesIdFocusNode,
+                          controller: inputPagePresenter
+                              .salesIdTextEditingControllerRx.value,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  width: 1, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          "Invoice ID AX",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                        child: TextField(
+                          keyboardType: TextInputType.text,
+                          focusNode: _invoiceIdFocusNode,
+                          controller: inputPagePresenter
+                              .invoiceIdTextEditingControllerRx.value,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  width: 1, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("Upload AX"),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          inputPagePresenter
+                                              .pickAndUploadFile();
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStateProperty.all<Color>(
+                                                  colorAccent),
+                                          foregroundColor:
+                                              WidgetStateProperty.all<Color>(
+                                                  Colors.white),
+                                          elevation:
+                                              WidgetStateProperty.all<double>(
+                                                  6.0),
+                                          padding: WidgetStateProperty.all<
+                                                  EdgeInsets>(
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 20,
+                                                  vertical: 12)),
+                                          shape: WidgetStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16.0),
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "Choose File",
+                                          style: TextStyle(
+                                            fontSize: 16, // Text size
+                                            fontWeight:
+                                                FontWeight.bold, // Text weight
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              });
+                        },
+                        child: Container(
+                          width: 100,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: colorAccent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Upload AX",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      )
                     ],
                   );
                 }),
-                Obx(
-                  () => CheckboxListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                    title: const Text(
-                      "Claim to principal ?",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+              ],
+              Obx(() {
+                final deptState = inputPagePresenter.deptList.value;
+                return DropdownButtonHideUnderline(
+                  child: SearchChoices.single(
+                    isExpanded: true,
+                    hint: const Text(
+                      "Select Department",
+                      style: TextStyle(fontSize: 16),
                     ),
-                    value: inputPagePresenter.isClaim.value,
-                    onChanged: (bool? value) {
+                    value: deptState.selectedChoice,
+                    items: deptState.choiceList?.map((dept) {
+                      return DropdownMenuItem<IdAndValue<String>>(
+                        value: dept,
+                        child: Text(
+                          dept.value,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (IdAndValue<String>? newValue) {
+                      _closeKeyboard();
                       setState(() {
-                        inputPagePresenter.isClaim.value = value ?? false;
+                        inputPagePresenter.changeDept(newValue);
                       });
                     },
                   ),
-                ),
-                if (inputPagePresenter.isClaim.value) ...[
-                  Obx(
-                    () => SearchChoices.single(
-                      clearSearchIcon: const Icon(Icons.clear_all),
-                      padding: const EdgeInsets.only(top: 8),
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      ),
-                      menuBackgroundColor: Colors.white,
-                      underline: Container(
-                        height: 1,
-                        color: Colors.grey,
-                      ),
-                      isExpanded: true,
-                      value:
-                          inputPagePresenter.principalList.value.selectedChoice,
-                      hint: const Text(
-                        "Select Principal",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      items: inputPagePresenter.principalList.value.choiceList
-                          ?.map((item) {
-                        return DropdownMenuItem(
-                          value: item,
-                          child: Text(item.value,
-                              style: const TextStyle(fontSize: 16)),
-                        );
-                      }).toList(),
-                      onChanged: (IdAndValue<String>? newValue) {
-                        _closeKeyboard();
-                        inputPagePresenter.changePrincipal(newValue);
-                      },
-                    ),
-                  ),
-                  if (inputPagePresenter
-                          .principalList.value.selectedChoice?.id ==
-                      '0') ...[
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        "Principal Name",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.only(top: 4, bottom: 16.0),
-                      child: TextField(
-                        controller: inputPagePresenter
-                            .principalNameTextEditingControllerRx.value,
-                        maxLines: 1,
-                        focusNode: _principalNameFocusNode,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(width: 1, color: Colors.black),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ] else ...[
-                Obx(() {
-                  final deptState = inputPagePresenter.deptList.value;
-                  return DropdownButtonHideUnderline(
-                    child: SearchChoices.single(
-                      isExpanded: true,
-                      hint: const Text(
-                        "Select Department",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      value: deptState.selectedChoice,
-                      items: deptState.choiceList?.map((dept) {
-                        return DropdownMenuItem<IdAndValue<String>>(
-                          value: dept,
-                          child: Text(
-                            dept.value,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (IdAndValue<String>? newValue) {
-                        _closeKeyboard();
-                        setState(() {
-                          inputPagePresenter.changeDept(newValue);
-                        });
-                      },
-                    ),
-                  );
-                }),
-              ],
+                );
+              }),
             ],
           );
         },

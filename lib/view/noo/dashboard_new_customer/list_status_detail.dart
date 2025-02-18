@@ -119,37 +119,23 @@ class StatusDetailView extends GetView<StatusDetailController> {
     return Obx(() {
       if (!controller.isLoading.value &&
           controller.statusApproval.value == controller.statusRejected) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                offset: const Offset(0, -2),
-                blurRadius: 4,
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: SizedBox(
-              width: double.infinity,
-              height: 45,
-              child: ElevatedButton(
-                onPressed: controller.navigateToEdit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: controller.navigateToEdit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'Edit',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              child: const Text(
+                'Edit',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -175,12 +161,15 @@ class StatusDetailView extends GetView<StatusDetailController> {
         _buildDetailRow('Company Status', data.companyStatus),
         _buildDetailRow('Currency', data.currency),
         _buildDetailRow('Price Group', data.priceGroup),
-        _buildDetailRow('AX Category', data.category1!),
-        _buildDetailRow('Regional', data.regional!),
-        _buildDetailRow('Payment Mode', data.paymentMode!),
+        if (data.category1 != null)
+          _buildDetailRow('AX Category', data.category1!),
+        if (data.regional != null) _buildDetailRow('Regional', data.regional!),
+        if (data.paymentMode != null)
+          _buildDetailRow('Payment Mode', data.paymentMode!),
         _buildDetailRow('Contact Person', data.contactPerson),
         _buildDetailRow('KTP', data.ktp),
-        _buildDetailRow('KTP Address', data.ktpAddress!),
+        if (data.ktpAddress != null)
+          _buildDetailRow('KTP Address', data.ktpAddress!),
         _buildDetailRow('NPWP', data.npwp),
         _buildDetailRow('FAX', data.faxNo),
         _buildDetailRow('Phone', data.phoneNo),

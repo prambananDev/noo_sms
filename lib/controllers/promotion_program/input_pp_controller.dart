@@ -292,9 +292,6 @@ class InputPageController extends GetxController {
                 id: element["itemId"].toString(), value: element["itemName"]))
             .toList();
         _updateState();
-      } else {
-        debugPrint(
-            "Failed to load product data, status code: ${response.statusCode}");
       }
     } else if (selectedChoice ==
         itemGroupInputPageDropdownState.choiceList?[1]) {
@@ -311,9 +308,6 @@ class InputPageController extends GetxController {
                 id: element["GROUPID"].toString(), value: element["NAME"]))
             .toList();
         _updateState();
-      } else {
-        debugPrint(
-            "Failed to load discount group data, status code: ${response.statusCode}");
       }
     }
   }

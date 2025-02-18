@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_sms_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardMain extends StatefulWidget {
   const DashboardMain({Key? key}) : super(key: key);
@@ -12,6 +13,18 @@ class DashboardMain extends StatefulWidget {
 
 class DashboardMainState extends State<DashboardMain> {
   final DashboardController _controller = DashboardController();
+  String addressDetail = "";
+
+  @override
+  void initState() {
+    super.initState();
+    loadSharedPreferences();
+  }
+
+  Future<void> loadSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    addressDetail = (prefs.getString("getAddressDetail") ?? "");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +92,13 @@ class DashboardMainState extends State<DashboardMain> {
                           style: TextStyle(color: colorNetral)),
                     ),
                   ),
+                  // Text(
+                  //   addressDetail,
+                  //   style: TextStyle(
+                  //     fontSize: 24,
+                  //     color: colorBlack,
+                  //   ),
+                  // ),
                 ],
               ),
             ),

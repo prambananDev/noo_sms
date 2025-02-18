@@ -120,16 +120,16 @@ class ApprovalController extends GetxController {
 
   Future<void> getSharedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    idUser.value = prefs.getInt("userid") ?? 0;
+    idUser.value = prefs.getInt("id") ?? 0;
     editApproval.value = prefs.getInt("editApproval") ?? 0;
   }
 
   Future<void> fetchApprovals() async {
     isLoading.value = true;
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt("userid")?.toString();
+    final id = prefs.getInt("id")?.toString();
 
-    final url = '${baseURLDevelopment}FindApproval/$userId?page=${page.value}';
+    final url = '${baseURLDevelopment}FindApproval/$id?page=${page.value}';
 
     final response = await makeApiCall(url);
 
@@ -290,7 +290,7 @@ class ApprovalController extends GetxController {
   }
 
   Future<void> processReject(int id, String remark) async {
-    final url = '${baseURLDevelopment}ApprovalModel/$id?'
+    final url = '${baseURLDevelopment}Approval/$id?'
         'value=0&'
         'approveBy=${idUser.value}&'
         'ApprovedSignature=reject&'
@@ -298,9 +298,20 @@ class ApprovalController extends GetxController {
 
     final response = await makeApiCall(url, method: 'POST');
 
+    showSuccessMessage('Rejection processed successfully');
     if (response.statusCode == 200) {
-      // Get.offAllNamed('/dashboard');
+      _disposeApprovalControllers(id);
+
+      Get.back();
+
       showSuccessMessage('Rejection processed successfully');
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      Get.toNamed('/noo_pending');
+    } else {
+      Get.back();
+      handleError('Failed to process approval',
+          'Server returned ${response.statusCode}');
     }
   }
 

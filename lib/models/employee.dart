@@ -88,14 +88,12 @@ class Employee {
       employee = Employee.fromLoginJson(jsonObject);
 
       if (apiResult.statusCode == 200) {
-        int? status;
         SharedPreferences preferences = await SharedPreferences.getInstance();
 
         User.getUsers(
           username,
           password,
         ).then((value) {
-          status = value.code;
           if (value.code != 200) {
             message = value.message;
           } else {
@@ -122,7 +120,8 @@ class Employee {
 
   Future<String> logOut(String username) async {
     String url = "$apiCons2/api/Logout?username=$username";
-    var apiResult, data;
+    http.Response apiResult;
+    String data;
     try {
       apiResult = await http.post(
         Uri.parse(url),

@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
+import 'package:dio/dio.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/feedback_detail.dart';
@@ -14,6 +16,7 @@ import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropd
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:noo_sms/models/transaction_history_sample.dart';
 import 'package:noo_sms/models/upload_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart' hide FormData;
 
@@ -90,6 +93,11 @@ class TransactionHistorySampleController extends GetxController {
       promotionTypeInputPageDropdownStateRx =
       InputPageDropdownState<IdAndValue<String>>().obs;
 
+  Future<void> refreshData() async {
+    isLoading.value = true;
+    await getTransactionHistory();
+  }
+
   Future<void> getTransactionHistory() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int idEmp = int.tryParse(prefs.getString("getIdEmp") ?? '0') ?? 0;
@@ -164,15 +172,14 @@ class TransactionHistorySampleController extends GetxController {
         backgroundColor: Colors.blue.withOpacity(0.7),
         colorText: Colors.white,
       );
-      var jsonObject;
+      Map<String, dynamic> jsonObject;
       try {
         jsonObject = jsonDecode(response.data);
       } catch (e) {
         throw Exception('Failed to parse response as JSON: $e');
       }
 
-      var objects =
-          UploadFileResponse.fromJson(jsonObject as Map<String, dynamic>);
+      var objects = UploadFileResponse.fromJson(jsonObject);
       return objects;
     } else {
       throw Exception(
@@ -290,6 +297,106 @@ class TransactionHistorySampleController extends GetxController {
       }
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<bool> downloadFile({
+    required int salesId,
+    required BuildContext context,
+  }) async {
+    dio.Dio dioClient = dio.Dio();
+    try {
+      _showLoadingDialog(context);
+      final downloadUrl = '$apiCons2/api/downloadAttachment?salesid=$salesId';
+
+      Directory? downloadDirectory;
+      if (Platform.isAndroid) {
+        downloadDirectory = await getExternalStorageDirectory();
+
+        if (downloadDirectory == null) {
+          final tempDir = await getTemporaryDirectory();
+          downloadDirectory = tempDir;
+        }
+      } else {
+        downloadDirectory = await getApplicationDocumentsDirectory();
+      }
+
+      if (!await downloadDirectory.exists()) {
+        await downloadDirectory.create(recursive: true);
+      }
+      final now = DateTime.now();
+      final formattedDate = DateFormat('ddMMyyyy').format(now);
+
+      final fileName = 'AX_${salesId}_$formattedDate.pdf';
+      final filePath = '${downloadDirectory.path}/$fileName';
+
+      await dioClient.download(
+        downloadUrl,
+        filePath,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {
+            HttpHeaders.acceptEncodingHeader: '*',
+          },
+        ),
+        onReceiveProgress: (received, total) {
+          debugPrint('Received: $received, Total: $total');
+        },
+      );
+
+      Navigator.of(context).pop();
+
+      _showSnackBar(context, 'File downloaded to: $filePath');
+
+      return true;
+    } catch (e) {
+      Navigator.of(context).pop();
+
+      _showSnackBar(context, 'Download failed: ${e.toString()}');
+      return false;
+    }
+  }
+
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Downloading...'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  Future<List<ApprovalInfo>> fetchApprovalInfo(int id) async {
+    final response = await http.get(
+      Uri.parse('$apiCons2/api/SampleApprovalInfo/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    debugPrint(response.body);
+    debugPrint(Uri.parse('$apiCons2/api/SampleApprovalInfo/$id').toString());
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((json) => ApprovalInfo.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load approval info');
     }
   }
 

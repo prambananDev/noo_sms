@@ -43,7 +43,7 @@ class DraftController extends GetxController {
         salesOffice: formController.selectedSalesOffice,
         businessUnit: formController.selectedBusinessUnit,
         category: formController.selectedCategory,
-        category1: formController.selectedCategory2,
+        category1: formController.selectedCategory1,
         regional: formController.selectedAXRegional,
         segment: formController.selectedSegment,
         subSegment: formController.selectedSubSegment,

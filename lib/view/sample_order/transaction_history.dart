@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/button_widget.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_history_controller.dart';
+import 'package:noo_sms/models/transaction_history_sample.dart';
 import 'package:noo_sms/view/sample_order/transaction_feedback.dart';
 
 class TransactionHistorySampleView extends StatefulWidget {
@@ -146,26 +147,91 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                   ],
                 ),
                 child: ListTile(
-                  title: Text(
-                    transaction.salesId ?? "N/A",
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        'Customer : ${transaction.customer}',
-                        style: const TextStyle(fontSize: 16),
+                      Row(
+                        children: [
+                          const Text(
+                            "Order Number : ",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                          Text(
+                            transaction.salesId ?? "N/A",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: colorBlack),
+                          ),
+                        ],
                       ),
                       Text(
-                        'Cust.Reff : ${transaction.custReff}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Date: ${DateFormat("dd-MM-yyyy hh:mm").format(DateTime.parse(transaction.date!))}',
+                        'Order Date : ${DateFormat("dd-MM-yyyy hh:mm").format(DateTime.parse(transaction.date!))}',
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w300),
+                      ),
+                      Text(
+                        'Customer Name : ${transaction.customer ?? "N/A"}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Segment : ${transaction.segment}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Address : ${transaction.address}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'PIC : ${transaction.pic}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Phone Number: ${transaction.phone}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Purpose Type : ${transaction.purposeType}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Purpose : ${transaction.purpose}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Purpose Description : ${transaction.desc}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Sales Office : ${transaction.salesoffice}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Business Unit : ${transaction.businessUnit}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Departement : ${transaction.dept}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Claim : ${transaction.isClaimed}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Principal : ${transaction.principal}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Feedback : ${transaction.feedback}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Feedback Note : ${transaction.notes ?? "N/A"}',
+                        style: const TextStyle(fontSize: 16),
                       ),
                       Row(
                         children: [
@@ -185,69 +251,169 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                           ),
                         ],
                       ),
-                      Text(
-                        'Description : ${transaction.desc}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Address : ${transaction.address}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'PIC : ${transaction.pic}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Phone : ${transaction.phone}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Principal : ${transaction.principal}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Segment : ${transaction.segment}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Notes : ${transaction.notes}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Sales Office : ${transaction.salesoffice}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Business Unit : ${transaction.businessUnit}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Dept : ${transaction.dept}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Claim : ${transaction.isClaimed}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Feedback : ${transaction.feedback}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Purpose : ${transaction.purpose}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Purpose Type : ${transaction.purposeType}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            child: ButtonOrderSample(
+                          const Text(
+                            "Attachment : ",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              await inputPagePresenter.downloadFile(
+                                  salesId: transaction.id!, context: context);
+                            },
+                            child: Text(
+                              "Download File",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: colorAccent,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ButtonOrderSample(
+                              size: MediaQuery.of(context).size,
+                              onTapAction: () async {
+                                try {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (BuildContext context) {
+                                      return const AlertDialog(
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CircularProgressIndicator(),
+                                            SizedBox(height: 16),
+                                            Text(
+                                                'Loading approval information...'),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+
+                                  final List<ApprovalInfo> approvalInfo =
+                                      await inputPagePresenter
+                                          .fetchApprovalInfo(
+                                              transaction.id ?? 0);
+
+                                  Navigator.pop(context);
+
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text(
+                                          "Approval Information",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        content: SingleChildScrollView(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: approvalInfo.map((info) {
+                                              final statusColor =
+                                                  info.status == 'Approved'
+                                                      ? Colors.green
+                                                      : info.status == 'Pending'
+                                                          ? Colors.orange
+                                                          : Colors.red;
+
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Level ${info.level} - ${info.name}',
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        const Text(
+                                                          'Status: ',
+                                                          style: TextStyle(
+                                                              fontSize: 14),
+                                                        ),
+                                                        Text(
+                                                          info.status,
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: statusColor,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    if (info.message !=
+                                                        null) ...[
+                                                      Text(
+                                                        'Message: ${info.message}',
+                                                        style: const TextStyle(
+                                                            fontSize: 14),
+                                                      ),
+                                                    ],
+                                                    if (info.time != null) ...[
+                                                      Text(
+                                                        'Time: ${DateFormat("dd-MM-yyyy HH:mm").format(info.time!)}',
+                                                        style: const TextStyle(
+                                                            fontSize: 14),
+                                                      ),
+                                                    ],
+                                                    const Divider(),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                } catch (e) {
+                                  Navigator.pop(context);
+
+                                  Get.snackbar(
+                                    'Error',
+                                    'Failed to load approval information',
+                                    backgroundColor: Colors.red,
+                                    colorText: Colors.white,
+                                  );
+                                }
+                              },
+                              colorIcon: Colors.white,
+                              nameButton: "Info",
+                            ),
+                            ButtonOrderSample(
                               size: MediaQuery.of(context).size,
                               onTapAction: isFeedbackButtonActive
                                   ? () async {
@@ -344,93 +510,95 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                   : Colors.grey,
                               nameButton: "Feedback",
                             ),
-                          ),
-                          ButtonOrderSample(
-                            imageData: imageData,
-                            size: MediaQuery.of(context).size,
-                            onTapAction: isPODButtonActive
-                                ? () async {
-                                    String? salesId = transaction.salesId;
+                            ButtonOrderSample(
+                              imageData: imageData,
+                              size: MediaQuery.of(context).size,
+                              onTapAction: isPODButtonActive
+                                  ? () async {
+                                      String? salesId = transaction.salesId;
 
-                                    Uint8List? fetchedData =
-                                        await inputPagePresenter
-                                            .fetchImagePOD(salesId!);
+                                      Uint8List? fetchedData =
+                                          await inputPagePresenter
+                                              .fetchImagePOD(salesId!);
 
-                                    if (transaction.docStatus == 1) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text("Upload POD"),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                    handleUploadsPOD(salesId,
-                                                        ImageSource.camera);
-                                                  },
-                                                  child: const Text("Camera"),
-                                                ),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                    handleUploadsPOD(salesId,
-                                                        ImageSource.gallery);
-                                                  },
-                                                  child: const Text("Gallery"),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    } else if (transaction.docStatus == 2 ||
-                                        transaction.docStatus == 3) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) =>
-                                            AlertDialog(
-                                          title: const Text(
-                                            "POD Image",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          content: SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.6,
-                                            child: fetchedData != null
-                                                ? Image.memory(fetchedData,
-                                                    fit: BoxFit.fitWidth)
-                                                : const Center(
-                                                    child: Text(
-                                                        "No Image Loaded",
-                                                        textAlign:
-                                                            TextAlign.center),
+                                      if (transaction.docStatus == 1) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text("Upload POD"),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      handleUploadsPOD(salesId,
+                                                          ImageSource.camera);
+                                                    },
+                                                    child: const Text("Camera"),
                                                   ),
-                                          ),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: const Text('Close'),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      handleUploadsPOD(salesId,
+                                                          ImageSource.gallery);
+                                                    },
+                                                    child:
+                                                        const Text("Gallery"),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      } else if (transaction.docStatus == 2 ||
+                                          transaction.docStatus == 3) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              AlertDialog(
+                                            title: const Text(
+                                              "POD Image",
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ],
-                                        ),
-                                      );
+                                            content: SizedBox(
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.6,
+                                              child: fetchedData != null
+                                                  ? Image.memory(fetchedData,
+                                                      fit: BoxFit.fitWidth)
+                                                  : const Center(
+                                                      child: Text(
+                                                          "No Image Loaded",
+                                                          textAlign:
+                                                              TextAlign.center),
+                                                    ),
+                                            ),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: const Text('Close'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
                                     }
-                                  }
-                                : null,
-                            colorIcon:
-                                isPODButtonActive ? Colors.white : Colors.grey,
-                            nameButton: "POD",
-                          )
-                        ],
+                                  : null,
+                              colorIcon: isPODButtonActive
+                                  ? Colors.white
+                                  : Colors.grey,
+                              nameButton: "POD",
+                            )
+                          ],
+                        ),
                       ),
                     ],
                   ),

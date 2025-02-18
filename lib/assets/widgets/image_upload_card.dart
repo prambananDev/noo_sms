@@ -6,6 +6,7 @@ class ImageUploadCard extends StatelessWidget {
   final String title;
   final File? image;
   final Uint8List? webImage;
+  final String? imageUrl;
   final VoidCallback onCameraPress;
   final VoidCallback onGalleryPress;
   final String heroTagCamera;
@@ -16,6 +17,7 @@ class ImageUploadCard extends StatelessWidget {
     required this.title,
     this.image,
     this.webImage,
+    this.imageUrl,
     required this.onCameraPress,
     required this.onGalleryPress,
     required this.heroTagCamera,
@@ -26,8 +28,8 @@ class ImageUploadCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: SizedBox(
-        height: 200,
-        width: 150,
+        height: MediaQuery.of(context).size.height * 0.3,
+        width: MediaQuery.of(context).size.width * 0.85,
         child: ListView(
           children: [
             Column(
@@ -65,13 +67,12 @@ class ImageUploadCard extends StatelessWidget {
   }
 
   Widget _buildImageContent() {
-    if (image == null && webImage == null) {
-      return Text(title);
-    }
-
     return Column(
       children: [
-        Text(title),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 10),
         if (kIsWeb && webImage != null)
           Image.memory(
@@ -88,6 +89,41 @@ class ImageUploadCard extends StatelessWidget {
             cacheHeight: 400,
             cacheWidth: 300,
             fit: BoxFit.cover,
+          )
+        else if (imageUrl != null)
+          Image.network(
+            imageUrl!,
+            filterQuality: FilterQuality.medium,
+            cacheHeight: 400,
+            cacheWidth: 300,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Center(
+                child: Icon(Icons.error_outline, size: 50),
+              );
+            },
+          )
+        else
+          const SizedBox(
+            height: 200,
+            child: Center(
+              child: Icon(
+                Icons.image_outlined,
+                size: 50,
+                color: Colors.grey,
+              ),
+            ),
           ),
       ],
     );

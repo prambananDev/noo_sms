@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 
 class LocationController extends GetxController {
@@ -172,7 +171,6 @@ class LocationController extends GetxController {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // Update observable values
       longitudeData.value = "${position.longitude}";
       latitudeData.value = "${position.latitude}";
       streetName.value = street;

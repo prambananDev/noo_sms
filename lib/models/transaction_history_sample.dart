@@ -123,3 +123,40 @@ class TransactionLines {
     return data;
   }
 }
+
+class ApprovalInfo {
+  final int level;
+  final String name;
+  final String status;
+  final String? message;
+  final DateTime? time;
+
+  ApprovalInfo({
+    required this.level,
+    required this.name,
+    required this.status,
+    this.message,
+    this.time,
+  });
+
+  factory ApprovalInfo.fromJson(Map<String, dynamic> json) {
+    return ApprovalInfo(
+      level: json['Level'] as int,
+      name: json['Name'] as String,
+      status: json['Status'] as String,
+      message: json['Message'] as String?,
+      time:
+          json['Time'] != null ? DateTime.parse(json['Time'] as String) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'Level': level,
+      'Name': name,
+      'Status': status,
+      'Message': message,
+      'Time': time?.toIso8601String(),
+    };
+  }
+}

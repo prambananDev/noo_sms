@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
@@ -157,34 +158,23 @@ class StatusDetailController extends GetxController {
     }
   }
 
-  void navigateToEdsit() {
-    if (statusData.value != null) {
-      Get.to(
-        () => CustomerForm(
-          editData: statusData.value,
-          controller: customerFormController,
-        ),
-      )?.then((value) {
-        if (value == true) {
-          initializeData(statusData.value!.id);
-        }
-      });
-    }
-  }
-
   void navigateToEdit() {
     if (statusData.value != null) {
-      Get.delete<CustomerFormController>();
+      Get.delete<CustomerFormController>(force: true);
 
       final controller =
           Get.put(CustomerFormController(editData: statusData.value));
       controller.isEditMode.value = true;
 
+      controller.fillFormData(statusData.value!);
+
       Get.to(
         () => CustomerForm(
           editData: statusData.value,
-          controller: customerFormController,
+          isFromDraft: false,
+          controller: controller,
         ),
+        preventDuplicates: true,
       )?.then((value) {
         if (value == true) {
           initializeData(statusData.value!.id);

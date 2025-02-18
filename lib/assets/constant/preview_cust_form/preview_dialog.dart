@@ -89,7 +89,7 @@ class PreviewDialog extends StatelessWidget {
                     buildRow("Sales Office", controller.selectedSalesOffice),
                     buildRow("Business Unit", controller.selectedBusinessUnit),
                     buildRow("Category 1", controller.selectedCategory),
-                    buildRow("Category 2", controller.selectedCategory2),
+                    buildRow("Category 2", controller.selectedCategory1),
                     buildRow("AX Regional", controller.selectedAXRegional),
                     buildRow("Payment Mode", controller.selectedPaymentMode),
                     buildRow("Segment", controller.selectedSegment),

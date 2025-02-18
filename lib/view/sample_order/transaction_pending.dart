@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_pending_controller.dart';
 import 'package:noo_sms/models/approval.dart';
+import 'package:noo_sms/models/id_valaue.dart';
+import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropdown_state.dart';
+import 'package:search_choices/search_choices.dart';
 
 class TransactionPendingPage extends StatefulWidget {
   const TransactionPendingPage({super.key});
@@ -15,11 +18,22 @@ class TransactionPendingPage extends StatefulWidget {
 class TransactionPendingPageState extends State<TransactionPendingPage> {
   final TransactionPendingController presenter =
       Get.put(TransactionPendingController());
+  final FocusNode _principalNameFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     presenter.fetchApprovals();
+  }
+
+  @override
+  void dispose() {
+    _principalNameFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _closeKeyboard() {
+    _principalNameFocusNode.unfocus();
   }
 
   @override
@@ -52,32 +66,64 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
               ],
             ),
             child: ListTile(
-              leading: Icon(Icons.description, color: colorAccent),
-              title: Text(
-                approval.salesOrder,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              leading: Icon(
+                Icons.description,
+                color: colorAccent,
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      const Text(
+                        "Order Number : ",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Text(
+                        approval.salesOrder ?? "N/A",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colorBlack),
+                      ),
+                    ],
+                  ),
                   Text(
-                    'Customer : ${approval.customer}',
+                    'Order Date : ${approval.getFormattedDate()}',
                     style: const TextStyle(fontSize: 16),
                   ),
                   Text(
-                    'Date : ${approval.getFormattedDate()}',
+                    'Customer Name : ${approval.customer ?? "N/A"}',
                     style: const TextStyle(fontSize: 16),
                   ),
-                  Text('Status : ${approval.status}',
-                      style: const TextStyle(fontSize: 16)),
                   if (approval.desc != null)
-                    Text('Description : ${approval.desc}',
+                    Text('Purpose Description : ${approval.desc}',
                         style: const TextStyle(fontSize: 16)),
                   Text('Purpose : ${approval.purpose}',
                       style: const TextStyle(fontSize: 16)),
                   Text('Purpose Type : ${approval.purposeType}',
                       style: const TextStyle(fontSize: 16)),
+                  Row(
+                    children: [
+                      const Text(
+                        "Status : ",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Text(
+                        approval.status,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colorBlack),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               isThreeLine: true,
@@ -96,217 +142,281 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
 
     for (var detail in details) {
       var controller = TextEditingController(text: detail.qty.toString());
-
-      controller.addListener(() {
-        int index = qtyControllers.indexOf(controller);
-        if (index >= 0 && index < details.length) {
-          int newQty = int.tryParse(controller.text) ?? details[index].qty;
-          details[index] = ApprovalDetail(
-            productId: details[index].productId,
-            product: details[index].product,
-            qty: newQty,
-            unit: details[index].unit,
-          );
-        }
-      });
       qtyControllers.add(controller);
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      presenter.isClaim.value = false;
+      presenter.principalList.value =
+          InputPageDropdownState<IdAndValue<String>>(
+        choiceList: presenter.principalList.value.choiceList,
+        selectedChoice:
+            presenter.principalList.value.choiceList?.isNotEmpty == true
+                ? presenter.principalList.value.choiceList![0]
+                : null,
+        loadingState: 2,
+      );
+      presenter.principalNameTextEditingControllerRx.value.clear();
+    });
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: constraints.maxHeight -
-                      MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 10),
-                        ...details.asMap().entries.map((entry) {
-                          int index = entry.key;
-                          ApprovalDetail detail = entry.value;
-                          return Column(
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: GetBuilder<TransactionPendingController>(
+                init: presenter,
+                builder: (controller) {
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.8,
+                    child: AlertDialog(
+                      insetPadding: const EdgeInsets.all(8),
+                      contentPadding: const EdgeInsets.all(4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide.none,
+                      ),
+                      title: Center(
+                        child: Text(
+                          'Preview Details',
+                          style: TextStyle(
+                            color: colorAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      content: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              ListTile(
-                                title: Text(detail.product),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              ...details.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                ApprovalDetail detail = entry.value;
+                                return Column(
                                   children: [
-                                    Row(
-                                      children: [
-                                        const Text('QTY : '),
-                                        Container(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.4,
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.06,
-                                          margin:
-                                              const EdgeInsets.only(bottom: 10),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 4),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            border: Border.all(
-                                              width: 0.5,
-                                              color: const Color.fromARGB(
-                                                  167, 37, 37, 37),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
+                                    ListTile(
+                                      title: Text(detail.product),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
                                             children: [
-                                              IconButton(
-                                                onPressed: () {
-                                                  _addQuantity(index, false,
-                                                      qtyControllers);
-                                                },
-                                                icon: const Icon(
-                                                  Icons.remove,
-                                                  color: Colors.black,
-                                                  size: 18,
+                                              const Text('QTY : '),
+                                              Container(
+                                                width: 150,
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                      color: Colors.grey),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
-                                              ),
-                                              SizedBox(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.1,
-                                                child: TextField(
-                                                  autofocus: false,
-                                                  textAlign: TextAlign.center,
-                                                  controller:
-                                                      qtyControllers[index],
-                                                  keyboardType:
-                                                      const TextInputType
-                                                          .numberWithOptions(
-                                                    decimal: false,
-                                                    signed: true,
-                                                  ),
-                                                  inputFormatters: <TextInputFormatter>[
-                                                    FilteringTextInputFormatter
-                                                        .allow(
-                                                            RegExp(r'[0-9]')),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                          Icons.remove),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          int currentQty = int.tryParse(
+                                                                  qtyControllers[
+                                                                          index]
+                                                                      .text) ??
+                                                              0;
+                                                          if (currentQty > 1) {
+                                                            qtyControllers[
+                                                                        index]
+                                                                    .text =
+                                                                (currentQty - 1)
+                                                                    .toString();
+                                                          }
+                                                        });
+                                                      },
+                                                    ),
+                                                    Text(qtyControllers[index]
+                                                        .text),
+                                                    IconButton(
+                                                      icon:
+                                                          const Icon(Icons.add),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          int currentQty = int.tryParse(
+                                                                  qtyControllers[
+                                                                          index]
+                                                                      .text) ??
+                                                              0;
+                                                          qtyControllers[index]
+                                                                  .text =
+                                                              (currentQty + 1)
+                                                                  .toString();
+                                                        });
+                                                      },
+                                                    ),
                                                   ],
-                                                  decoration:
-                                                      const InputDecoration(
-                                                    border: InputBorder.none,
-                                                  ),
-                                                ),
-                                              ),
-                                              IconButton(
-                                                onPressed: () {
-                                                  _addQuantity(index, true,
-                                                      qtyControllers);
-                                                },
-                                                icon: const Icon(
-                                                  Icons.add,
-                                                  color: Colors.black,
-                                                  size: 18,
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                          Text('Unit: ${detail.unit}'),
+                                        ],
+                                      ),
                                     ),
-                                    Text(
-                                      'Unit: ${detail.unit}',
-                                    ),
+                                    const Divider(),
                                   ],
+                                );
+                              }).toList(),
+
+                              Obx(() => CheckboxListTile(
+                                    title: const Text('Claim to Principal'),
+                                    value: presenter.isClaim.value,
+                                    onChanged: (bool? value) {
+                                      presenter.isClaim.value = value ?? false;
+                                      controller.update();
+                                    },
+                                  )),
+
+                              if (presenter.isClaim.value)
+                                Obx(() {
+                                  final principalList =
+                                      presenter.principalList.value.choiceList;
+                                  return SearchChoices.single(
+                                    hint: const Text("Select Principal"),
+                                    isExpanded: true,
+                                    value: presenter
+                                        .principalList.value.selectedChoice,
+                                    items: principalList?.map((item) {
+                                      return DropdownMenuItem(
+                                        value: item,
+                                        child: Text(item.value),
+                                      );
+                                    }).toList(),
+                                    onChanged: (IdAndValue<String>? newValue) {
+                                      setState(() {
+                                        presenter.changePrincipal(newValue);
+                                      });
+                                    },
+                                  );
+                                }),
+
+                              if (presenter.isClaim.value &&
+                                  presenter.principalList.value.selectedChoice
+                                          ?.id ==
+                                      '0')
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: TextField(
+                                    controller: presenter
+                                        .principalNameTextEditingControllerRx
+                                        .value,
+                                    decoration: InputDecoration(
+                                      labelText: 'New Principal Name',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
                                 ),
+
+                              // Message Input
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: TextField(
+                                  controller: messageController,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    labelText: 'Message (Optional)',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Action Buttons
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      onPressed: () {
+                                        // Update details with current qty
+                                        for (int i = 0;
+                                            i < details.length;
+                                            i++) {
+                                          details[i] = ApprovalDetail(
+                                            productId: details[i].productId,
+                                            product: details[i].product,
+                                            qty: int.tryParse(
+                                                    qtyControllers[i].text) ??
+                                                details[i].qty,
+                                            unit: details[i].unit,
+                                          );
+                                        }
+
+                                        // Send rejection
+                                        presenter.sendApproval(id, false,
+                                            messageController.text, details);
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('REJECT'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      onPressed: () {
+                                        // Update details with current qty
+                                        for (int i = 0;
+                                            i < details.length;
+                                            i++) {
+                                          details[i] = ApprovalDetail(
+                                            productId: details[i].productId,
+                                            product: details[i].product,
+                                            qty: int.tryParse(
+                                                    qtyControllers[i].text) ??
+                                                details[i].qty,
+                                            unit: details[i].unit,
+                                          );
+                                        }
+
+                                        presenter.sendApproval(id, true,
+                                            messageController.text, details);
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('APPROVE'),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          );
-                        }).toList(),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: TextField(
-                            controller: messageController,
-                            maxLines: null,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                    width: 1, color: Colors.black),
-                              ),
-                            ),
                           ),
                         ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size(0, 45),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  for (int i = 0; i < details.length; i++) {
-                                    details[i] = ApprovalDetail(
-                                      productId: details[i].productId,
-                                      product: details[i].product,
-                                      qty: int.tryParse(
-                                              qtyControllers[i].text) ??
-                                          details[i].qty,
-                                      unit: details[i].unit,
-                                    );
-                                  }
-                                  presenter.sendApproval(id, false,
-                                      messageController.text, details);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('REJECT'),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colorAccent,
-                                  minimumSize: const Size(0, 45),
-                                  foregroundColor: const Color(0xFFFFFFFF),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  presenter.sendApproval(id, true,
-                                      messageController.text, details);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('APPROVE'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            );
+          },
         );
       },
     );

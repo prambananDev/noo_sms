@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart' as dio;
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -11,6 +15,7 @@ import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropd
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_state.dart';
 import 'package:noo_sms/models/wrapper.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransactionSampleController extends GetxController
@@ -32,7 +37,10 @@ class TransactionSampleController extends GetxController
       TextEditingController().obs;
   Rx<TextEditingController> transactionDateTextEditingControllerRx =
       TextEditingController().obs;
-  Rx<TextEditingController> principalNameTextEditingControllerRx =
+
+  Rx<TextEditingController> salesIdTextEditingControllerRx =
+      TextEditingController().obs;
+  Rx<TextEditingController> invoiceIdTextEditingControllerRx =
       TextEditingController().obs;
   Rx<bool> isClaim = false.obs;
   Rx<InputPageDropdownState<IdAndValue<String>>>
@@ -68,11 +76,6 @@ class TransactionSampleController extends GetxController
               choiceList: [], loadingState: 0)
           .obs;
 
-  Rx<InputPageDropdownState<IdAndValue<String>>> principalList =
-      InputPageDropdownState<IdAndValue<String>>(
-              choiceList: [], loadingState: 0)
-          .obs;
-
   Rx<InputPageDropdownState<IdAndValue<String>>> distributionChannelList =
       InputPageDropdownState<IdAndValue<String>>(
               choiceList: [], loadingState: 0)
@@ -84,6 +87,10 @@ class TransactionSampleController extends GetxController
           .obs;
 
   RxBool isProspectValid = false.obs;
+
+  RxString fileName = ''.obs;
+
+  final RxString uploadedFileName = ''.obs;
 
   final List<Map<String, dynamic>> types = [
     {"id": "0", "value": "Commercial"},
@@ -124,7 +131,7 @@ class TransactionSampleController extends GetxController
     update();
     await _loadPurpose();
     await _loadDept();
-    await _loadPrincipal();
+
     update();
   }
 
@@ -160,7 +167,7 @@ class TransactionSampleController extends GetxController
     var urlGetPurpose =
         "http://sms.prb.co.id/sample/SamplePurpose?type=$selectSampleType";
 
-    var response = await Dio().get(urlGetPurpose);
+    var response = await dio.Dio().get(urlGetPurpose);
     var listData = response.data;
 
     List<IdAndValue<String>> mappedList =
@@ -207,7 +214,6 @@ class TransactionSampleController extends GetxController
         return element["Text"].toString();
       }).toList();
 
-      // Update the state immediately
       promotionProgramInputStateRx.value.promotionProgramInputState[index]
           .unitPageDropdownState = InputPageDropdownState<String>(
         choiceList: mappedList,
@@ -215,7 +221,6 @@ class TransactionSampleController extends GetxController
         selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
       );
 
-      // Force refresh
       promotionProgramInputStateRx.refresh();
       update();
     }
@@ -263,41 +268,9 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  _loadPrincipal() async {
-    var urlGetPrincipal = "http://sms.prb.co.id/sample/SamplePrincipals";
-    final response = await http.get(Uri.parse(urlGetPrincipal));
-    var listData = jsonDecode(response.body);
-
-    List<IdAndValue<String>> mappedList =
-        listData.map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(
-        id: element["Value"].toString(),
-        value: element["Text"],
-      );
-    }).toList();
-    mappedList.insert(0, IdAndValue(id: '0', value: 'New Principal'));
-
-    principalList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: mappedList,
-      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-      loadingState: 2,
-    );
-
-    update();
-  }
-
-  void changePrincipal(IdAndValue<String>? newValue) {
-    principalList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: principalList.value.choiceList,
-      selectedChoice: newValue,
-      loadingState: 2,
-    );
-    update();
-  }
-
   void _loadDistrChannel() async {
-    var urlGetPrincipal = "http://sms.prb.co.id/sample/SampleDistChannel";
-    final response = await http.get(Uri.parse(urlGetPrincipal));
+    var urlGetDistr = "http://sms.prb.co.id/sample/SampleDistChannel";
+    final response = await http.get(Uri.parse(urlGetDistr));
     var listData = jsonDecode(response.body);
 
     List<IdAndValue<String>> mappedList =
@@ -468,6 +441,108 @@ class TransactionSampleController extends GetxController
     return true;
   }
 
+  Future<void> requestPermissions() async {
+    PermissionStatus cameraStatus = await Permission.camera.request();
+    if (cameraStatus.isGranted) {
+    } else {}
+
+    PermissionStatus storageStatus = await Permission.storage.request();
+    if (storageStatus.isGranted) {
+    } else if (storageStatus.isDenied) {
+    } else if (storageStatus.isPermanentlyDenied) {
+      openAppSettings();
+    }
+  }
+
+  Future<String?> _getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("username");
+  }
+
+  Future<String> generateFileName(String extension) async {
+    final now = DateTime.now();
+    final formattedDate = DateFormat('ddMMyyyy').format(now);
+    final username = await _getUsername();
+    return 'ax_${username}_$formattedDate.$extension';
+  }
+
+  Future<void> pickAndUploadFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        File selectedFile = File(result.files.first.path!);
+        String extension = result.files.first.extension ?? 'jpg';
+        String fileName = await generateFileName(extension);
+
+        debugPrint('Selected file: ${selectedFile.path}');
+        debugPrint('Generated filename: $fileName');
+
+        await uploadFile(selectedFile, fileName);
+      }
+    } catch (e) {
+      debugPrint('Error picking file: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to pick file: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  Future<void> uploadFile(File file, String fileName) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? token = preferences.getString("token");
+
+    try {
+      dio.Dio dioClient = dio.Dio();
+      uploadedFileName.value = fileName;
+
+      final formData = dio.FormData.fromMap({
+        'attachmentName': await dio.MultipartFile.fromFile(
+          file.path,
+          filename: fileName,
+        ),
+      });
+
+      final response = await dioClient.post(
+        '$apiCons2/api/uploadAttachment',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': '$token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint('Upload response: ${response.data}');
+        Get.snackbar(
+          'Success',
+          'File uploaded successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        throw Exception('Upload failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to upload file: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   bool validateSubmission() {
     if (typesList.value.selectedChoice == null) {
       Get.snackbar('Error', 'Please select Sample Type',
@@ -557,23 +632,6 @@ class TransactionSampleController extends GetxController
           return false;
         }
       }
-
-      if (isClaim.value) {
-        if (principalList.value.selectedChoice == null) {
-          Get.snackbar('Error', 'Please select Principal',
-              backgroundColor: Colors.red.withOpacity(0.8),
-              colorText: Colors.white);
-          return false;
-        }
-
-        if (principalList.value.selectedChoice?.id == '0' &&
-            principalNameTextEditingControllerRx.value.text.isEmpty) {
-          Get.snackbar('Error', 'Please enter Principal Name',
-              backgroundColor: Colors.red.withOpacity(0.8),
-              colorText: Colors.white);
-          return false;
-        }
-      }
     } else {
       if (deptList.value.selectedChoice == null) {
         Get.snackbar('Error', 'Please select Department',
@@ -599,19 +657,20 @@ class TransactionSampleController extends GetxController
       "samplePurpose": purposeList.value.selectedChoice?.id,
       "description": purposeDescTextEditingControllerRx.value.text,
       "custid": customerNameInputPageDropdownStateRx.value.selectedChoice?.id,
-      "custName":
-          customerNameInputPageDropdownStateRx.value.selectedChoice?.value,
+      "custName": customerNameInputPageDropdownStateRx
+                  .value.selectedChoice?.id ==
+              'prospect'
+          ? custNameTextEditingControllerRx.value.text
+          : customerNameInputPageDropdownStateRx.value.selectedChoice?.value,
       "distrChannel": distributionChannelList.value.selectedChoice?.id,
       "custPIC": custPicTextEditingControllerRx.value.text,
       "custPhone": custPhoneTextEditingControllerRx.value.text,
       "custAddress": custAddressTextEditingControllerRx.value.text,
-      "isClaim": isClaim.value ? 1 : 0,
-      "principal": principalList.value.selectedChoice?.id,
-      "principalName": (principalList.value.selectedChoice == null ||
-              principalList.value.selectedChoice?.id == '0')
-          ? principalNameTextEditingControllerRx.value.text
-          : principalList.value.selectedChoice?.value,
       "idEmp": idEmp,
+      "dept": deptList.value.selectedChoice?.id,
+      "salesIdAX": custPicTextEditingControllerRx.value.text,
+      "invoiceIdAX": custPicTextEditingControllerRx.value.text,
+      "attachment": uploadedFileName.value,
       "lines": promotionProgramInputStateRx.value.promotionProgramInputState
           .map((element) => {
                 "itemId": element.productTransactionPageDropdownState
@@ -633,7 +692,7 @@ class TransactionSampleController extends GetxController
       },
       body: isiBody,
     );
-
+    debugPrint(response.body);
     if (response.statusCode == 201 || response.statusCode == 200) {
       Get.dialog(
         const SimpleDialog(
@@ -675,14 +734,12 @@ class TransactionSampleController extends GetxController
     custPicTextEditingControllerRx.value.clear();
     custPhoneTextEditingControllerRx.value.clear();
     custAddressTextEditingControllerRx.value.clear();
-    principalNameTextEditingControllerRx.value.clear();
 
-    // Reset dropdown selections
     typesList.value.selectedChoice = null;
     purposeList.value.selectedChoice = null;
     customerNameInputPageDropdownStateRx.value.selectedChoice = null;
     distributionChannelList.value.selectedChoice = null;
-    principalList.value.selectedChoice = null;
+
     deptList.value.selectedChoice = null;
 
     isClaim.value = false;
