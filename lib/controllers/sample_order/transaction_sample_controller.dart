@@ -42,7 +42,6 @@ class TransactionSampleController extends GetxController
       TextEditingController().obs;
   Rx<TextEditingController> invoiceIdTextEditingControllerRx =
       TextEditingController().obs;
-  Rx<bool> isClaim = false.obs;
   Rx<InputPageDropdownState<IdAndValue<String>>>
       promotionTypeInputPageDropdownStateRx =
       InputPageDropdownState<IdAndValue<String>>().obs;
@@ -741,8 +740,6 @@ class TransactionSampleController extends GetxController
     distributionChannelList.value.selectedChoice = null;
 
     deptList.value.selectedChoice = null;
-
-    isClaim.value = false;
 
     isProspectValid.value = false;
 

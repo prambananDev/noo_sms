@@ -10,18 +10,23 @@ class Approval {
   final String status;
   final String purpose;
   final String purposeType;
+  final int? isClaimed;
+  final String? principal;
+  final String? newPrincipal;
 
-  Approval({
-    required this.id,
-    required this.salesOrder,
-    this.customer,
-    required this.date,
-    this.custReff,
-    this.desc,
-    required this.status,
-    required this.purpose,
-    required this.purposeType,
-  });
+  Approval(
+      {required this.id,
+      required this.salesOrder,
+      this.customer,
+      required this.date,
+      this.custReff,
+      this.desc,
+      required this.status,
+      required this.purpose,
+      required this.purposeType,
+      this.isClaimed,
+      this.principal,
+      this.newPrincipal});
 
   factory Approval.fromJson(Map<String, dynamic> json) {
     return Approval(
@@ -34,6 +39,9 @@ class Approval {
       status: json['Status'] as String,
       purpose: json['Purpose'] as String,
       purposeType: json['PurposeType'] as String,
+      isClaimed: json['IsClaimed'] as int?,
+      principal: json['Principal'] as String?,
+      newPrincipal: json['NewPrincipal'] as String?,
     );
   }
 
