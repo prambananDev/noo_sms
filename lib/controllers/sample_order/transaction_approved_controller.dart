@@ -32,7 +32,7 @@ class TransactionApprovedController extends GetxController {
 
   Future<void> fetchApproved() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? idEmpString = prefs.getString("getIdEmp");
+    final String? idEmpString = prefs.getString("scs_idEmp");
 
     if (idEmpString == null || idEmpString.isEmpty) {
       Get.snackbar('Error', 'Employee ID not found',
@@ -50,7 +50,7 @@ class TransactionApprovedController extends GetxController {
     }
 
     final Uri url =
-        Uri.parse('$apiCons2/api/SampleApproval/$idEmp?approved=true');
+        Uri.parse('$apiSCS/api/SampleApproval/$idEmp?approved=true');
 
     try {
       final response = await http.get(url);
@@ -70,7 +70,7 @@ class TransactionApprovedController extends GetxController {
   }
 
   void showApprovedDetail(BuildContext context, int id) async {
-    final Uri url = Uri.parse('$apiCons2/api/SampleApproval/$id?detail=true');
+    final Uri url = Uri.parse('$apiSCS/api/SampleApproval/$id?detail=true');
     try {
       final response =
           await http.get(url, headers: {"Content-Type": "application/json"});

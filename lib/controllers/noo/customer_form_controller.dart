@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:async/async.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -13,8 +12,6 @@ import 'package:noo_sms/assets/constant/preview_cust_form/preview_controller.dar
 import 'package:noo_sms/models/customer_form.dart';
 import 'package:noo_sms/models/draft_model.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
-import 'package:noo_sms/view/dashboard/dashboard_noo.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,7 +46,6 @@ class CustomerFormController extends GetxController
   String village = "";
   String district = "";
 
-  final Rx<Uint8List?> _imageKTPWeb = Rx<Uint8List?>(null);
   final Rx<File?> _imageKTP = Rx<File?>(null);
   final Rx<File?> _imageNPWP = Rx<File?>(null);
   final Rx<File?> _imageSIUP = Rx<File?>(null);
@@ -57,6 +53,7 @@ class CustomerFormController extends GetxController
   final Rx<File?> _imageBusinessPhotoFront = Rx<File?>(null);
   final Rx<File?> _imageBusinessPhotoInside = Rx<File?>(null);
   final Rx<File?> _imageCompetitorTop = Rx<File?>(null);
+  final Rx<Uint8List?> _imageKTPWeb = Rx<Uint8List?>(null);
 
   final RxString ktpFromServer = ''.obs;
   final RxString npwpFromServer = ''.obs;
@@ -332,44 +329,38 @@ class CustomerFormController extends GetxController
     }
 
     if (data.fotoKTP?.isNotEmpty == true) {
-      ktpImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoKTP}";
+      ktpImageUrl = "${apiNOO}Files/GetFiles?fileName=${data.fotoKTP}";
       ktpFromServer.value = data.fotoKTP!;
     }
 
     if (data.fotoNPWP?.isNotEmpty == true) {
-      npwpImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoNPWP}";
+      npwpImageUrl = "${apiNOO}Files/GetFiles?fileName=${data.fotoNPWP}";
       npwpFromServer.value = data.fotoNPWP!;
     }
 
     if (data.fotoSIUP?.isNotEmpty == true) {
-      siupImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoSIUP}";
+      siupImageUrl = "${apiNOO}Files/GetFiles?fileName=${data.fotoSIUP}";
       siupFromServer.value = data.fotoSIUP!;
     }
 
     if (data.fotoGedung3?.isNotEmpty == true) {
-      sppkpImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoGedung3}";
+      sppkpImageUrl = "${apiNOO}Files/GetFiles?fileName=${data.fotoGedung3}";
       sppkpFromServer.value = data.fotoGedung3!;
     }
 
     if (data.fotoGedung1?.isNotEmpty == true) {
-      frontImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoGedung1}";
+      frontImageUrl = "${apiNOO}Files/GetFiles?fileName=${data.fotoGedung1}";
       businessPhotoFrontFromServer.value = data.fotoGedung1!;
     }
 
     if (data.fotoGedung2?.isNotEmpty == true) {
-      insideImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoGedung2}";
+      insideImageUrl = "${apiNOO}Files/GetFiles?fileName=${data.fotoGedung2}";
       businessPhotoInsideFromServer.value = data.fotoGedung2!;
     }
 
     if (data.fotoCompetitorTop?.isNotEmpty == true) {
       competitorImageUrl =
-          "${baseURLDevelopment}Files/GetFiles?fileName=${data.fotoCompetitorTop}";
+          "${apiNOO}Files/GetFiles?fileName=${data.fotoCompetitorTop}";
       competitorTopFromServer.value = data.fotoCompetitorTop!;
     }
 
@@ -532,6 +523,87 @@ class CustomerFormController extends GetxController
     update();
   }
 
+  bool validateRequiredDocuments() {
+    List<String> missingDocuments = [];
+
+    if (imageKTP == null && ktpFromServer.value.isEmpty) {
+      missingDocuments.add('KTP');
+    }
+
+    if (imageNPWP == null && npwpFromServer.value.isEmpty) {
+      missingDocuments.add('NPWP');
+    }
+
+    if (imageSIUP == null && siupFromServer.value.isEmpty) {
+      missingDocuments.add('NIB');
+    }
+
+    if (imageSPPKP == null && sppkpFromServer.value.isEmpty) {
+      missingDocuments.add('SPPKP');
+    }
+
+    if (imageBusinessPhotoFront == null &&
+        businessPhotoFrontFromServer.value.isEmpty) {
+      missingDocuments.add('Front View');
+    }
+
+    if (imageBusinessPhotoInside == null &&
+        businessPhotoInsideFromServer.value.isEmpty) {
+      missingDocuments.add('Inside View');
+    }
+
+    final salesSignaturePoints = signatureSalesController.points;
+    final customerSignaturePoints = signatureCustomerController.points;
+
+    if (salesSignaturePoints.isEmpty &&
+        signatureSalesFromServer.value.isEmpty) {
+      missingDocuments.add('Sales Signature');
+    }
+
+    if (customerSignaturePoints.isEmpty &&
+        signatureCustomersFromServer.value.isEmpty) {
+      missingDocuments.add('Customer Signature');
+    }
+
+    if (missingDocuments.isNotEmpty) {
+      Get.dialog(
+        AlertDialog(
+          title: const Text('Missing Documents'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Please complete all required documents:'),
+              const SizedBox(height: 10),
+              ...missingDocuments.map((doc) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: Colors.red, size: 18),
+                        const SizedBox(width: 8),
+                        Text(doc,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   Future<Map<String, dynamic>> prepareSubmitData() async {
     final prefs = await SharedPreferences.getInstance();
     final int? userId = prefs.getInt("userid");
@@ -623,13 +695,17 @@ class CustomerFormController extends GetxController
 
   Future<void> handleSubmit() async {
     try {
+      if (!validateRequiredDocuments()) {
+        return;
+      }
       if (!await _uploadSignatures()) return;
       final requestBody = await prepareSubmitData();
       final response = await _sendRequest(requestBody);
       if (response.statusCode == 200) {
         Get.snackbar('Success', 'Customer updated successfully');
         clearForm();
-        DashboardNooState.tabController.animateTo(1);
+
+        Get.offAllNamed('/noo', arguments: {'initialIndex': 1});
       } else {
         throw Exception('Failed to update customer: ${response.body}');
       }
@@ -669,7 +745,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<http.Response> _sendRequest(Map<String, dynamic> requestBody) async {
-    final url = Uri.parse("${baseURLDevelopment}NOOCustTables");
+    final url = Uri.parse("${apiNOO}NOOCustTables");
 
     final headers = {
       'authorization': 'Basic ${base64Encode(utf8.encode('test:test456'))}',
@@ -727,7 +803,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchSalesOffices() async {
-    final url = Uri.parse("${baseURLDevelopment}ViewSO?SO=$so");
+    final url = Uri.parse("${apiNOO}ViewSO?SO=$so");
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
     if (response.statusCode == 200) {
@@ -738,7 +814,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchBusinessUnits() async {
-    final url = Uri.parse("${baseURLDevelopment}ViewBU?BU=$bu");
+    final url = Uri.parse("${apiNOO}ViewBU?BU=$bu");
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
     if (response.statusCode == 200) {
@@ -749,7 +825,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchAXRegionals() async {
-    final url = Uri.parse("${baseURLDevelopment}AX_Regional");
+    final url = Uri.parse("${apiNOO}AX_Regional");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -759,7 +835,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchPaymentMode() async {
-    final url = Uri.parse("${baseURLDevelopment}AX_CustPaymMode");
+    final url = Uri.parse("${apiNOO}AX_CustPaymMode");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -770,7 +846,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchCategory() async {
-    final url = Uri.parse("${baseURLDevelopment}AX_Category1");
+    final url = Uri.parse("${apiNOO}AX_Category1");
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
     if (response.statusCode == 200) {
@@ -781,7 +857,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchCategory1() async {
-    final url = Uri.parse("${baseURLDevelopment}CustCategory");
+    final url = Uri.parse("${apiNOO}CustCategory");
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
     if (response.statusCode == 200) {
@@ -792,7 +868,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchSegment() async {
-    final url = Uri.parse("${baseURLDevelopment}CustSegment?bu=$bu");
+    final url = Uri.parse("${apiNOO}CustSegment?bu=$bu");
 
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
@@ -806,7 +882,7 @@ class CustomerFormController extends GetxController
   Future<void> fetchSubSegment() async {
     selectedSubSegment = null;
     update();
-    final url = Uri.parse("${baseURLDevelopment}CustSubSegment");
+    final url = Uri.parse("${apiNOO}CustSubSegment");
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
     if (response.statusCode == 200) {
@@ -827,7 +903,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchClass() async {
-    final url = Uri.parse("${baseURLDevelopment}CustClass");
+    final url = Uri.parse("${apiNOO}CustClass");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -837,7 +913,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchCompanyStatus() async {
-    final url = Uri.parse("${baseURLDevelopment}CustCompanyChain");
+    final url = Uri.parse("${apiNOO}CustCompanyChain");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -847,7 +923,7 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchCurrency() async {
-    final url = Uri.parse("${baseURLDevelopment}Currency");
+    final url = Uri.parse("${apiNOO}Currency");
     final response = await http.get(url, headers: {'authorization': basicAuth});
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
@@ -861,8 +937,8 @@ class CustomerFormController extends GetxController
       return;
     }
 
-    final url = Uri.parse(
-        "${baseURLDevelopment}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
+    final url =
+        Uri.parse("${apiNOO}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
     final response = await http.get(url, headers: {'authorization': basicAuth});
 
     if (response.statusCode == 200) {
@@ -958,7 +1034,7 @@ class CustomerFormController extends GetxController
       };
 
       final response = await http.put(
-        Uri.parse('${baseURLDevelopment}NOOCustTables/${editData!.id}'),
+        Uri.parse('${apiNOO}NOOCustTables/${editData!.id}'),
         headers: {
           'authorization': basicAuth,
           'Content-Type': 'application/json',
@@ -980,7 +1056,7 @@ class CustomerFormController extends GetxController
 
   Future<void> getImageKTPFromCamera() async {
     if (kIsWeb) {
-      await _handleWebImage('KTP');
+      await _handleWebImage('KTP', ImageSource.camera);
     } else {
       await _handleMobileImage(
           'KTP', ImageSource.camera, _imageKTP, ktpFromServer);
@@ -989,7 +1065,7 @@ class CustomerFormController extends GetxController
 
   Future<void> getImageKTPFromGallery() async {
     if (kIsWeb) {
-      await _handleWebImage('KTP');
+      await _handleWebImage('KTP', ImageSource.gallery);
     } else {
       await _handleMobileImage(
           'KTP', ImageSource.gallery, _imageKTP, ktpFromServer);
@@ -1006,6 +1082,7 @@ class CustomerFormController extends GetxController
         'NPWP', ImageSource.gallery, _imageNPWP, npwpFromServer);
   }
 
+// SIUP Image methods
   Future<void> getImageSIUPFromCamera() async {
     await _handleMobileImage(
         'SIUP', ImageSource.camera, _imageSIUP, siupFromServer);
@@ -1016,6 +1093,7 @@ class CustomerFormController extends GetxController
         'SIUP', ImageSource.gallery, _imageSIUP, siupFromServer);
   }
 
+// SPPKP Image methods
   Future<void> getImageSPPKP() async {
     await _handleMobileImage(
         'SPPKP', ImageSource.camera, _imageSPPKP, sppkpFromServer);
@@ -1036,6 +1114,7 @@ class CustomerFormController extends GetxController
         _imageBusinessPhotoFront, businessPhotoFrontFromServer);
   }
 
+// Business Photo Inside methods
   Future<void> getImageBusinessPhotoInsideFromCamera() async {
     await _handleMobileImage('BUSINESSPHOTOINSIDE', ImageSource.camera,
         _imageBusinessPhotoInside, businessPhotoInsideFromServer);
@@ -1056,15 +1135,6 @@ class CustomerFormController extends GetxController
         _imageCompetitorTop, competitorTopFromServer);
   }
 
-  Future<void> _handleWebImage(String type) async {
-    final pickedFile =
-        await _picker.pickImage(source: ImageSource.camera, imageQuality: 20);
-    if (pickedFile != null) {
-      final imageBytes = await pickedFile.readAsBytes();
-      _imageKTPWeb.value = imageBytes;
-    }
-  }
-
   Future<void> _handleSignature(
       String type, Uint8List imageFile, RxString imageFromServerState) async {
     final username = await _getUsername();
@@ -1072,7 +1142,7 @@ class CustomerFormController extends GetxController
 
     final newFile =
         "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_$username.jpg";
-    final uri = Uri.parse("${baseURLDevelopment}Upload");
+    final uri = Uri.parse("${apiNOO}Upload");
 
     final request = http.MultipartRequest("POST", uri)
       ..files.add(
@@ -1089,36 +1159,79 @@ class CustomerFormController extends GetxController
 
   Future<void> _handleMobileImage(String type, ImageSource source,
       Rx<File?> imageState, RxString imageFromServerState) async {
-    final pickedFile =
-        await _picker.pickImage(source: source, imageQuality: 20);
-    if (pickedFile == null) return;
+    try {
+      final pickedFile =
+          await _picker.pickImage(source: source, imageQuality: 20);
+      if (pickedFile == null) return;
 
-    final username = await _getUsername();
-    if (username == null) return;
+      final username = await _getUsername();
+      if (username == null) return;
 
-    final dateNow = DateFormat("ddMMyyyy_hhmmss").format(DateTime.now());
-    final directory = await _getImageDirectory();
+      final dateNow = DateFormat("ddMMyyyy_hhmmss").format(DateTime.now());
+      final directory = await _getImageDirectory();
+      final fileName = '${type}_${dateNow}_${username}_.jpg';
+      final filePath = '$directory$fileName';
 
-    final newFile = await File(pickedFile.path)
-        .copy('$directory${type}_${dateNow}_${username}_.jpg');
+      // Copy file to app directory
+      final newFile = await File(pickedFile.path).copy(filePath);
 
-    var stream = http.ByteStream(DelegatingStream.typed(newFile.openRead()));
-    var length = await newFile.length();
-    var uri = Uri.parse("${baseURLDevelopment}Upload");
-    var request = http.MultipartRequest("POST", uri);
-    var multipartFile = http.MultipartFile('file', stream, length,
-        filename: basename(newFile.path));
-    request.files.add(multipartFile);
-    var response = await request.send();
-
-    response.stream.transform(utf8.decoder).listen((value) {
-      String imageFromServer =
-          "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_${username}_.jpg";
-      imageFromServer = value.replaceAll("\"", "");
-
-      imageFromServerState.value = imageFromServer;
+      // Update local state immediately
       imageState.value = newFile;
-    });
+      update();
+
+      // Prepare upload
+      final uri = Uri.parse("${apiNOO}Upload");
+      final request = http.MultipartRequest("POST", uri);
+
+      // Add file to request
+      request.files.add(
+        await http.MultipartFile.fromPath('file', newFile.path,
+            filename: fileName),
+      );
+
+      // Send request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        // Update server state
+        debugPrint(response.statusCode.toString());
+        final serverFileName = response.body.replaceAll("\"", "");
+        imageFromServerState.value = serverFileName;
+        update();
+      } else {
+        throw Exception('Upload failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error handling image: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to process image: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      // Reset states on error
+      imageState.value = null;
+      imageFromServerState.value = '';
+      update();
+    }
+  }
+
+  Future<void> _handleWebImage(String type, ImageSource source) async {
+    try {
+      final pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        final imageBytes = await pickedFile.readAsBytes();
+        _imageKTPWeb.value = imageBytes;
+        update();
+      }
+    } catch (e) {
+      debugPrint('Error handling web image: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to process web image: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Future<void> requestPermissions() async {

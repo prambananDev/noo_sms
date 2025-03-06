@@ -1,32 +1,51 @@
-// controllers/dashboard_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:noo_sms/view/dashboard/dashboard_approvalpp.dart';
-import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
-import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/view/login/login_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 
-class DashboardController {
-  List<Map<String, dynamic>> dataMenu = [
-    {
-      "title": "Program\nPromotion",
-      "icon": Icons.discount_outlined,
-      "naviGateTo": const DashboardPP(initialIndex: 0),
-    },
-    {
-      "title": "Approval\nPP",
-      "icon": Icons.approval_outlined,
-      "naviGateTo": const DashboardApprovalPP(initialIndex: 0),
-    },
-    {
-      "title": "Order\nTaking",
-      "icon": Icons.shopping_bag_outlined,
-      "naviGateTo": const DashboardOrderTaking(initialIndex: 0),
-    },
-  ];
+class DashboardController extends GetxController {
+  RxString addressDetail = "".obs;
+  RxString fullName = "".obs;
+  RxList<Map<String, dynamic>> menuItems = <Map<String, dynamic>>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadSharedPreferences();
+    loadMenuItems();
+  }
+
+  Future<void> loadSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    addressDetail.value = (prefs.getString("getAddressDetail") ?? "");
+    fullName.value = (prefs.getString("fullname") ?? "");
+    debugPrint("Username loaded: ${fullName.value}");
+    debugPrint("address loaded: ${addressDetail.value}");
+  }
+
+  void loadMenuItems() {
+    menuItems.value = [
+      {
+        "title": "Promotion Program",
+        "svgPath": "assets/icons/sms_icon.svg",
+        "route": "/sms"
+      },
+      {"title": "NOO", "svgPath": "assets/icons/noo_icon.svg", "route": "/noo"},
+      {
+        "title": "Sample\nOrder",
+        "svgPath": "assets/icons/sample_order_icon.svg",
+        "route": "/sample"
+      },
+      {
+        "title": "Order\nTacking",
+        "svgPath": "assets/icons/order_taking_icon.svg",
+        "route": ""
+      },
+    ];
+  }
+
   Future<bool> logout() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);

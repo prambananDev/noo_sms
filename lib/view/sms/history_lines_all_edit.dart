@@ -41,7 +41,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   }
 
   Future<void> getDataActivity() async {
-    final url = '$apiCons/api/activity/${widget.numberPP}';
+    final url = '$apiSMS/api/activity/${widget.numberPP}';
 
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {

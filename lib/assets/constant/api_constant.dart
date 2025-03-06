@@ -1,21 +1,3 @@
-class ApiConstant {
-  String urlApi = '';
-  ApiConstant(int code) {
-    if (code == 0) {
-      //domain utama
-      urlApi = 'http://hrms.prb.co.id:8869/';
-    } else if (code == 1) {
-      //jlm
-      urlApi = 'http://119.18.157.236:8869/';
-    } else {
-      //quantum
-      urlApi = 'http://119.18.157.236:8869/';
-    }
-  }
-}
-
-var apiCons = "http://sms-api.prb.co.id";
-var apiCons2 = "http://api-scs.prb.co.id";
-// var apiCons3 = "http://noo.prb.co.id:8893";
-
-var baseURLDevelopment = "http://noo.prb.co.id:8893/api/";
+var apiSMS = "http://sms-api.prb.co.id";
+var apiSCS = "http://api-scs.prb.co.id";
+var apiNOO = "http://noo.prb.co.id:8893/api/";

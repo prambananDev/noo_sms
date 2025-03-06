@@ -49,16 +49,15 @@ class ApprovedController extends GetxController {
 
   Future<void> fetchData({bool refresh = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt("userid")?.toString();
+    final id = prefs.getInt("id")?.toString();
 
     if (refresh) {
       page.value = 1;
       hasMoreData.value = true;
     }
 
-    var urlGetApproved =
-        "${baseURLDevelopment}ApprovedNOO/$userId?page=${page.value}";
-
+    var urlGetApproved = "${apiNOO}ApprovedNOO/$id?page=${page.value}";
+    debugPrint(urlGetApproved);
     final response = await http
         .get(Uri.parse(urlGetApproved), headers: {'authorization': basicAuth});
 
@@ -71,13 +70,14 @@ class ApprovedController extends GetxController {
 
   Future<void> getStatusDetail(int id) async {
     isLoading(true);
-    var urlGetApprovalDetail = "${baseURLDevelopment}NOOCustTables/$id";
+    var urlGetApprovalDetail = "${apiNOO}NOOCustTables/$id";
     final response = await http.get(Uri.parse(urlGetApprovalDetail),
         headers: <String, String>{'authorization': basicAuth});
     (response.body);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       currentApproval.value = ApprovalModel.fromJson(data);
+
       companyAddress.value = Address.fromJson(data["CompanyAddresses"]);
       deliveryAddress.value = Address.fromJson(data["DeliveryAddresses"]);
       taxAddress.value = Address.fromJson(data["TaxAddresses"]);
@@ -86,7 +86,7 @@ class ApprovedController extends GetxController {
   }
 
   Future<void> fetchApprovalStatuses(int id) async {
-    var urlGetApprovalStatuses = "${baseURLDevelopment}ApprovalStatuses/$id";
+    var urlGetApprovalStatuses = "${apiNOO}ApprovalStatuses/$id";
     final response = await http.get(Uri.parse(urlGetApprovalStatuses),
         headers: <String, String>{'authorization': basicAuth});
 
@@ -100,7 +100,7 @@ class ApprovedController extends GetxController {
 
   Future<void> uploadSignature(List<int> imageFile, String fileName) async {
     try {
-      var uri = Uri.parse("${baseURLDevelopment}Upload");
+      var uri = Uri.parse("${apiNOO}Upload");
       var request = http.MultipartRequest("POST", uri);
 
       request.files.add(

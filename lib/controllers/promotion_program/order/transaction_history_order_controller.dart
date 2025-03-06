@@ -19,7 +19,7 @@ class HistoryOrderController extends GetxController {
   List data = [];
 
   getTransactionHistory() async {
-    var url = "$apiCons/api/transaction";
+    var url = "$apiSMS/api/transaction";
     final response = await get(Uri.parse(url));
     transactionHistory.value = (jsonDecode(response.body) as List)
         .map((data) => TransactionHistory.fromJson(data))

@@ -71,7 +71,6 @@ class LocationController extends GetxController {
         return;
       }
 
-      // Cancel existing subscription if any
       await _positionStreamSubscription?.cancel();
 
       _positionStreamSubscription = Geolocator.getPositionStream(
@@ -119,7 +118,6 @@ class LocationController extends GetxController {
         _retryAttempts++;
         _scheduleRetry(position);
       } else {
-        // If all retries failed, save at least the coordinates
         await _saveBasicLocationData(position);
         throw Exception(
             'Failed to get address after $maxRetryAttempts attempts');
@@ -159,12 +157,12 @@ class LocationController extends GetxController {
 
       List<String> addressParts = [
         street,
-        subLocality,
-        locality,
+        // subLocality,
+        // locality,
         subAdministrativeArea,
-        administrativeArea,
-        postalCode,
-        country,
+        // administrativeArea,
+        // postalCode,
+        // country,
       ].where((part) => part.isNotEmpty).toList();
 
       String fullAddress = addressParts.join(", ");
@@ -203,7 +201,6 @@ class LocationController extends GetxController {
     _saveBasicLocationData(position);
   }
 
-  // Method to manually retry getting location
   Future<void> retryLocationUpdate() async {
     errorMessage.value = '';
     _retryAttempts = 0;

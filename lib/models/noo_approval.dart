@@ -31,7 +31,6 @@ class ApprovalModel {
   final String? fotoNPWP;
   final String? fotoKTP;
   final String? fotoSIUP;
-  final String? fotoGedung;
   final String? fotoGedung1;
   final String? fotoGedung2;
   final String? fotoGedung3;
@@ -93,7 +92,6 @@ class ApprovalModel {
     this.fotoNPWP,
     this.fotoKTP,
     this.fotoSIUP,
-    this.fotoGedung,
     this.fotoGedung1,
     this.fotoGedung2,
     this.fotoGedung3,
@@ -156,7 +154,6 @@ class ApprovalModel {
         fotoNPWP: json['FotoNPWP'],
         fotoKTP: json['FotoKTP'],
         fotoSIUP: json['FotoSIUP'],
-        fotoGedung: json['FotoGedung'],
         fotoGedung1: json['FotoGedung1'],
         fotoGedung2: json['FotoGedung2'],
         fotoGedung3: json['FotoGedung3'],
@@ -237,7 +234,6 @@ class ApprovalModel {
         'FotoNPWP': fotoNPWP,
         'FotoKTP': fotoKTP,
         'FotoSIUP': fotoSIUP,
-        'FotoGedung': fotoGedung,
         'FotoGedung1': fotoGedung1,
         'FotoGedung2': fotoGedung2,
         'FotoGedung3': fotoGedung3,
@@ -362,7 +358,6 @@ class ApprovalModel {
         fotoNPWP: fotoNPWP ?? this.fotoNPWP,
         fotoKTP: fotoKTP ?? this.fotoKTP,
         fotoSIUP: fotoSIUP ?? this.fotoSIUP,
-        fotoGedung: fotoGedung ?? this.fotoGedung,
         fotoGedung1: fotoGedung1 ?? this.fotoGedung1,
         fotoGedung2: fotoGedung2 ?? this.fotoGedung2,
         fotoGedung3: fotoGedung3 ?? this.fotoGedung3,

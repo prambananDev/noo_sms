@@ -1,193 +1,194 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:provider/provider.dart';
 import 'package:noo_sms/assets/global.dart';
-import 'package:noo_sms/controllers/login/login_controller.dart';
-import 'package:noo_sms/controllers/provider/login_provider.dart';
+import 'package:noo_sms/service/auth_controller.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
-
-  @override
-  LoginViewState createState() => LoginViewState();
-}
-
-class LoginViewState extends State<LoginView> {
-  final LoginController _controller = Get.put(LoginController());
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-      _controller.setLoginProvider(loginProvider);
-      _controller.loadRememberMeStatus();
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  void _fieldFocusChange(
-      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
-    currentFocus.unfocus();
-    FocusScope.of(context).requestFocus(nextFocus);
-  }
+class LoginView extends StatelessWidget {
+  const LoginView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-
-    double scaleWidth(double width) => width * screenWidth / 375;
-    double scaleHeight(double height) => height * screenHeight / 812;
-    double scaleFont(double fontSize) => fontSize * screenWidth / 375;
+    final AuthController controller = Get.put(AuthController());
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
 
     return Scaffold(
-      backgroundColor: colorNetral,
-      body: Form(
-        key: _controller.formKey,
-        child: Padding(
-          padding: EdgeInsets.all(scaleWidth(20)),
-          child: Stack(
-            children: <Widget>[
-              ClipPath(
-                child: Container(
-                  height: scaleHeight(450),
-                  padding: EdgeInsets.all(scaleHeight(10)),
-                  decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.all(Radius.circular(scaleWidth(90))),
-                    color: Colors.white,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.06,
+              vertical: 24,
+            ),
+            child: Form(
+              key: controller.formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Image.asset(
+                      'assets/icons/logo.png',
+                      height: isTablet ? 60 : 40,
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      SizedBox(height: scaleHeight(20)),
-                      TextFormField(
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return 'Please, insert your Username';
-                          }
-                          return null;
-                        },
-                        controller: _controller.usernameController,
-                        textInputAction: TextInputAction.next,
-                        focusNode: _controller.usernameFocus,
-                        onFieldSubmitted: (term) {
-                          _fieldFocusChange(context, _controller.usernameFocus,
-                              _controller.passwordFocus);
-                        },
-                        style: TextStyle(
-                          fontSize: scaleFont(15),
-                          color: Theme.of(context).primaryColorDark,
-                        ),
+                  SizedBox(height: screenHeight * 0.07),
+                  Text(
+                    'Hi,',
+                    style: TextStyle(
+                      fontSize: isTablet ? 48 : 36,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF333333),
+                    ),
+                  ),
+                  Text(
+                    'Welcome',
+                    style: TextStyle(
+                      fontSize: isTablet ? 48 : 36,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF333333),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.04),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      'Username',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ),
+                  TextFormField(
+                    controller: controller.usernameController,
+                    focusNode: controller.usernameFocus,
+                    decoration: InputDecoration(
+                      hintText: 'Username',
+                      fillColor: const Color(0xFFF5F7FA),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: isTablet ? 18 : 14,
+                      ),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    validator: controller.validateUsername,
+                    onFieldSubmitted: (_) => FocusScope.of(context)
+                        .requestFocus(controller.passwordFocus),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      'Kata Sandi',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+                  Obx(() => TextFormField(
+                        controller: controller.passwordController,
+                        focusNode: controller.passwordFocus,
                         decoration: InputDecoration(
-                          hintText: 'Insert your username AX',
-                          labelText: 'Username*',
-                          errorStyle: TextStyle(
-                              color: Colors.red, fontSize: scaleFont(13)),
-                          hintStyle: TextStyle(
-                              color: Colors.grey, fontSize: scaleFont(15)),
-                          labelStyle: TextStyle(
-                              color: Theme.of(context).primaryColorDark,
-                              fontSize: scaleFont(17)),
-                          border: InputBorder.none,
-                          icon: Icon(Icons.person_pin,
-                              color: Theme.of(context).primaryColorDark),
+                          hintText: 'Tulis kata sandi',
+                          fillColor: const Color(0xFFF5F7FA),
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: isTablet ? 18 : 14,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.obscureText.value
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: const Color(0xFF1E4389),
+                            ),
+                            onPressed: controller.togglePasswordVisibility,
+                          ),
+                        ),
+                        obscureText: controller.obscureText.value,
+                        validator: controller.validatePassword,
+                        onFieldSubmitted: (_) => controller.login(),
+                      )),
+                  SizedBox(height: screenHeight * 0.01),
+                  Row(
+                    children: [
+                      Obx(() => Checkbox(
+                            value: controller.rememberMe.value,
+                            onChanged: (value) =>
+                                controller.toggleRememberMe(value ?? false),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            side: const BorderSide(color: Color(0xFFCCCCCC)),
+                            activeColor: colorAccent,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          )),
+                      SizedBox(width: screenWidth * 0.01),
+                      const Text(
+                        'Remember Me',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF333333),
                         ),
                       ),
-                      Divider(
-                          color: Theme.of(context).primaryColorDark,
-                          thickness: 1),
-                      Obx(() => TextFormField(
-                            validator: (value) {
-                              if (value?.isEmpty ?? true) {
-                                return 'Please, insert your Password';
-                              }
-                              return null;
-                            },
-                            obscureText: _controller.obscureText.value,
-                            controller: _controller.passwordController,
-                            textInputAction: TextInputAction.done,
-                            focusNode: _controller.passwordFocus,
-                            onFieldSubmitted: (term) {
-                              _controller.passwordFocus.unfocus();
-                            },
-                            style: TextStyle(
-                                color: Theme.of(context).primaryColorDark,
-                                fontSize: scaleFont(15)),
-                            decoration: InputDecoration(
-                              hintText: 'Insert your password',
-                              labelText: 'Password*',
-                              errorStyle: TextStyle(
-                                  color: Colors.red, fontSize: scaleFont(13)),
-                              hintStyle: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
-                                  fontSize: scaleFont(15)),
-                              labelStyle: TextStyle(
-                                  color: Theme.of(context).primaryColorDark,
-                                  fontSize: scaleFont(17)),
-                              border: InputBorder.none,
-                              icon: Icon(Icons.lock,
-                                  color: Theme.of(context).primaryColorDark),
-                              suffixIcon: GestureDetector(
-                                onTap: () {
-                                  _controller.obscureText.value =
-                                      !_controller.obscureText.value;
-                                },
-                                child: Icon(_controller.obscureText.value
-                                    ? Icons.visibility
-                                    : Icons.visibility_off),
-                              ),
-                            ),
-                          )),
-                      Divider(
-                          color: Theme.of(context).primaryColorDark,
-                          thickness: 1),
-                      Obx(() => CheckboxListTile(
-                            title: const Text("Remember me"),
-                            value: _controller.rememberMe.value,
-                            onChanged: (newValue) {
-                              _controller.rememberMe.value = newValue ?? false;
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
-                          )),
-                      Obx(() => ElevatedButton(
-                            onPressed: _controller.isLoggingIn.value
-                                ? null
-                                : () async {
-                                    if (_controller.formKey.currentState!
-                                        .validate()) {
-                                      await _controller.login(
-                                        _controller.rememberMe.value,
-                                        _controller.usernameController.text,
-                                        _controller.passwordController.text,
-                                        context,
-                                      );
-                                    }
-                                  },
-                            child: _controller.isLoggingIn.value
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : const Text("LOGIN"),
-                          )),
                     ],
                   ),
-                ),
+                  SizedBox(height: screenHeight * 0.04),
+                  Obx(() => ElevatedButton(
+                        onPressed: controller.isLoggingIn.value
+                            ? null
+                            : controller.login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorAccent,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            vertical: isTablet ? 20 : 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          elevation: 0,
+                          disabledBackgroundColor:
+                              const Color(0xFF1E4389).withOpacity(0.7),
+                        ),
+                        child: controller.isLoggingIn.value
+                            ? SizedBox(
+                                height: isTablet ? 24 : 20,
+                                width: isTablet ? 24 : 20,
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                      )),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -7,7 +7,7 @@ import 'package:noo_sms/models/list_status_noo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-class StatusController extends GetxController {
+class ViewAllController extends GetxController {
   var data = <NOOModel>[].obs;
   var isLoading = false.obs;
   var page = 1.obs;
@@ -37,16 +37,10 @@ class StatusController extends GetxController {
   Future<void> loadInitialData() async {
     isLoading.value = true;
     try {
-      await getUserId();
       await fetchData();
     } finally {
       isLoading.value = false;
     }
-  }
-
-  Future<void> getUserId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId.value = prefs.getInt("id").toString();
   }
 
   Future<void> fetchData({bool isLoadMore = false}) async {
@@ -56,8 +50,7 @@ class StatusController extends GetxController {
 
     try {
       final response = await http.get(
-        Uri.parse(
-            '${apiNOO}FindNOObyUserId/${userId.value}?page=${page.value}'),
+        Uri.parse('${apiNOO}ViewAllCust?page=${page.value}'),
         headers: {
           'authorization': 'Basic ${base64Encode(utf8.encode('test:test456'))}'
         },

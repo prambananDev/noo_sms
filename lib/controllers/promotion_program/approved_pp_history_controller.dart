@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +32,7 @@ class HistoryController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     dynamic id = prefs.getInt("userid");
 
-    String url = "$apiCons/api/Approve/$id";
+    String url = "$apiSMS/api/Approve/$id";
     var body = {'status': status, 'ids': ids};
 
     final response = await http.put(

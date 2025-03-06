@@ -165,37 +165,37 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
         ImageDetailRow(
           title: "Foto NPWP",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoNPWP}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoNPWP}",
         ),
         ImageDetailRow(
           title: "Foto KTP",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoKTP}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoKTP}",
         ),
         ImageDetailRow(
           title: "Foto SIUP",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoSIUP}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoSIUP}",
         ),
         ImageDetailRow(
           title: "Foto Gedung\nDepan",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoGedung1}",
-        ),
-        ImageDetailRow(
-          title: "Foto Gedung\nSamping",
-          imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoGedung2}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoGedung1}",
         ),
         ImageDetailRow(
           title: "Foto Gedung\nDalam",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoGedung3}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoGedung2}",
+        ),
+        ImageDetailRow(
+          title: "Foto SPPKP",
+          imageUrl:
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoGedung3}",
         ),
         ImageDetailRow(
           title: "Foto Competitor\nTop",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.fotoCompetitorTop}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.fotoCompetitorTop}",
         ),
       ],
     );
@@ -207,27 +207,27 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
         ImageDetailRow(
           title: "Customer\nSignature",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.custSignature}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.custSignature}",
         ),
         ImageDetailRow(
           title: "Sales\nSignature",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.salesSignature}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.salesSignature}",
         ),
         ImageDetailRow(
           title: "Approval 1\nSignature",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.approval1Signature}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.approval1Signature}",
         ),
         ImageDetailRow(
           title: "Approval 2\nSignature",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.approval2Signature}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.approval2Signature}",
         ),
         ImageDetailRow(
           title: "Approval 3\nSignature",
           imageUrl:
-              "${baseURLDevelopment}Files/GetFiles?fileName=${controller.currentApproval.value.approval3Signature}",
+              "${apiNOO}Files/GetFiles?fileName=${controller.currentApproval.value.approval3Signature}",
         ),
       ],
     );

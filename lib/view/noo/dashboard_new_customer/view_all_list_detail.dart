@@ -6,14 +6,14 @@ import 'package:noo_sms/assets/widgets/image_detail.dart';
 import 'package:noo_sms/controllers/noo/list_status_detail_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
 
-class StatusDetailView extends GetView<StatusDetailController> {
+class ViewAllListDetail extends GetView<StatusDetailController> {
   final int id;
   final String so;
   final String bu;
   final String name;
   final String status;
 
-  const StatusDetailView({
+  const ViewAllListDetail({
     Key? key,
     required this.id,
     required this.bu,
@@ -48,7 +48,6 @@ class StatusDetailView extends GetView<StatusDetailController> {
         ),
       ),
       body: _buildBody(controller, context),
-      bottomNavigationBar: _buildBottomButton(controller),
     );
   }
 
@@ -112,37 +111,6 @@ class StatusDetailView extends GetView<StatusDetailController> {
           ),
         ),
       );
-    });
-  }
-
-  Widget _buildBottomButton(StatusDetailController controller) {
-    return Obx(() {
-      if (!controller.isLoading.value &&
-          controller.statusApproval.value == controller.statusRejected) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: controller.navigateToEdit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Edit',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        );
-      }
-      return const SizedBox.shrink();
     });
   }
 
@@ -387,7 +355,7 @@ class StatusDetailView extends GetView<StatusDetailController> {
   }
 
   Widget _buildAddressDetails(dynamic address) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

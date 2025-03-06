@@ -1,5 +1,3 @@
-// lib/controllers/status_detail_controller.dart
-
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -41,7 +39,7 @@ class StatusDetailController extends GetxController {
     try {
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
-        Uri.parse('${baseURLDevelopment}NOOCustTables/$id'),
+        Uri.parse('${apiNOO}NOOCustTables/$id'),
         headers: {'authorization': auth},
       );
 
@@ -60,12 +58,11 @@ class StatusDetailController extends GetxController {
     }
   }
 
-  // Fetch approval status
   Future<void> fetchApprovalStatus(int id) async {
     try {
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
-        Uri.parse('${baseURLDevelopment}Approval/$id'),
+        Uri.parse('${apiNOO}Approval/$id'),
         headers: {'authorization': auth},
       );
 
@@ -82,12 +79,11 @@ class StatusDetailController extends GetxController {
     }
   }
 
-  // Get image
   Future<Uint8List> getImage(String fileName) async {
     try {
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
-        Uri.parse('${baseURLDevelopment}Files/GetFiles?fileName=$fileName'),
+        Uri.parse('${apiNOO}Files/GetFiles?fileName=$fileName'),
         headers: {'authorization': auth},
       );
 
@@ -107,7 +103,7 @@ class StatusDetailController extends GetxController {
       isLoading(true);
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.put(
-        Uri.parse('${baseURLDevelopment}NOOCustTables/$id'),
+        Uri.parse('${apiNOO}NOOCustTables/$id'),
         headers: {
           'authorization': auth,
           'Content-Type': 'application/json',
@@ -116,7 +112,7 @@ class StatusDetailController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        await fetchStatusDetail(id); // Refresh data after update
+        await fetchStatusDetail(id);
         return true;
       }
       return false;
@@ -134,7 +130,7 @@ class StatusDetailController extends GetxController {
       isLoading(true);
       final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.post(
-        Uri.parse('${baseURLDevelopment}Files/UploadFile'),
+        Uri.parse('${apiNOO}Files/UploadFile'),
         headers: {
           'authorization': auth,
           'Content-Type': 'application/json',

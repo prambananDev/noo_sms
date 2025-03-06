@@ -97,7 +97,7 @@ class TransactionController extends GetxController {
     locationInputPageDropdownStateRx.value.loadingState = 1;
     _updateState();
     try {
-      var urlGetLocation = "$apiCons/api/SalesOffices";
+      var urlGetLocation = "$apiSMS/api/SalesOffices";
       final response = await get(Uri.parse(urlGetLocation));
       var listData = jsonDecode(response.body);
 
@@ -113,7 +113,7 @@ class TransactionController extends GetxController {
   }
 
   Future<void> loadProgramData(String programNumber) async {
-    var url = '$apiCons/api/activity/$programNumber';
+    var url = '$apiSMS/api/activity/$programNumber';
     final response = await get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -162,7 +162,7 @@ class TransactionController extends GetxController {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     try {
-      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
+      var urlGetCustomer = "$apiSCS/api/AllCustomer?username=$username";
 
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
@@ -184,7 +184,7 @@ class TransactionController extends GetxController {
     String? username = preferences.getString("username");
     _productInputPageDropdownState.loadingStateWrapper?.value = 1;
     _updateState();
-    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
+    var urlGetProduct = "$apiSCS/api/AllProduct?ID=$username&idSales=Sample";
     final response = await get(Uri.parse(urlGetProduct));
     var listData = jsonDecode(response.body);
     _productInputPageDropdownState.loadingStateWrapper?.value = 2;
@@ -202,7 +202,7 @@ class TransactionController extends GetxController {
         .productTransactionPageDropdownState?.selectedChoiceWrapper?.value?.id;
     InputPageDropdownState<String>? unitPageDropdownState =
         promotionProgramInputState.unitPageDropdownState;
-    var urlGetUnit = "$apiCons2/api/Unit?item=$selectProductPageDropdownState";
+    var urlGetUnit = "$apiSCS/api/Unit?item=$selectProductPageDropdownState";
 
     final response = await get(Uri.parse(urlGetUnit));
 
@@ -329,7 +329,7 @@ class TransactionController extends GetxController {
 
     int? userId = preferences.getInt("userid");
     final int idEmp =
-        int.tryParse(preferences.getString("getIdEmp") ?? '0') ?? 0;
+        int.tryParse(preferences.getString("scs_idEmp") ?? '0') ?? 0;
 
     final isiBody = jsonEncode(<String, dynamic>{
       "custid": customerNameInputPageDropdownStateRx.value.selectedChoice?.id,

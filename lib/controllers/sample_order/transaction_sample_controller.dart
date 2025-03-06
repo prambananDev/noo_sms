@@ -303,7 +303,7 @@ class TransactionSampleController extends GetxController
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     try {
-      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
+      var urlGetCustomer = "$apiSCS/api/AllCustomer?username=$username";
       final response = await http.get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
 
@@ -344,7 +344,7 @@ class TransactionSampleController extends GetxController
     String? username = preferences.getString("username");
     productInputPageDropdownState.loadingStateWrapper?.value = 1;
     update();
-    var urlGetProduct = "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
+    var urlGetProduct = "$apiSCS/api/AllProduct?ID=$username&idSales=Sample";
     final response = await get(Uri.parse(urlGetProduct));
     var listData = jsonDecode(response.body);
     productInputPageDropdownState.loadingStateWrapper?.value = 2;
@@ -359,7 +359,7 @@ class TransactionSampleController extends GetxController
   Future<double> getQtyUnitPrice(
       String cusId, String idProduct, int qty, String unit) async {
     var urlPrice =
-        "$apiCons2/api/AllPrice?cust=$cusId&item=$idProduct&unit=$unit&qty=$qty&type=1";
+        "$apiSCS/api/AllPrice?cust=$cusId&item=$idProduct&unit=$unit&qty=$qty&type=1";
     final responsePrice = await http.get(Uri.parse(urlPrice));
     double listDataPrice = 0.0;
     if (responsePrice.statusCode == 200) {
@@ -511,7 +511,7 @@ class TransactionSampleController extends GetxController
       });
 
       final response = await dioClient.post(
-        '$apiCons2/api/uploadAttachment',
+        '$apiSCS/api/uploadAttachment',
         data: formData,
         options: Options(
           headers: {
@@ -649,7 +649,7 @@ class TransactionSampleController extends GetxController
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? token = preferences.getString("token");
     final int idEmp =
-        int.tryParse(preferences.getString("getIdEmp") ?? '0') ?? 0;
+        int.tryParse(preferences.getString("scs_idEmp") ?? '0') ?? 0;
 
     final isiBody = jsonEncode({
       "sampleType": typesList.value.selectedChoice?.id,
@@ -682,7 +682,7 @@ class TransactionSampleController extends GetxController
           .toList(),
     });
 
-    var url = '$apiCons2/api/SampleTransaction';
+    var url = '$apiSCS/api/SampleTransaction';
     final response = await post(
       Uri.parse(url),
       headers: {

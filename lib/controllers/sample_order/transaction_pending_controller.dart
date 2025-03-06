@@ -33,8 +33,8 @@ class TransactionPendingController extends GetxController {
   Future<void> fetchApprovals() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString("token");
-    final int idEmp = int.tryParse(prefs.getString("getIdEmp") ?? '0') ?? 0;
-    final Uri url = Uri.parse('$apiCons2/api/SampleApproval/$idEmp');
+    final int idEmp = int.tryParse(prefs.getString("scs_idEmp") ?? '0') ?? 0;
+    final Uri url = Uri.parse('$apiSCS/api/SampleApproval/$idEmp');
 
     try {
       final response = await http.get(url, headers: {
@@ -89,7 +89,7 @@ class TransactionPendingController extends GetxController {
 
   void showApprovalDetail(BuildContext context, int id,
       Function(int, List<ApprovalDetail>) showDialog) async {
-    final url = '$apiCons2/api/SampleApproval/$id?detail=true';
+    final url = '$apiSCS/api/SampleApproval/$id?detail=true';
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -115,9 +115,9 @@ class TransactionPendingController extends GetxController {
   void sendApproval(int id, bool isApproved, String message,
       List<ApprovalDetail> details) async {
     final prefs = await SharedPreferences.getInstance();
-    final int idEmp = int.tryParse(prefs.getString("getIdEmp") ?? '0') ?? 0;
+    final int idEmp = int.tryParse(prefs.getString("scs_idEmp") ?? '0') ?? 0;
     final int status = isApproved ? 1 : 2;
-    final Uri url = Uri.parse('$apiCons2/api/SampleApproval');
+    final Uri url = Uri.parse('$apiSCS/api/SampleApproval');
 
     final lines = details
         .map((detail) => {

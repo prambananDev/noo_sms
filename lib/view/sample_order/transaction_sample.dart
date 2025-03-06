@@ -108,17 +108,29 @@ class _TransactionPageState extends State<TransactionSample> {
   bool _isAddItemEnabled() {
     bool isPurposeDescriptionFilled = inputPagePresenter
         .purposeDescTextEditingControllerRx.value.text.isNotEmpty;
-    // bool isPrincipalNameFilled = !inputPagePresenter.isClaim.value ||
-    //     (inputPagePresenter.isClaim.value &&
-    //         inputPagePresenter.principalList.value.selectedChoice?.id != '0') ||
-    //     (inputPagePresenter
-    //         .principalNameTextEditingControllerRx.value.text.isNotEmpty);
 
-    bool isCommercial =
-        inputPagePresenter.typesList.value.selectedChoice?.value ==
-            'Commercial';
+    String? sampleType =
+        inputPagePresenter.typesList.value.selectedChoice?.value;
 
-    return isPurposeDescriptionFilled && isCommercial == true;
+    if (sampleType == null) {
+      return false;
+    }
+
+    if (sampleType == 'Commercial') {
+      return isPurposeDescriptionFilled;
+    } else if (sampleType == 'Non Commercial') {
+      bool isDepartmentSelected =
+          inputPagePresenter.deptList.value.selectedChoice != null;
+
+      bool isPurposeSelected =
+          inputPagePresenter.purposeList.value.selectedChoice != null;
+
+      return isPurposeDescriptionFilled &&
+          isDepartmentSelected &&
+          isPurposeSelected;
+    }
+
+    return false;
   }
 
   void _addItem() {
@@ -743,109 +755,128 @@ class _TransactionPageState extends State<TransactionSample> {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("Upload AX"),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          inputPagePresenter
-                                              .pickAndUploadFile();
-                                        },
-                                        style: ButtonStyle(
-                                          backgroundColor:
-                                              WidgetStateProperty.all<Color>(
-                                                  colorAccent),
-                                          foregroundColor:
-                                              WidgetStateProperty.all<Color>(
-                                                  Colors.white),
-                                          elevation:
-                                              WidgetStateProperty.all<double>(
-                                                  6.0),
-                                          padding: WidgetStateProperty.all<
-                                                  EdgeInsets>(
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 20,
-                                                  vertical: 12)),
-                                          shape: WidgetStateProperty.all<
-                                              RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16.0),
+                      Obx(() => GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text("Attach Document"),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              inputPagePresenter
+                                                  .pickAndUploadFile();
+                                            },
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  WidgetStateProperty.all<
+                                                      Color>(colorAccent),
+                                              foregroundColor:
+                                                  WidgetStateProperty.all<
+                                                      Color>(Colors.white),
+                                              elevation: WidgetStateProperty
+                                                  .all<double>(6.0),
+                                              padding: WidgetStateProperty.all<
+                                                      EdgeInsets>(
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12)),
+                                              shape: WidgetStateProperty.all<
+                                                  RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          16.0),
+                                                ),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              "Choose File",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          "Choose File",
-                                          style: TextStyle(
-                                            fontSize: 16, // Text size
-                                            fontWeight:
-                                                FontWeight.bold, // Text weight
-                                          ),
-                                        ),
+                                        ],
                                       ),
-                                    ],
+                                    );
+                                  });
+                            },
+                            child: inputPagePresenter
+                                    .uploadedFileName.value.isEmpty
+                                ? Container(
+                                    width: inputPagePresenter
+                                            .uploadedFileName.value.isEmpty
+                                        ? MediaQuery.of(context).size.width *
+                                            0.5
+                                        : null,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: colorAccent,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      "Attach Document",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    inputPagePresenter.uploadedFileName.value,
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                );
-                              });
-                        },
-                        child: Container(
-                          width: 100,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: colorAccent,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            "Upload AX",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      )
+                          )),
                     ],
                   );
                 }),
               ],
-              Obx(() {
-                final deptState = inputPagePresenter.deptList.value;
-                return DropdownButtonHideUnderline(
-                  child: SearchChoices.single(
-                    isExpanded: true,
-                    hint: const Text(
-                      "Select Department",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    value: deptState.selectedChoice,
-                    items: deptState.choiceList?.map((dept) {
-                      return DropdownMenuItem<IdAndValue<String>>(
-                        value: dept,
-                        child: Text(
-                          dept.value,
-                          style: const TextStyle(fontSize: 16),
+              if (inputPagePresenter.typesList.value.selectedChoice?.value ==
+                  'Non Commercial') ...[
+                Obx(
+                  () {
+                    final deptState = inputPagePresenter.deptList.value;
+                    return DropdownButtonHideUnderline(
+                      child: SearchChoices.single(
+                        isExpanded: true,
+                        hint: const Text(
+                          "Select Department",
+                          style: TextStyle(fontSize: 16),
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (IdAndValue<String>? newValue) {
-                      _closeKeyboard();
-                      setState(() {
-                        inputPagePresenter.changeDept(newValue);
-                      });
-                    },
-                  ),
-                );
-              }),
+                        value: deptState.selectedChoice,
+                        items: deptState.choiceList?.map((dept) {
+                          return DropdownMenuItem<IdAndValue<String>>(
+                            value: dept,
+                            child: Text(
+                              dept.value,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (IdAndValue<String>? newValue) {
+                          _closeKeyboard();
+                          setState(() {
+                            inputPagePresenter.changeDept(newValue);
+                          });
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
             ],
           );
         },

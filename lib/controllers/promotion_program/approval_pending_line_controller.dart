@@ -203,7 +203,7 @@ class HistoryLinesPendingController extends GetxController {
         "lines": selectedLines
       };
 
-      final response = await put(Uri.parse("$apiCons/api/Approve/$userId"),
+      final response = await put(Uri.parse("$apiSMS/api/Approve/$userId"),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -258,7 +258,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getSupplyItem() async {
-    var url = "$apiCons/api/PrbItemTables";
+    var url = "$apiSMS/api/PrbItemTables";
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
@@ -267,7 +267,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getUnit(String? itemId) async {
-    var url = "$apiCons2/api/Unit?item=$itemId";
+    var url = "$apiSCS/api/Unit?item=$itemId";
     final response = await get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -278,7 +278,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getSupplyUnit(String itemId) async {
-    var url = "$apiCons/api/Unit?item=$itemId";
+    var url = "$apiSMS/api/Unit?item=$itemId";
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
@@ -287,7 +287,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getWarehouse() async {
-    var url = "$apiCons/api/Warehouse";
+    var url = "$apiSMS/api/Warehouse";
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
@@ -298,7 +298,7 @@ class HistoryLinesPendingController extends GetxController {
   Future<void> approveNew(String approveOrReject) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     dynamic id = prefs.getInt("userid");
-    String url = "$apiCons/api/Approve/$id";
+    String url = "$apiSMS/api/Approve/$id";
 
     List<Promotion> data = listHistorySO.cast<Promotion>();
 

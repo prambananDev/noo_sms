@@ -55,7 +55,7 @@ class HistoryAllState extends State<HistoryAll> {
   Future<List<dynamic>?> _fetchStatusData(String noPP) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final url =
-        "$apiCons/api/PromosiHeader?username=${prefs.getString("username")}&NoPP=$noPP";
+        "$apiSMS/api/PromosiHeader?username=${prefs.getString("username")}&NoPP=$noPP";
 
     final response =
         await get(Uri.parse(url), headers: {'authorization': _user.token!})

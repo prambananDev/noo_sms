@@ -37,21 +37,27 @@ class CustomerFormState extends State<CustomerForm> {
   @override
   void initState() {
     super.initState();
-    controller = Get.isRegistered<CustomerFormController>()
-        ? Get.find<CustomerFormController>()
-        : Get.put(CustomerFormController());
 
-    controller.requestPermissions();
+    if (Get.isRegistered<CustomerFormController>()) {
+      controller = Get.find<CustomerFormController>();
+    } else {
+      controller = Get.put(CustomerFormController());
+    }
+
     if (widget.editData != null) {
       controller.isEditMode.value = true;
     }
+
+    controller.requestPermissions();
   }
 
   @override
   void dispose() {
-    controller.clearForm();
+    if (Get.isRegistered<CustomerFormController>()) {
+      Get.delete<CustomerFormController>();
+    }
     controller.isEditMode.value = false;
-    Get.delete<CustomerFormController>();
+
     super.dispose();
   }
 
@@ -836,12 +842,14 @@ class CustomerFormState extends State<CustomerForm> {
                               Get.back(result: true);
                             }
                           } else {
-                            final previewController =
-                                Get.isRegistered<PreviewController>()
-                                    ? Get.find<PreviewController>()
-                                    : Get.put(PreviewController());
-                            Get.dialog(
-                                PreviewDialog(controller: previewController));
+                            if (controller.validateRequiredDocuments()) {
+                              final previewController =
+                                  Get.isRegistered<PreviewController>()
+                                      ? Get.find<PreviewController>()
+                                      : Get.put(PreviewController());
+                              Get.dialog(
+                                  PreviewDialog(controller: previewController));
+                            }
                           }
                         },
                         child: Text(

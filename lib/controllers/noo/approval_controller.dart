@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -23,6 +24,8 @@ class ApprovalController extends GetxController {
   final Rx<Address> companyAddress = Address().obs;
   final Rx<Address> deliveryAddress = Address().obs;
   final Rx<Address> taxAddress = Address().obs;
+  final Map<String, Map<String, double>> _creditLimitCache = {};
+  final RxBool isCreditLimitLoading = false.obs;
 
   final remarkController = TextEditingController();
   final paymentTermController = TextEditingController();
@@ -129,8 +132,8 @@ class ApprovalController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt("id")?.toString();
 
-    final url = '${baseURLDevelopment}FindApproval/$id?page=${page.value}';
-
+    final url = '${apiNOO}FindApproval/$id?page=${page.value}';
+    debugPrint(url);
     final response = await makeApiCall(url);
 
     if (response.statusCode == 200) {
@@ -144,35 +147,41 @@ class ApprovalController extends GetxController {
     isLoading.value = true;
     initializeApprovalControllers(id);
 
-    final response =
-        await makeApiCall('${baseURLDevelopment}NOOCustTables/$id');
+    try {
+      final response = await makeApiCall('${apiNOO}NOOCustTables/$id');
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      currentApproval.value = ApprovalModel.fromJson(data);
-      companyAddress.value = Address.fromJson(data['CompanyAddresses']);
-      deliveryAddress.value = Address.fromJson(data['DeliveryAddresses']);
-      taxAddress.value = Address.fromJson(data['TaxAddresses']);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        currentApproval.value = ApprovalModel.fromJson(data);
+        companyAddress.value = Address.fromJson(data['CompanyAddresses']);
+        deliveryAddress.value = Address.fromJson(data['DeliveryAddresses']);
+        taxAddress.value = Address.fromJson(data['TaxAddresses']);
 
-      // Load all required data
-      await Future.wait([
-        fetchCreditLimitRange(currentApproval.value.segment ?? ''),
-        fetchPaymentTerms(currentApproval.value.segment ?? ''),
-        fetchApprovalStatuses(id),
-      ]);
+        fetchCreditLimitRange(currentApproval.value.segment ?? '');
 
-      // Set initial values after data is loaded
-      getCreditLimitController(id).text =
-          currentApproval.value.creditLimit?.toString() ?? '';
+        await fetchPaymentTerms(currentApproval.value.segment ?? '');
+        await fetchApprovalStatuses(id);
 
-      final currentPaymentTerm = currentApproval.value.paymentTerm;
-      if (currentPaymentTerm != null && currentPaymentTerm.isNotEmpty) {
-        setSelectedPaymentTerm(id, currentPaymentTerm);
-      } else if (paymentTerms.isNotEmpty) {
-        setSelectedPaymentTerm(id, paymentTerms.first);
+        getCreditLimitController(id).text =
+            currentApproval.value.creditLimit?.toString() ?? '';
+
+        final currentPaymentTerm = currentApproval.value.paymentTerm;
+        if (currentPaymentTerm != null &&
+            currentPaymentTerm.isNotEmpty &&
+            paymentTerms.contains(currentPaymentTerm)) {
+          setSelectedPaymentTerm(id, currentPaymentTerm);
+        } else if (paymentTerms.isNotEmpty) {
+          setSelectedPaymentTerm(id, paymentTerms.first);
+        } else {
+          setSelectedPaymentTerm(id, "");
+        }
+
+        update(['approval-$id', 'payment-terms-$id']);
       }
-
-      update(['approval-$id']);
+    } catch (e) {
+      debugPrint('Error fetching approval detail: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -191,7 +200,6 @@ class ApprovalController extends GetxController {
 
   String formatForApi(String value) {
     try {
-      // Remove all dots and convert to double
       final cleanValue = value.replaceAll('.', '');
       return double.parse(cleanValue).toString();
     } catch (e) {
@@ -200,10 +208,20 @@ class ApprovalController extends GetxController {
   }
 
   Future<void> processApproval(BuildContext context, int id, String remark,
-      bool isCreditLimitValid) async {
+      bool ignoreCreditLimitValidation) async {
     try {
-      if (!isCreditLimitValid) {
-        return;
+      if (!ignoreCreditLimitValidation) {
+        final creditLimitText = getCreditLimitController(id).text;
+        final isValid = validateCreditLimitForSubmission(id, creditLimitText);
+        if (!isValid) {
+          Get.snackbar(
+            'Validation Error',
+            'Please correct the credit limit value.',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          return;
+        }
       }
 
       final signatureController = getSignatureController(id);
@@ -214,7 +232,6 @@ class ApprovalController extends GetxController {
         return;
       }
 
-      // Show loading indicator
       Get.dialog(
         const Center(
           child: CircularProgressIndicator(),
@@ -226,7 +243,7 @@ class ApprovalController extends GetxController {
 
       final apiCreditLimit = formatForApi(getCreditLimitController(id).text);
 
-      final url = '${baseURLDevelopment}Approval?'
+      final url = '${apiNOO}Approval?'
           'id=$id&'
           'value=1&'
           'approveBy=${idUser.value}&'
@@ -240,7 +257,9 @@ class ApprovalController extends GetxController {
       if (response.statusCode == 200) {
         _disposeApprovalControllers(id);
 
-        Get.back();
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
 
         Get.snackbar(
           'Success',
@@ -251,10 +270,12 @@ class ApprovalController extends GetxController {
           duration: const Duration(seconds: 2),
         );
 
-        await Future.delayed(const Duration(milliseconds: 500));
-        Get.toNamed('/noo_approve');
+        await Future.delayed(const Duration(seconds: 1));
+        await Get.offNamed('/noo_approve');
       } else {
-        Get.back();
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
         handleError('Failed to process approval',
             'Server returned ${response.statusCode}');
       }
@@ -266,7 +287,36 @@ class ApprovalController extends GetxController {
     }
   }
 
-// Update show success message to return Future
+  bool validateCreditLimitForSubmission(int id, String value) {
+    try {
+      if (value.isEmpty) {
+        setCreditLimitError(id, 'Credit limit is required');
+        return false;
+      }
+
+      final cleanValue = value.replaceAll('.', '');
+      final creditLimit = double.parse(cleanValue);
+
+      if (!isCreditLimitLoading.value) {
+        if (creditLimit < minCreditLimit.value ||
+            creditLimit > maxCreditLimit.value) {
+          setCreditLimitError(
+              id,
+              "Credit limit must be between ${formatCurrency(minCreditLimit.value)} "
+              "and ${formatCurrency(maxCreditLimit.value)}");
+          return false;
+        }
+      }
+
+      // No errors
+      setCreditLimitError(id, '');
+      return true;
+    } catch (e) {
+      setCreditLimitError(id, 'Invalid number format');
+      return false;
+    }
+  }
+
   Future<void> showSuccessMessage(String message) async {
     Get.snackbar(
       'Success',
@@ -290,7 +340,7 @@ class ApprovalController extends GetxController {
   }
 
   Future<void> processReject(int id, String remark) async {
-    final url = '${baseURLDevelopment}Approval/$id?'
+    final url = '${apiNOO}Approval/$id?'
         'value=0&'
         'approveBy=${idUser.value}&'
         'ApprovedSignature=reject&'
@@ -321,13 +371,12 @@ class ApprovalController extends GetxController {
     final filename =
         "SIGNATUREAPPROVAL_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_${username}_.jpg";
 
-    var request =
-        http.MultipartRequest('POST', Uri.parse('${baseURLDevelopment}Upload'))
-          ..files.add(http.MultipartFile.fromBytes(
-            'file',
-            signature,
-            filename: filename,
-          ));
+    var request = http.MultipartRequest('POST', Uri.parse('${apiNOO}Upload'))
+      ..files.add(http.MultipartFile.fromBytes(
+        'file',
+        signature,
+        filename: filename,
+      ));
 
     final response = await request.send();
     final responseStr = await response.stream.bytesToString();
@@ -336,19 +385,74 @@ class ApprovalController extends GetxController {
 
   Future<void> fetchCreditLimitRange(String segment) async {
     final adjustedSegment = segment != "Hotels" ? "All" : segment;
-    final response = await makeApiCall(
-        '${baseURLDevelopment}CreditLimits/BySegment/$adjustedSegment');
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      minCreditLimit.value = data[0]["Min"].toDouble();
-      maxCreditLimit.value = data[0]["Max"].toDouble();
+    if (_creditLimitCache.containsKey(adjustedSegment)) {
+      final cachedData = _creditLimitCache[adjustedSegment]!;
+      minCreditLimit.value = cachedData['min']!;
+      maxCreditLimit.value = cachedData['max']!;
+      isCreditLimitLoading.value = false;
+      update(['credit-range-info']);
+      return;
+    }
+
+    minCreditLimit.value = 0.0;
+    maxCreditLimit.value = 10000000.0;
+
+    isCreditLimitLoading.value = true;
+    update(['credit-range-info']);
+
+    _loadCreditLimitInBackground(adjustedSegment);
+  }
+
+  Future<void> _loadCreditLimitInBackground(String segment) async {
+    try {
+      final response = await makeApiCall(
+        '${apiNOO}CreditLimits/BySegment/$segment',
+        timeout: const Duration(seconds: 5),
+      );
+      debugPrint('${apiNOO}CreditLimits/BySegment/$segment');
+      debugPrint(response.statusCode.toString());
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data.isNotEmpty) {
+          final min = data[0]["Min"].toDouble();
+          final max = data[0]["Max"].toDouble();
+
+          _creditLimitCache[segment] = {
+            'min': min,
+            'max': max,
+          };
+
+          minCreditLimit.value = min;
+          maxCreditLimit.value = max;
+        }
+      } else if (response.statusCode == 408) {
+        debugPrint('Credit limit range fetch timed out');
+      } else {
+        debugPrint('Error fetching credit limit range: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Unexpected error fetching credit limit range: $e');
+    } finally {
+      isCreditLimitLoading.value = false;
+
+      update(['credit-range-info']);
     }
   }
 
   void validateCreditLimit(int id, String value) {
+    if (isCreditLimitLoading.value) {
+      setCreditLimitError(id, 'Loading credit limit range...');
+      return;
+    }
+
     try {
       final cleanValue = value.replaceAll('.', '');
+      if (cleanValue.isEmpty) {
+        setCreditLimitError(id, 'Credit limit is required');
+        return;
+      }
+
       final creditLimit = double.parse(cleanValue);
       if (creditLimit < minCreditLimit.value ||
           creditLimit > maxCreditLimit.value) {
@@ -369,32 +473,54 @@ class ApprovalController extends GetxController {
     return formatter.format(value);
   }
 
-  Future<http.Response> makeApiCall(String url,
-      {String method = 'GET', dynamic body}) async {
-    switch (method) {
-      case 'GET':
-        return await http.get(
-          Uri.parse(url),
-          headers: {'authorization': basicAuth},
-        );
-      case 'POST':
-        return await http.post(
-          Uri.parse(url),
-          headers: {
-            'authorization': basicAuth,
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(body),
-        );
-      default:
-        throw Exception('Unsupported HTTP method');
+  Future<http.Response> makeApiCall(
+    String url, {
+    String method = 'GET',
+    dynamic body,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    try {
+      switch (method) {
+        case 'GET':
+          return await http.get(
+            Uri.parse(url),
+            headers: {'authorization': basicAuth},
+          ).timeout(timeout);
+        case 'POST':
+          return await http
+              .post(
+                Uri.parse(url),
+                headers: {
+                  'authorization': basicAuth,
+                  'Content-Type': 'application/json',
+                },
+                body: jsonEncode(body),
+              )
+              .timeout(timeout);
+        default:
+          throw Exception('Unsupported HTTP method');
+      }
+    } on TimeoutException {
+      return http.Response(
+        '{"error": "Request timed out"}',
+        408, // 408 is Request Timeout
+        headers: {'content-type': 'application/json'},
+      );
+    } catch (e) {
+      debugPrint('API call error: $e');
+
+      return http.Response(
+        '{"error": "API call failed: $e"}',
+        500,
+        headers: {'content-type': 'application/json'},
+      );
     }
   }
 
   Future<void> fetchApprovalStatuses(int id) async {
     try {
       final response = await http.get(
-        Uri.parse('${baseURLDevelopment}Approval/$id'),
+        Uri.parse('${apiNOO}Approval/$id'),
         headers: {'authorization': basicAuth},
       );
 
@@ -409,7 +535,7 @@ class ApprovalController extends GetxController {
   }
 
   Future<void> fetchPaymentTerms(String segment) async {
-    var url = "${baseURLDevelopment}PaymentTerms/BySegment/$segment";
+    var url = "${apiNOO}PaymentTerms/BySegment/$segment";
     final response = await makeApiCall(url);
 
     if (response.statusCode == 200) {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -17,8 +18,10 @@ import 'package:noo_sms/models/state_management/promotion_program/input_pp_state
 import 'package:noo_sms/models/transaction_history_sample.dart';
 import 'package:noo_sms/models/upload_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart' hide FormData;
+import 'package:url_launcher/url_launcher.dart';
 
 class TransactionHistorySampleController extends GetxController {
   var transactionHistory = <TransactionHistorySample>[].obs;
@@ -72,7 +75,7 @@ class TransactionHistorySampleController extends GetxController {
       };
       final String feedbackJson = jsonEncode(feedbackData);
 
-      var url = '$apiCons2/api/SampleTransaction';
+      var url = '$apiSCS/api/SampleTransaction';
       final response = await http.put(
         Uri.parse(url),
         body: feedbackJson,
@@ -100,8 +103,8 @@ class TransactionHistorySampleController extends GetxController {
 
   Future<void> getTransactionHistory() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int idEmp = int.tryParse(prefs.getString("getIdEmp") ?? '0') ?? 0;
-    var urls = "$apiCons2/api/SampleTransaction/$idEmp";
+    final int idEmp = int.tryParse(prefs.getString("scs_idEmp") ?? '0') ?? 0;
+    var urls = "$apiSCS/api/SampleTransaction/$idEmp";
 
     try {
       final response = await http.get(Uri.parse(urls));
@@ -120,7 +123,7 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   getTransactionHistoryDetail(String idTransaction) async {
-    String url = "$apiCons2/api/SampleTransaction/detail?trx=$idTransaction";
+    String url = "$apiSCS/api/SampleTransaction/detail?trx=$idTransaction";
 
     final response = await http.get(Uri.parse(url));
     final listData = jsonDecode(response.body);
@@ -158,7 +161,7 @@ class TransactionHistorySampleController extends GetxController {
       "attachmentName": await dio.MultipartFile.fromFile(resizedFile.path,
           filename: resizedFile.path.split('/').last)
     });
-    String uploadURL = "$apiCons2/api/uploadPOD/?salesid=$salesId";
+    String uploadURL = "$apiSCS/api/uploadPOD/?salesid=$salesId";
     var response = await dioClient.post(uploadURL, data: formData);
 
     if (response.statusCode == 200) {
@@ -189,7 +192,7 @@ class TransactionHistorySampleController extends GetxController {
 
   Future<Uint8List?> fetchImagePOD(String salesId) async {
     dio.Dio dioClient = dio.Dio();
-    String downloadURL = "$apiCons2/api/downloadPOD/?salesid=$salesId";
+    String downloadURL = "$apiSCS/api/downloadPOD/?salesid=$salesId";
     try {
       dio.Response<List<int>> response = await dioClient.get<List<int>>(
         downloadURL,
@@ -209,7 +212,7 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   void _loadFeed() async {
-    var urlGetDept = "$apiCons2/api/SampleFeedbackReasons";
+    var urlGetDept = "$apiSCS/api/SampleFeedbackReasons";
     final response = await http.get(Uri.parse(urlGetDept));
     var listData = jsonDecode(response.body);
 
@@ -230,7 +233,7 @@ class TransactionHistorySampleController extends GetxController {
   }
 
   Future<void> loadFeedVal2(String salesId) async {
-    final url = '$apiCons2/api/SampleFeedbackReasons/?salesid=$salesId';
+    final url = '$apiSCS/api/SampleFeedbackReasons/?salesid=$salesId';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -262,7 +265,7 @@ class TransactionHistorySampleController extends GetxController {
       "attachmentName": await dio.MultipartFile.fromFile(resizedFile.path,
           filename: resizedFile.path.split('/').last)
     });
-    String uploadURL = "$apiCons2/api/uploadFeedback/?salesid=$salesId";
+    String uploadURL = "$apiSCS/api/uploadFeedback/?salesid=$salesId";
     var response = await dioClient.post(uploadURL, data: formData);
 
     if (response.statusCode == 200) {
@@ -282,7 +285,7 @@ class TransactionHistorySampleController extends GetxController {
   Future<Uint8List?> fetchImageFeed(String salesId) async {
     loadFeedVal2(salesId);
     dio.Dio dioClient = dio.Dio();
-    String downloadURL = "$apiCons2/api/downloadFeedback/?salesid=$salesId";
+    String downloadURL = "$apiSCS/api/downloadFeedback/?salesid=$salesId";
     try {
       dio.Response<List<int>> response = await dioClient.get<List<int>>(
         downloadURL,
@@ -300,35 +303,168 @@ class TransactionHistorySampleController extends GetxController {
     }
   }
 
+  Future<void> _openFolder(String path) async {
+    if (Platform.isAndroid) {
+      final uri = Uri.parse(
+          'content://com.android.externalstorage.documents/document/primary:Download');
+      try {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+          webViewConfiguration:
+              const WebViewConfiguration(enableJavaScript: true),
+        );
+      } catch (e) {
+        final directUri = Uri.parse('file:///storage/emulated/0/Download');
+        try {
+          await launchUrl(
+            directUri,
+            mode: LaunchMode.externalApplication,
+          );
+        } catch (e) {
+          debugPrint('Could not open folder: $e');
+        }
+      }
+    } else {
+      final directory = Directory(path).parent;
+      final uri = Uri.file(directory.path);
+      try {
+        await launchUrl(uri);
+      } catch (e) {
+        debugPrint('Could not open folder: $e');
+      }
+    }
+  }
+
+  Future<void> _showDownloadSuccessDialog(
+      BuildContext context, String filePath) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 48,
+                ),
+                const Text(
+                  'Download Successful',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const Text('Your file has been downloaded successfully at'),
+                const SizedBox(height: 10),
+                Text(
+                  filePath,
+                  style: const TextStyle(fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                    },
+                    child: const Text('Close'),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      _openFolder(filePath);
+                      Navigator.of(dialogContext).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Open Folder'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<bool> downloadFile({
     required int salesId,
     required BuildContext context,
   }) async {
+    if (!await _requestStoragePermission()) {
+      _showSnackBar(
+          context, 'Storage permission is required to download files');
+      return false;
+    }
+
+    if (Platform.isAndroid) {
+      if (await Permission.manageExternalStorage.isGranted) {
+      } else {
+        final status = await Permission.manageExternalStorage.request();
+        if (!status.isGranted) {
+          _showSnackBar(
+              context, 'Storage permission is required to download files');
+          return false;
+        }
+      }
+    }
+
     dio.Dio dioClient = dio.Dio();
     try {
       _showLoadingDialog(context);
-      final downloadUrl = '$apiCons2/api/downloadAttachment?salesid=$salesId';
+      final downloadUrl = '$apiSCS/api/downloadAttachment?salesid=$salesId';
 
       Directory? downloadDirectory;
-      if (Platform.isAndroid) {
-        downloadDirectory = await getExternalStorageDirectory();
+      String filePath = '';
 
-        if (downloadDirectory == null) {
-          final tempDir = await getTemporaryDirectory();
-          downloadDirectory = tempDir;
+      if (Platform.isAndroid) {
+        try {
+          downloadDirectory = await getExternalStorageDirectory();
+          if (downloadDirectory == null) {
+            throw Exception('Could not access external storage');
+          }
+          String? downloadPath;
+          List<String> paths = downloadDirectory.path.split('/');
+          int index = paths.indexOf('Android');
+          if (index > 0) {
+            paths = paths.sublist(0, index);
+            downloadPath = paths.join('/') + '/Download';
+          }
+
+          if (downloadPath != null) {
+            final dir = Directory(downloadPath);
+            if (!await dir.exists()) {
+              await dir.create(recursive: true);
+            }
+            downloadDirectory = dir;
+          }
+        } catch (e) {
+          debugPrint('Error accessing download directory: $e');
+          // Fallback to app's directory
+          downloadDirectory = await getApplicationDocumentsDirectory();
         }
       } else {
         downloadDirectory = await getApplicationDocumentsDirectory();
       }
 
-      if (!await downloadDirectory.exists()) {
-        await downloadDirectory.create(recursive: true);
-      }
       final now = DateTime.now();
       final formattedDate = DateFormat('ddMMyyyy').format(now);
-
       final fileName = 'AX_${salesId}_$formattedDate.pdf';
-      final filePath = '${downloadDirectory.path}/$fileName';
+      filePath = '${downloadDirectory.path}/$fileName';
 
       await dioClient.download(
         downloadUrl,
@@ -340,21 +476,43 @@ class TransactionHistorySampleController extends GetxController {
           },
         ),
         onReceiveProgress: (received, total) {
-          debugPrint('Received: $received, Total: $total');
+          if (total != -1) {
+            final progress = (received / total * 100).toStringAsFixed(0);
+            debugPrint('Download Progress: $progress%');
+          }
         },
       );
 
+      if (!context.mounted) return true;
       Navigator.of(context).pop();
-
-      _showSnackBar(context, 'File downloaded to: $filePath');
+      await _showDownloadSuccessDialog(context, filePath);
 
       return true;
     } catch (e) {
+      debugPrint('Download error: $e');
+      if (!context.mounted) return false;
       Navigator.of(context).pop();
 
       _showSnackBar(context, 'Download failed: ${e.toString()}');
       return false;
     }
+  }
+
+  Future<bool> _requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      var storageStatus = await Permission.storage.status;
+      if (!storageStatus.isGranted) {
+        storageStatus = await Permission.storage.request();
+      }
+
+      if (await Permission.manageExternalStorage.isRestricted) {
+        final status = await Permission.manageExternalStorage.request();
+        return status.isGranted;
+      }
+
+      return storageStatus.isGranted;
+    }
+    return true;
   }
 
   void _showLoadingDialog(BuildContext context) {
@@ -387,11 +545,11 @@ class TransactionHistorySampleController extends GetxController {
 
   Future<List<ApprovalInfo>> fetchApprovalInfo(int id) async {
     final response = await http.get(
-      Uri.parse('$apiCons2/api/SampleApprovalInfo/$id'),
+      Uri.parse('$apiSCS/api/SampleApprovalInfo/$id'),
       headers: {'Content-Type': 'application/json'},
     );
     debugPrint(response.body);
-    debugPrint(Uri.parse('$apiCons2/api/SampleApprovalInfo/$id').toString());
+    debugPrint(Uri.parse('$apiSCS/api/SampleApprovalInfo/$id').toString());
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
       return data.map((json) => ApprovalInfo.fromJson(json)).toList();

@@ -29,10 +29,12 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
   void initState() {
     super.initState();
     controller = Get.put(ApprovalController());
-    if (widget.id != null) {
-      controller.fetchApprovalDetail(widget.id!);
-    }
-    _initializeCreditLimit();
+    Future.microtask(() {
+      if (widget.id != null) {
+        controller.fetchApprovalDetail(widget.id!);
+      }
+      _initializeCreditLimit();
+    });
   }
 
   Future<void> _initializeCreditLimit() async {
@@ -40,6 +42,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
     final editApproval = prefs.getInt("EditApproval") ?? 0;
 
     if (editApproval == 1) {
+      await Future.delayed(Duration.zero);
       controller.creditLimitController.text =
           controller.currentApproval.value.creditLimit?.toString() ?? '';
     }
@@ -191,7 +194,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -231,7 +234,13 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
         _buildImageViewer('KTP', controller.currentApproval.value.fotoKTP),
         _buildImageViewer('SIUP', controller.currentApproval.value.fotoSIUP),
         _buildImageViewer(
-            'Foto Gedung', controller.currentApproval.value.fotoGedung),
+            'Foto Gedung Depan', controller.currentApproval.value.fotoGedung1),
+        _buildImageViewer(
+            'Foto Gedung Dalam', controller.currentApproval.value.fotoGedung2),
+        _buildImageViewer(
+            'Foto SPPKP', controller.currentApproval.value.fotoGedung3),
+        _buildImageViewer('Foto Competitor TOP',
+            controller.currentApproval.value.fotoCompetitorTop),
       ],
     );
   }
@@ -247,20 +256,35 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Image.network(
-        '${baseURLDevelopment}Files/GetFiles?fileName=$imageUrl',
-        fit: BoxFit.cover,
-        height: 200,
-        width: double.infinity,
-        errorBuilder: (context, error, stackTrace) {
-          return const Center(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              'Image not found',
-              style: TextStyle(fontSize: 16, color: Colors.black),
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: colorBlack,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          );
-        },
+          ),
+          Image.network(
+            '${apiNOO}Files/GetFiles?fileName=$imageUrl',
+            fit: BoxFit.cover,
+            height: 200,
+            width: double.infinity,
+            errorBuilder: (context, error, stackTrace) {
+              return const Center(
+                child: Text(
+                  'Image not found',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -288,128 +312,178 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Remark'),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: TextField(
-            controller: controller.getRemarkController(widget.id!),
-            decoration: const InputDecoration(hintText: "Enter remark here"),
-          ),
+        TextField(
+          controller: controller.getRemarkController(widget.id!),
+          decoration: const InputDecoration(hintText: "Enter remark here"),
         ),
       ],
     );
   }
 
   Widget _buildPaymentAndCreditSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Payment and Credit'),
-        GetBuilder<ApprovalController>(
-          builder: (controller) {
-            return FutureBuilder<int>(
-              future: _getEditApproval(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Payment and Credit'),
+          GetBuilder<ApprovalController>(
+            builder: (controller) {
+              return FutureBuilder<int>(
+                future: _getEditApproval(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
 
-                if (snapshot.data == 1) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Credit Limit',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                  if (snapshot.data == 1) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Credit Limit',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: colorBlack,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      TextField(
-                        controller:
-                            controller.getCreditLimitController(widget.id!),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          TextInputFormatter.withFunction((oldValue, newValue) {
-                            if (newValue.text.isEmpty) {
-                              return newValue;
-                            }
-                            String formatted = controller
-                                .formatNumberForDisplay(newValue.text);
-                            return TextEditingValue(
-                              text: formatted,
-                              selection: TextSelection.collapsed(
-                                  offset: formatted.length),
-                            );
-                          }),
-                        ],
-                        decoration: const InputDecoration(
-                          hintText: "Enter credit limit",
-                        ),
-                        onChanged: (value) {
-                          controller.validateCreditLimit(widget.id!, value);
-                        },
-                      ),
-                      GetBuilder<ApprovalController>(
-                        id: 'credit-limit-error${widget.id}',
-                        builder: (controller) {
-                          final error =
-                              controller.getCreditLimitError(widget.id!);
-                          if (error.isNotEmpty) {
-                            return Text(
-                              error,
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 16,
-                              ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                      GetBuilder<ApprovalController>(
-                        id: 'payment-terms-${widget.id}',
-                        builder: (controller) {
-                          final selectedTerm =
-                              controller.getSelectedPaymentTerm(widget.id!);
-
-                          return DropdownButtonFormField<String>(
-                            value: selectedTerm.isNotEmpty
-                                ? selectedTerm // Ensure selectedTerm is a plain String
-                                : null, // Set to null if empty or invalid
-                            items: controller.paymentTerms.map((term) {
-                              return DropdownMenuItem(
-                                value: term,
-                                child: Text(term),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                controller.setSelectedPaymentTerm(
-                                    widget.id!, value);
+                        TextField(
+                          controller:
+                              controller.getCreditLimitController(widget.id!),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            TextInputFormatter.withFunction(
+                                (oldValue, newValue) {
+                              if (newValue.text.isEmpty) {
+                                return newValue;
                               }
+                              String formatted = controller
+                                  .formatNumberForDisplay(newValue.text);
+                              return TextEditingValue(
+                                text: formatted,
+                                selection: TextSelection.collapsed(
+                                    offset: formatted.length),
+                              );
+                            }),
+                          ],
+                          decoration: const InputDecoration(
+                            hintText: "Enter credit limit",
+                          ),
+                        ),
+                        GetBuilder<ApprovalController>(
+                          id: 'credit-range-info',
+                          builder: (controller) {
+                            final isLoading =
+                                controller.isCreditLimitLoading.value;
+                            if (!isLoading) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  "Credit limit range ${controller.formatCurrency(controller.minCreditLimit.value)} - ${controller.formatCurrency(controller.maxCreditLimit.value)}",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return const Padding(
+                                padding: EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  "Loading credit limit range...",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        GetBuilder<ApprovalController>(
+                          id: 'credit-limit-error${widget.id}',
+                          builder: (controller) {
+                            final error =
+                                controller.getCreditLimitError(widget.id!);
+                            if (error.isNotEmpty) {
+                              return Text(
+                                error,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: GetBuilder<ApprovalController>(
+                            id: 'payment-terms-${widget.id}',
+                            builder: (controller) {
+                              final selectedTerm =
+                                  controller.getSelectedPaymentTerm(widget.id!);
+                              final paymentTermsList = controller.paymentTerms;
+                              final bool isValidSelection =
+                                  selectedTerm.isEmpty ||
+                                      paymentTermsList.contains(selectedTerm);
+
+                              if (!isValidSelection &&
+                                  controller.paymentTerms.isNotEmpty) {
+                                Future.microtask(() {
+                                  controller.setSelectedPaymentTerm(
+                                      widget.id!,
+                                      controller.paymentTerms.isNotEmpty
+                                          ? controller.paymentTerms.first
+                                          : "");
+                                });
+                              }
+
+                              return DropdownButtonFormField<String>(
+                                value:
+                                    isValidSelection && selectedTerm.isNotEmpty
+                                        ? selectedTerm
+                                        : null,
+                                items: paymentTermsList.map((term) {
+                                  return DropdownMenuItem(
+                                    value: term,
+                                    child: Text(term),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    controller.setSelectedPaymentTerm(
+                                        widget.id!, value);
+                                  }
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Payment Terms',
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  border: OutlineInputBorder(),
+                                ),
+                              );
                             },
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              border: OutlineInputBorder(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                } else {
-                  return detailRow(
-                    'Credit Limit',
-                    controller.currentApproval.value.creditLimit.toString(),
-                  );
-                }
-              },
-            );
-          },
-        ),
-      ],
+                          ),
+                        )
+                      ],
+                    );
+                  } else {
+                    return detailRow(
+                      'Credit Limit',
+                      controller.currentApproval.value.creditLimit.toString(),
+                    );
+                  }
+                },
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -467,12 +541,28 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
   }
 
   void _showApproveConfirmation() {
+    final isLoading = controller.isCreditLimitLoading.value;
+
     showDialog(
       context: Get.context!,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Approval'),
-          content: const Text('Are you sure you want to approve this request?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Are you sure you want to approve this request?'),
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    'Warning: Credit limit range validation is still loading.',
+                    style: TextStyle(color: Colors.orange, fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -483,12 +573,34 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
             ),
             TextButton(
               onPressed: () async {
+                final creditLimitText =
+                    controller.getCreditLimitController(widget.id!).text;
+
+                // Use captured loading state
+                bool skipValidation = isLoading;
+
+                if (!skipValidation) {
+                  bool isValid = controller.validateCreditLimitForSubmission(
+                      widget.id!, creditLimitText);
+
+                  if (!isValid) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please correct the credit limit value'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+                }
+
                 await controller.processApproval(
                   context,
                   widget.id!,
                   controller.getRemarkController(widget.id!).text,
-                  controller.getCreditLimitError(widget.id!).isEmpty,
+                  skipValidation,
                 );
+
                 Navigator.of(context).pop();
               },
               child: Text(

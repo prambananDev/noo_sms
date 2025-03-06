@@ -32,7 +32,37 @@ class ApprovalPage extends StatelessWidget {
       },
       child: Obx(() {
         if (controller.isLoading.value && controller.approvals.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return FutureBuilder(
+            future: Future.delayed(const Duration(seconds: 5)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  controller.isLoading.value &&
+                  controller.approvals.isEmpty) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "Data not available",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Center(
+                  child: CircularProgressIndicator(
+                color: colorAccent,
+              ));
+            },
+          );
         }
 
         return ListView.builder(

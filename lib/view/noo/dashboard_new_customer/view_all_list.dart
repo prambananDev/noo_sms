@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
-import 'package:noo_sms/controllers/noo/list_status_controller_noo.dart';
+import 'package:noo_sms/controllers/noo/view_all_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/list_status_detail.dart';
 
 import 'package:intl/intl.dart';
+import 'package:noo_sms/view/noo/dashboard_new_customer/view_all_list_detail.dart';
 
-class StatusPage extends StatelessWidget {
+class ViewAllListPage extends StatelessWidget {
   final String? name;
   final String? so;
   final String? bu;
 
-  const StatusPage({Key? key, this.name, this.so, this.bu}) : super(key: key);
+  const ViewAllListPage({Key? key, this.name, this.so, this.bu})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<StatusController>(
-      init: StatusController(),
+    return GetBuilder<ViewAllController>(
+      init: ViewAllController(),
       builder: (controller) {
         return Scaffold(
           backgroundColor: colorNetral,
@@ -27,7 +29,7 @@ class StatusPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(StatusController controller) {
+  Widget _buildBody(ViewAllController controller) {
     return RefreshIndicator(
       onRefresh: controller.refreshData,
       child: Obx(() {
@@ -35,7 +37,6 @@ class StatusPage extends StatelessWidget {
           return FutureBuilder(
             future: Future.delayed(const Duration(seconds: 5)),
             builder: (context, snapshot) {
-              // If the future is complete (5s passed) and still loading with no data
               if (snapshot.connectionState == ConnectionState.done &&
                   controller.isLoading.value &&
                   controller.data.isEmpty) {
@@ -57,7 +58,7 @@ class StatusPage extends StatelessWidget {
                   ),
                 );
               }
-              // Standard loading indicator before timeout
+
               return const Center(child: CircularProgressIndicator());
             },
           );
@@ -144,7 +145,7 @@ class StatusPage extends StatelessWidget {
             right: 10,
             child: GestureDetector(
               onTap: () {
-                Get.to(() => StatusDetailView(
+                Get.to(() => ViewAllListDetail(
                       id: item.id,
                       bu: item.businessUnit,
                       so: item.salesOffice,

@@ -148,7 +148,7 @@ class InputPageController extends GetxController {
   }
 
   void _loadPrincipal() async {
-    var urlPrincipal = "$apiCons/api/Principals";
+    var urlPrincipal = "$apiSMS/api/Principals";
     final response = await get(Uri.parse(urlPrincipal));
     final listData = jsonDecode(response.body);
 
@@ -158,7 +158,7 @@ class InputPageController extends GetxController {
   }
 
   Future<void> loadProgramData(String programNumber) async {
-    var url = '$apiCons/api/activity/$programNumber';
+    var url = '$apiSMS/api/activity/$programNumber';
     final response = await get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -205,7 +205,7 @@ class InputPageController extends GetxController {
     locationInputPageDropdownStateRx.value.loadingState = 1;
     _updateState();
     try {
-      var urlGetLocation = "$apiCons/api/SalesOffices";
+      var urlGetLocation = "$apiSMS/api/SalesOffices";
       final response = await get(Uri.parse(urlGetLocation));
       var listData = jsonDecode(response.body);
       locationInputPageDropdownStateRx.value.loadingState = 2;
@@ -223,7 +223,7 @@ class InputPageController extends GetxController {
     vendorInputPageDropdownStateRx.value.loadingState = 1;
     _updateState();
     try {
-      var urlGetVendor = "$apiCons/api/Vendors";
+      var urlGetVendor = "$apiSMS/api/Vendors";
       final response = await get(Uri.parse(urlGetVendor));
       var listData = jsonDecode(response.body);
       vendorInputPageDropdownStateRx.value.loadingState = 2;
@@ -241,7 +241,7 @@ class InputPageController extends GetxController {
   void _loadWarehouse() async {
     _warehouseInputPageDropdownState.loadingStateWrapper?.value = 1;
     _updateState();
-    var urlGetWarehouse = "$apiCons/api/Warehouse";
+    var urlGetWarehouse = "$apiSMS/api/Warehouse";
     final response = await get(Uri.parse(urlGetWarehouse));
     var listData = jsonDecode(response.body);
     _warehouseInputPageDropdownState.loadingStateWrapper?.value = 2;
@@ -273,8 +273,7 @@ class InputPageController extends GetxController {
     }
 
     if (selectedChoice == itemGroupInputPageDropdownState!.choiceList?[0]) {
-      var urlGetProduct =
-          "$apiCons2/api/AllProduct?ID=$username&idSales=Sample";
+      var urlGetProduct = "$apiSCS/api/AllProduct?ID=$username&idSales=Sample";
 
       final response = await get(
         Uri.parse(urlGetProduct),
@@ -295,7 +294,7 @@ class InputPageController extends GetxController {
       }
     } else if (selectedChoice ==
         itemGroupInputPageDropdownState.choiceList?[1]) {
-      var urlGetDiscGroup = "$apiCons/api/ItemGroup";
+      var urlGetDiscGroup = "$apiSMS/api/ItemGroup";
 
       final response = await get(Uri.parse(urlGetDiscGroup));
 
@@ -321,7 +320,7 @@ class InputPageController extends GetxController {
     //         .customerNameOrDiscountGroupInputPageDropdownState;
     InputPageDropdownState<IdAndValue<String>>? supplyItemPageDropdownState =
         promotionProgramInputState.supplyItem;
-    var urlGetSupplyItem = "$apiCons/api/PrbItemTables";
+    var urlGetSupplyItem = "$apiSMS/api/PrbItemTables";
 
     final response = await get(
       Uri.parse(urlGetSupplyItem),
@@ -347,7 +346,7 @@ class InputPageController extends GetxController {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     try {
-      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
+      var urlGetCustomer = "$apiSCS/api/AllCustomer?username=$username";
 
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
@@ -395,7 +394,7 @@ class InputPageController extends GetxController {
     _updateState();
 
     final urlGetUnit =
-        "$apiCons2/api/Unit?item=${selectProductState.selectedChoice?.id}";
+        "$apiSCS/api/Unit?item=${selectProductState.selectedChoice?.id}";
     final response = await get(Uri.parse(urlGetUnit));
     final listData = jsonDecode(response.body);
 
@@ -501,7 +500,7 @@ class InputPageController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
     try {
-      var urlGetCustomer = "$apiCons2/api/AllCustomer?username=$username";
+      var urlGetCustomer = "$apiSCS/api/AllCustomer?username=$username";
       final response = await get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
       custNameHeaderValueDropdownStateRx.value.loadingState = 2;
@@ -820,7 +819,7 @@ class InputPageController extends GetxController {
       ({String username, String token}) credentials) async {
     final requestBody = await _prepareRequestBody();
     return await http.post(
-      Uri.parse('$apiCons/api/activity?username=${credentials.username}'),
+      Uri.parse('$apiSMS/api/activity?username=${credentials.username}'),
       headers: {
         "Content-Type": "application/json",
         'Authorization': credentials.token,
@@ -1028,7 +1027,7 @@ class InputPageController extends GetxController {
     });
 
     final response =
-        await put(Uri.parse('$apiCons/api/activity?username=$username'),
+        await put(Uri.parse('$apiSMS/api/activity?username=$username'),
             headers: {
               "Content-Type": "application/json",
               'Authorization': '$token',
