@@ -22,9 +22,9 @@ class ApprovedPPState extends State<ApprovedPP> {
 
   List<Promotion>? _listHistory;
   List<Promotion>? _listHistoryReal;
-
-  int? code;
   bool _isLoading = true;
+  int? code;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -33,55 +33,87 @@ class ApprovedPPState extends State<ApprovedPP> {
   }
 
   Future<void> _initializeData() async {
-    await _loadUserData();
-    await _loadHistory();
+    if (_isDisposed) return;
+
+    try {
+      await _loadUserData();
+      if (!_isDisposed) {
+        await _loadHistory();
+      }
+    } catch (e) {
+      if (!_isDisposed) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _loadUserData() async {
+    if (_isDisposed) return;
+
     try {
       final dir = await getApplicationDocumentsDirectory();
       Hive.init(dir.path);
 
       final prefs = await SharedPreferences.getInstance();
 
-      setState(() {
-        code = prefs.getInt("code");
-        _isLoading = false;
-      });
+      if (!_isDisposed) {
+        setState(() {
+          code = prefs.getInt("code");
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (!_isDisposed) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _loadHistory() async {
-    final value = await Promotion.getListPromotionApproved();
-    setState(() {
-      _listHistoryReal = value;
-      _listHistory = value;
-    });
+    if (_isDisposed) return;
+
+    try {
+      final value = await Promotion.getListPromotionApproved();
+      if (!_isDisposed) {
+        setState(() {
+          _listHistoryReal = value;
+          _listHistory = value;
+        });
+      }
+    } catch (e) {
+      if (!_isDisposed) {
+        setState(() {
+          _listHistory = [];
+          _listHistoryReal = [];
+        });
+      }
+    }
   }
 
   void _filterData(String query) {
-    if (_listHistoryReal == null) return;
+    if (_isDisposed || _listHistoryReal == null) return;
 
     _debouncer.run(() {
-      setState(() {
-        _listHistory = _listHistoryReal!.where((element) {
-          final nomorPP = element.nomorPP?.toLowerCase() ?? '';
-          final date = element.date.toLowerCase();
-          final customer = element.customer?.toLowerCase() ?? '';
-          final searchQuery = query.toLowerCase();
+      if (!_isDisposed) {
+        setState(() {
+          _listHistory = _listHistoryReal!.where((element) {
+            final nomorPP = element.nomorPP?.toLowerCase() ?? '';
+            final date = element.date.toLowerCase();
+            final customer = element.customer?.toLowerCase() ?? '';
+            final searchQuery = query.toLowerCase();
 
-          return nomorPP.contains(searchQuery) ||
-              date.contains(searchQuery) ||
-              customer.contains(searchQuery);
-        }).toList();
-      });
+            return nomorPP.contains(searchQuery) ||
+                date.contains(searchQuery) ||
+                customer.contains(searchQuery);
+          }).toList();
+        });
+      }
     });
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     filterController.dispose();
     super.dispose();
   }
@@ -132,48 +164,44 @@ class ApprovedPPState extends State<ApprovedPP> {
     return RefreshIndicator(
       key: refreshKey,
       onRefresh: _loadHistory,
-      child: FutureBuilder<List<Promotion>>(
-        future: Promotion.getListPromotionApproved(),
-        builder: (context, snapshot) => _buildFutureContent(snapshot),
-      ),
-    );
-  }
-
-  Widget _buildFutureContent(AsyncSnapshot<List<Promotion>> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting &&
-        _listHistory == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (snapshot.hasError) {
-      return Center(child: Text('Error: ${snapshot.error}'));
-    }
-
-    if (!snapshot.hasData && _listHistory == null) {
-      return _buildEmptyState();
-    }
-
-    _listHistory ??= _listHistoryReal = snapshot.data;
-
-    if (_listHistory?.isEmpty ?? true) {
-      return _buildEmptyState();
-    }
-
-    return ListView.builder(
-      itemCount: _listHistory?.length ?? 0,
-      itemBuilder: (context, index) =>
-          _buildPromotionCard(_listHistory![index]),
+      child: _listHistory == null
+          ? const Center(child: CircularProgressIndicator())
+          : _listHistory!.isEmpty
+              ? _buildEmptyState()
+              : ListView.builder(
+                  itemCount: _listHistory!.length,
+                  itemBuilder: (context, index) =>
+                      _buildPromotionCard(_listHistory![index]),
+                ),
     );
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('No Data'),
-          SizedBox(height: 8),
-          Text('Swipe down to refresh'),
+          Icon(
+            Icons.assignment_outlined,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No Approved PP Found',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Pull down to refresh',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
         ],
       ),
     );
@@ -225,14 +253,18 @@ class ApprovedPPState extends State<ApprovedPP> {
 
   Widget _buildViewLinesButton(Promotion promotion) {
     return TextButton(
-      onPressed: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HistoryLinesApproved(
-            numberPP: promotion.namePP,
-          ),
-        ),
-      ),
+      onPressed: () {
+        if (!_isDisposed) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HistoryLinesApproved(
+                numberPP: promotion.namePP,
+              ),
+            ),
+          );
+        }
+      },
       style: TextButton.styleFrom(
         backgroundColor: colorAccent,
         shape: RoundedRectangleBorder(

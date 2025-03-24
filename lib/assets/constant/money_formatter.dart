@@ -17,7 +17,6 @@ class CustomMoneyInputFormatter extends TextInputFormatter {
       return newValue.copyWith(text: '');
     }
 
-    // Remove all non-digit characters (except decimal point).
     String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (newText.isEmpty) {
       return newValue.copyWith(text: '');

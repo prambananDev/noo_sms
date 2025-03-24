@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CustomDropdown<T> extends StatelessWidget {
-  final List<T>? items; // The list of items
-  final T? selectedItem; // The currently selected item
-  final String hintText; // The hint to display when no item is selected
-  final Function(T?)? onChanged; // The callback to handle selection changes
-  final bool isExpanded; // Whether the dropdown should expand
+  final List<T>? items;
+  final T? selectedItem;
+  final String hintText;
+  final Function(T?)? onChanged;
+  final bool isExpanded;
 
   const CustomDropdown({
     Key? key,
@@ -23,7 +23,7 @@ class CustomDropdown<T> extends StatelessWidget {
       items: items?.map((T item) {
         return DropdownMenuItem<T>(
           value: item,
-          child: Text(item.toString()), // Customize this if needed
+          child: Text(item.toString()),
         );
       }).toList(),
       hint: Text(

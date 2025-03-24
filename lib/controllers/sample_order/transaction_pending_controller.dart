@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +18,9 @@ class TransactionPendingController extends GetxController {
   Rx<TextEditingController> principalNameTextEditingControllerRx =
       TextEditingController().obs;
   final RxBool isClaim = false.obs;
+  final RxBool isLoading = false.obs;
+  final RxString errorMessage = ''.obs;
+
   final Rx<InputPageDropdownState<IdAndValue<String>>> principalList =
       InputPageDropdownState<IdAndValue<String>>(
     choiceList: [],
@@ -26,21 +31,103 @@ class TransactionPendingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadPrincipal();
-    fetchApprovals();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      await Future.wait([_loadPrincipal(), fetchApprovals()]);
+    } catch (e) {
+      errorMessage.value = 'Failed to initialize data';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _loadPrincipal() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final url = Uri.parse('http://sms.prb.co.id/sample/SamplePrincipals');
+
+      final response = await get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException('Connection timeout');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var listData = jsonDecode(response.body);
+
+        List<IdAndValue<String>> mappedList =
+            listData.map<IdAndValue<String>>((element) {
+          return IdAndValue<String>(
+            id: element["Value"].toString(),
+            value: element["Text"],
+          );
+        }).toList();
+
+        // Add 'New Principal' option
+        mappedList.insert(0, IdAndValue(id: '0', value: 'New Principal'));
+
+        principalList.value = InputPageDropdownState<IdAndValue<String>>(
+          choiceList: mappedList,
+          selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+          loadingState: 2,
+        );
+      } else {
+        throw HttpException(
+            'Failed to load principals: ${response.statusCode}');
+      }
+    } catch (e) {
+      errorMessage.value = 'Failed to load principals';
+
+      // Set empty list with default option
+      principalList.value = InputPageDropdownState<IdAndValue<String>>(
+        choiceList: [IdAndValue(id: '0', value: 'New Principal')],
+        selectedChoice: IdAndValue(id: '0', value: 'New Principal'),
+        loadingState: 2,
+      );
+    }
+    update();
   }
 
   Future<void> fetchApprovals() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString("token");
-    final int idEmp = int.tryParse(prefs.getString("scs_idEmp") ?? '0') ?? 0;
-    final Uri url = Uri.parse('$apiSCS/api/SampleApproval/$idEmp');
-
     try {
-      final response = await http.get(url, headers: {
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-      });
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? token = prefs.getString("token");
+      final int idEmp = int.tryParse(prefs.getString("scs_idEmp") ?? '0') ?? 0;
+
+      if (token == null || token.isEmpty) {
+        throw 'Authentication token not found';
+      }
+
+      final Uri url = Uri.parse('$apiSCS/api/SampleApproval/$idEmp');
+
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException('Connection timeout');
+        },
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonResponse = json.decode(response.body) as List;
@@ -48,34 +135,15 @@ class TransactionPendingController extends GetxController {
             .map((data) => Approval.fromJson(data as Map<String, dynamic>))
             .toList();
       } else {
-        approvalList.clear();
+        throw HttpException(
+            'Failed to fetch approvals: ${response.statusCode}');
       }
     } catch (e) {
+      errorMessage.value = 'Failed to fetch approvals';
       approvalList.clear();
+    } finally {
+      isLoading.value = false;
     }
-  }
-
-  Future<void> _loadPrincipal() async {
-    var urlGetPrincipal = "http://sms.prb.co.id/sample/SamplePrincipals";
-    final response = await get(Uri.parse(urlGetPrincipal));
-    var listData = jsonDecode(response.body);
-
-    List<IdAndValue<String>> mappedList =
-        listData.map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(
-        id: element["Value"].toString(),
-        value: element["Text"],
-      );
-    }).toList();
-    mappedList.insert(0, IdAndValue(id: '0', value: 'New Principal'));
-
-    principalList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: mappedList,
-      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-      loadingState: 2,
-    );
-
-    update();
   }
 
   void changePrincipal(IdAndValue<String>? newValue) {
@@ -85,6 +153,10 @@ class TransactionPendingController extends GetxController {
       loadingState: 2,
     );
     update();
+  }
+
+  Future<void> refreshData() async {
+    await _initializeData();
   }
 
   void showApprovalDetail(BuildContext context, int id,
@@ -168,5 +240,11 @@ class TransactionPendingController extends GetxController {
       Get.snackbar('Error', 'An error occurred: $e',
           snackPosition: SnackPosition.BOTTOM);
     }
+  }
+
+  @override
+  void onClose() {
+    principalNameTextEditingControllerRx.value.dispose();
+    super.onClose();
   }
 }

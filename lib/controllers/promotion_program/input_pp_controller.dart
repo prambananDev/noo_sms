@@ -26,6 +26,8 @@ class InputPageController extends GetxController {
   RxString valPrincipal = "".obs;
   RxBool isProspectValid = false.obs;
   Rx<bool> isClaim = false.obs;
+  Map<String, List<IdAndValue<String>>> _productCache = {};
+
   Rx<InputPageWrapper> promotionProgramInputStateRx =
       InputPageWrapper(promotionProgramInputState: [], isAddItem: false).obs;
 
@@ -148,7 +150,7 @@ class InputPageController extends GetxController {
   }
 
   void _loadPrincipal() async {
-    var urlPrincipal = "$apiSMS/api/Principals";
+    var urlPrincipal = "$apiSMS/Principals";
     final response = await get(Uri.parse(urlPrincipal));
     final listData = jsonDecode(response.body);
 
@@ -158,7 +160,7 @@ class InputPageController extends GetxController {
   }
 
   Future<void> loadProgramData(String programNumber) async {
-    var url = '$apiSMS/api/activity/$programNumber';
+    var url = '$apiSMS/activity/$programNumber';
     final response = await get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -205,7 +207,7 @@ class InputPageController extends GetxController {
     locationInputPageDropdownStateRx.value.loadingState = 1;
     _updateState();
     try {
-      var urlGetLocation = "$apiSMS/api/SalesOffices";
+      var urlGetLocation = "$apiSMS/SalesOffices";
       final response = await get(Uri.parse(urlGetLocation));
       var listData = jsonDecode(response.body);
       locationInputPageDropdownStateRx.value.loadingState = 2;
@@ -223,7 +225,7 @@ class InputPageController extends GetxController {
     vendorInputPageDropdownStateRx.value.loadingState = 1;
     _updateState();
     try {
-      var urlGetVendor = "$apiSMS/api/Vendors";
+      var urlGetVendor = "$apiSMS/Vendors";
       final response = await get(Uri.parse(urlGetVendor));
       var listData = jsonDecode(response.body);
       vendorInputPageDropdownStateRx.value.loadingState = 2;
@@ -241,7 +243,7 @@ class InputPageController extends GetxController {
   void _loadWarehouse() async {
     _warehouseInputPageDropdownState.loadingStateWrapper?.value = 1;
     _updateState();
-    var urlGetWarehouse = "$apiSMS/api/Warehouse";
+    var urlGetWarehouse = "$apiSMS/Warehouse";
     final response = await get(Uri.parse(urlGetWarehouse));
     var listData = jsonDecode(response.body);
     _warehouseInputPageDropdownState.loadingStateWrapper?.value = 2;
@@ -272,6 +274,15 @@ class InputPageController extends GetxController {
       return;
     }
 
+    String cacheKey = selectedChoice;
+
+    if (_productCache.containsKey(cacheKey)) {
+      selectProductPageDropdownState?.loadingState = 2;
+      selectProductPageDropdownState?.choiceList = _productCache[cacheKey];
+      _updateState();
+      return;
+    }
+
     if (selectedChoice == itemGroupInputPageDropdownState!.choiceList?[0]) {
       var urlGetProduct = "$apiSCS/api/AllProduct?ID=$username&idSales=Sample";
 
@@ -284,28 +295,33 @@ class InputPageController extends GetxController {
 
       if (response.statusCode == 200) {
         var listData = jsonDecode(response.body);
-
-        selectProductPageDropdownState?.loadingState = 2;
-        selectProductPageDropdownState?.choiceList = listData
+        var productList = listData
             .map<IdAndValue<String>>((element) => IdAndValue<String>(
                 id: element["itemId"].toString(), value: element["itemName"]))
             .toList();
+
+        _productCache[cacheKey] = productList;
+
+        selectProductPageDropdownState?.loadingState = 2;
+        selectProductPageDropdownState?.choiceList = productList;
         _updateState();
       }
     } else if (selectedChoice ==
         itemGroupInputPageDropdownState.choiceList?[1]) {
-      var urlGetDiscGroup = "$apiSMS/api/ItemGroup";
-
+      var urlGetDiscGroup = "$apiSMS/ItemGroup";
       final response = await get(Uri.parse(urlGetDiscGroup));
 
       if (response.statusCode == 200) {
         var listData = jsonDecode(response.body);
-
-        selectProductPageDropdownState?.loadingState = 2;
-        selectProductPageDropdownState?.choiceList = listData
+        var productList = listData
             .map<IdAndValue<String>>((element) => IdAndValue<String>(
                 id: element["GROUPID"].toString(), value: element["NAME"]))
             .toList();
+
+        _productCache[cacheKey] = productList;
+
+        selectProductPageDropdownState?.loadingState = 2;
+        selectProductPageDropdownState?.choiceList = productList;
         _updateState();
       }
     }
@@ -320,7 +336,7 @@ class InputPageController extends GetxController {
     //         .customerNameOrDiscountGroupInputPageDropdownState;
     InputPageDropdownState<IdAndValue<String>>? supplyItemPageDropdownState =
         promotionProgramInputState.supplyItem;
-    var urlGetSupplyItem = "$apiSMS/api/PrbItemTables";
+    var urlGetSupplyItem = "$apiSMS/PrbItemTables";
 
     final response = await get(
       Uri.parse(urlGetSupplyItem),
@@ -540,14 +556,14 @@ class InputPageController extends GetxController {
         .itemGroupInputPageDropdownState?.selectedChoice = selectedChoice;
 
     _updateState();
-    // _loadProduct(index);
+    _loadProduct(index);
     _loadSupplyItem(index);
     // _loadProductByOrderSample(index);
   }
 
   void changeProduct(int index, IdAndValue<String> selectedChoice) {
     promotionProgramInputStateRx.value.promotionProgramInputState[index]
-        .supplyItem?.selectedChoice = selectedChoice;
+        .selectProductPageDropdownState?.selectedChoice = selectedChoice;
 
     _loadUnit(index);
 
@@ -819,7 +835,7 @@ class InputPageController extends GetxController {
       ({String username, String token}) credentials) async {
     final requestBody = await _prepareRequestBody();
     return await http.post(
-      Uri.parse('$apiSMS/api/activity?username=${credentials.username}'),
+      Uri.parse('$apiSMS/activity?username=${credentials.username}'),
       headers: {
         "Content-Type": "application/json",
         'Authorization': credentials.token,
@@ -1026,13 +1042,12 @@ class InputPageController extends GetxController {
       }).toList(),
     });
 
-    final response =
-        await put(Uri.parse('$apiSMS/api/activity?username=$username'),
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': '$token',
-            },
-            body: isiBody);
+    final response = await put(Uri.parse('$apiSMS/activity?username=$username'),
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': '$token',
+        },
+        body: isiBody);
 
     final tabController = Get.put(DashboardPPTabController());
     Future.delayed(const Duration(seconds: 2), () {

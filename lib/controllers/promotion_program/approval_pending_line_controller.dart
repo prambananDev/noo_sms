@@ -203,7 +203,7 @@ class HistoryLinesPendingController extends GetxController {
         "lines": selectedLines
       };
 
-      final response = await put(Uri.parse("$apiSMS/api/Approve/$userId"),
+      final response = await put(Uri.parse("$apiSMS/Approve/$userId"),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -258,7 +258,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getSupplyItem() async {
-    var url = "$apiSMS/api/PrbItemTables";
+    var url = "$apiSMS/PrbItemTables";
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
@@ -278,7 +278,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getSupplyUnit(String itemId) async {
-    var url = "$apiSMS/api/Unit?item=$itemId";
+    var url = "$apiSMS/Unit?item=$itemId";
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
@@ -287,7 +287,7 @@ class HistoryLinesPendingController extends GetxController {
   }
 
   Future<void> getWarehouse() async {
-    var url = "$apiSMS/api/Warehouse";
+    var url = "$apiSMS/Warehouse";
     final response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
       final listData = jsonDecode(response.body);
@@ -298,7 +298,7 @@ class HistoryLinesPendingController extends GetxController {
   Future<void> approveNew(String approveOrReject) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     dynamic id = prefs.getInt("userid");
-    String url = "$apiSMS/api/Approve/$id";
+    String url = "$apiSMS/Approve/$id";
 
     List<Promotion> data = listHistorySO.cast<Promotion>();
 

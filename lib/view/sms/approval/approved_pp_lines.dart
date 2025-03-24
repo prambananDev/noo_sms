@@ -309,7 +309,6 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
             value: promosi.price ?? '0',
           ),
           if ((promosi.ppType ?? "") != "Bonus") ...[
-            // Discount rows with null safety
             Row(
               children: <Widget>[
                 Container(

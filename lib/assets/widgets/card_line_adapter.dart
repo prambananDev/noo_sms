@@ -376,23 +376,26 @@ class CardLinesAdapterState extends State<CardLinesAdapter> {
       double totalPriceDiscValue) {
     return TextResultCard(
       title: "Net Price",
-      //  "Rp${MoneyFormatter(amount: widget.promotion!.disc1 == "0.00" && widget.promotion!.disc2 == "0.00" && widget.promotion!.disc3 == "0.00" && widget.promotion!.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).output.withoutFractionDigits.replaceAll(",", ".")}",
       value:
           "Rp${MoneyFormatter(amount: widget.promotion!.disc1 == "0.00" && widget.promotion!.disc2 == "0.00" && widget.promotion!.disc3 == "0.00" && widget.promotion!.disc4 == "0.00" ? totalPriceDiscValue : totalPriceDiscOnly).output.withoutFractionDigits.replaceAll(",", ".")}",
+    );
+  }
+
+  void navigateToHistory() {
+    Get.to(
+      () => HistorySO(
+        idProduct: widget.promotion!.idProduct!,
+        idCustomer: widget.promotion!.idCustomer!,
+        idEmp: widget.idEmp!,
+        namePP: widget.namePP!,
+      ),
     );
   }
 
   Widget buildSalesHistoryButton(BuildContext context) {
     return TextButton(
       onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return HistorySO(
-            namePP: widget.namePP!,
-            idCustomer: widget.promotion!.idCustomer!,
-            idProduct: widget.promotion!.idProduct!,
-            idEmp: widget.idEmp!,
-          );
-        }));
+        navigateToHistory();
       },
       style: TextButton.styleFrom(
         backgroundColor: colorAccent,

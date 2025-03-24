@@ -11,7 +11,6 @@ import 'package:noo_sms/assets/widgets/text_result_card.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_controller.dart';
 import 'package:noo_sms/models/promotion.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/view/login/login_view.dart';
 import 'package:noo_sms/view/sms/history_lines_all.dart';
 import 'package:noo_sms/view/sms/history_lines_all_edit.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,6 +32,13 @@ class HistoryAllState extends State<HistoryAll> {
   User _user = User();
   late int code;
   bool _isLoading = true;
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getSharedPreference();
+  }
 
   @override
   void dispose() {
@@ -41,35 +47,142 @@ class HistoryAllState extends State<HistoryAll> {
   }
 
   Future<void> listHistory() async {
-    await Future.delayed(const Duration(seconds: 1));
-    Promotion.getAllListPromotion().then((value) {
+    if (!mounted) return;
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      final value = await Promotion.getAllListPromotion();
+      if (!mounted) return;
+
+      setState(() {
+        listHistoryReal = value;
+        _listHistory = listHistoryReal;
+        _isRefreshing = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  Future<void> getSharedPreference() async {
+    try {
+      var dir = await getApplicationDocumentsDirectory();
+      Hive.init(dir.path);
+
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      int? prefCode = pref.getInt("code");
+
+      if (!mounted) return;
+
+      try {
+        Box userBox = await Hive.openBox('users');
+        if (userBox.isNotEmpty) {
+          final userData = userBox.getAt(0);
+          if (userData is User) {
+            setState(() {
+              _user = userData;
+              code = prefCode ?? 0;
+              _isLoading = false;
+            });
+            await listHistory();
+            return;
+          }
+        }
+      } catch (hiveError) {
+        await Hive.deleteBoxFromDisk('users');
+        Box userBox = await Hive.openBox('users');
+
+        String? token = pref.getString("token");
+        int? userId = pref.getInt("userid");
+        String? username = pref.getString("username");
+
+        if (token != null && userId != null && username != null) {
+          final fallbackUser = User(
+            id: userId,
+            token: token,
+            username: username,
+          );
+          await userBox.add(fallbackUser);
+
+          setState(() {
+            _user = fallbackUser;
+            code = prefCode ?? 0;
+            _isLoading = false;
+          });
+          await listHistory();
+          return;
+        }
+      }
+
       if (mounted) {
         setState(() {
-          listHistoryReal = value;
-          _listHistory = listHistoryReal;
+          _isLoading = false;
         });
+        Get.snackbar(
+          'Error',
+          'Session expired. Please login again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
+          duration: const Duration(seconds: 3),
+        );
       }
-    });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      Get.snackbar(
+        'Error',
+        'Failed to load user data',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
+      );
+    }
   }
 
   Future<List<dynamic>?> _fetchStatusData(String noPP) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final url =
-        "$apiSMS/api/PromosiHeader?username=${prefs.getString("username")}&NoPP=$noPP";
+        "$apiSMS/PromosiHeader?username=${prefs.getString("username")}&NoPP=$noPP";
 
-    final response =
-        await get(Uri.parse(url), headers: {'authorization': _user.token!})
-            .timeout(
-      const Duration(seconds: 10),
-      onTimeout: () {
-        throw TimeoutException('Request timed out');
-      },
-    );
+    try {
+      final response = await get(Uri.parse(url), headers: {
+        'Authorization': _user.token!,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException(
+              'The connection has timed out, Please try again!');
+        },
+      );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized access. Please login again.');
+      } else {
+        throw Exception(
+            'Failed to load status data. Status code: ${response.statusCode}');
+      }
+    } on TimeoutException catch (e) {
+      throw TimeoutException(
+          'Connection timeout. Please check your internet connection.');
+    } catch (e) {
+      throw Exception('Failed to fetch status data: $e');
     }
-    return null;
   }
 
   Widget _buildStatusItem(dynamic data, int index) {
@@ -351,66 +464,6 @@ class HistoryAllState extends State<HistoryAll> {
     );
   }
 
-  getSharedPreference() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    List<User> listUser = userBox.values.map((e) => e as User).toList();
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    Future.delayed(const Duration(milliseconds: 20));
-    setState(() {
-      _user = listUser[0];
-      code = pref.getInt("code")!;
-      _isLoading = false;
-    });
-  }
-
-  Future<bool> onBackPress() {
-    deleteBoxUser();
-    return Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) {
-        return const LoginView();
-      }),
-    ).then((_) => true);
-  }
-
-  void deleteBoxUser() async {
-    var dir = await getApplicationDocumentsDirectory();
-    Hive.init(dir.path);
-    Box userBox = await Hive.openBox('users');
-    SharedPreferences pref = await SharedPreferences.getInstance();
-
-    Future.delayed(const Duration(milliseconds: 10));
-    await userBox.deleteFromDisk();
-    pref.setInt("flag", 0);
-    pref.setString("result", "");
-  }
-
-  void logOut() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure log out ?'),
-        actions: <Widget>[
-          TextButton(
-              onPressed: () => Navigator.pop(context, 'Cancel'),
-              child: const Text('Cancel')),
-          TextButton(onPressed: onBackPress, child: const Text('Ok')),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getSharedPreference().then((_) {
-      listHistory();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -431,87 +484,65 @@ class HistoryAllState extends State<HistoryAll> {
             child: TextField(
               controller: filterController,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(10), // Standard padding
+                contentPadding: const EdgeInsets.all(10),
                 hintText: 'Enter customer, number PP or date',
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search, color: colorPrimary),
-                  onPressed: () {
-                    String value = filterController.text;
-                    _debouncer.run(() {
-                      setState(() {
-                        _listHistory = listHistoryReal!
-                            .where((element) =>
-                                element.nomorPP!
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()) ||
-                                element.date
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()) ||
-                                element.customer!
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()))
-                            .toList();
-                      });
-                    });
-                  },
+                  onPressed: () => _filterList(filterController.text),
                 ),
               ),
-              onEditingComplete: () {
-                String value = filterController.text;
-                _debouncer.run(() {
-                  setState(() {
-                    _listHistory = listHistoryReal!
-                        .where((element) =>
-                            element.nomorPP!
-                                .toLowerCase()
-                                .contains(value.toLowerCase()) ||
-                            element.date
-                                .toLowerCase()
-                                .contains(value.toLowerCase()) ||
-                            element.customer!
-                                .toLowerCase()
-                                .contains(value.toLowerCase()))
-                        .toList();
-                  });
-                });
-              },
+              onEditingComplete: () => _filterList(filterController.text),
             ),
           ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: listHistory,
-              child: FutureBuilder(
-                future: Promotion.getAllListPromotion(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (!snapshot.hasError && mounted) {
-                      _listHistory ??= listHistoryReal = snapshot.data;
-                      if (_listHistory!.isEmpty) {
-                        return const Center(
-                          child: Column(
-                            children: <Widget>[
-                              Text('No Data'),
-                              Text('Swipe down for refresh item'),
-                            ],
-                          ),
-                        );
-                      }
-                      return ListView.builder(
-                        itemCount: _listHistory!.length,
-                        itemBuilder: (BuildContext context, int index) =>
-                            cardAdapter(_listHistory![index]),
-                      );
-                    }
-                  }
-                  return const Center(
-                    child: CircularProgressIndicator(semanticsLabel: 'Loading'),
-                  );
-                },
-              ),
+              child: _buildListContent(),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildListContent() {
+    if (_isRefreshing) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_listHistory == null || _listHistory!.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('No Data'),
+            SizedBox(height: 8),
+            Text('Swipe down for refresh item'),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _listHistory!.length,
+      itemBuilder: (BuildContext context, int index) =>
+          cardAdapter(_listHistory![index]),
+    );
+  }
+
+  void _filterList(String value) {
+    _debouncer.run(() {
+      if (!mounted) return;
+      setState(() {
+        _listHistory = listHistoryReal
+            ?.where((element) =>
+                element.nomorPP!.toLowerCase().contains(value.toLowerCase()) ||
+                element.date.toLowerCase().contains(value.toLowerCase()) ||
+                element.customer!.toLowerCase().contains(value.toLowerCase()))
+            .toList();
+      });
+    });
   }
 }

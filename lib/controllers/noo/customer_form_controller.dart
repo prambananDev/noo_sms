@@ -366,11 +366,11 @@ class CustomerFormController extends GetxController
 
     longitudeControllerDelivery.text = data.long ?? '';
     latitudeControllerDelivery.text = data.lat ?? '';
-    debugPrint(latitudeControllerDelivery.text);
+
     // longitudeControllerDelivery.text = data.lat ?? '';
     // // latitudeControllerDelivery.text = data.long ?? '';
 
-    // debugPrint(latitudeControllerDelivery.text);
+    //
 
     update();
   }
@@ -1195,7 +1195,7 @@ class CustomerFormController extends GetxController
 
       if (response.statusCode == 200) {
         // Update server state
-        debugPrint(response.statusCode.toString());
+
         final serverFileName = response.body.replaceAll("\"", "");
         imageFromServerState.value = serverFileName;
         update();
@@ -1203,7 +1203,6 @@ class CustomerFormController extends GetxController
         throw Exception('Upload failed with status: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Error handling image: $e');
       Get.snackbar(
         'Error',
         'Failed to process image: ${e.toString()}',
@@ -1225,7 +1224,6 @@ class CustomerFormController extends GetxController
         update();
       }
     } catch (e) {
-      debugPrint('Error handling web image: $e');
       Get.snackbar(
         'Error',
         'Failed to process web image: ${e.toString()}',

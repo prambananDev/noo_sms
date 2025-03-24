@@ -32,7 +32,7 @@ class HistoryController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     dynamic id = prefs.getInt("userid");
 
-    String url = "$apiSMS/api/Approve/$id";
+    String url = "$apiSMS/Approve/$id";
     var body = {'status': status, 'ids': ids};
 
     final response = await http.put(

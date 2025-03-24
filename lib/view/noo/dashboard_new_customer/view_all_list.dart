@@ -187,6 +187,7 @@ class ViewAllListPage extends StatelessWidget {
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -195,7 +196,6 @@ class ViewAllListPage extends StatelessWidget {
             style: const TextStyle(
               color: Colors.black,
               fontSize: 16,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -214,6 +214,7 @@ class ViewAllListPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -222,7 +223,6 @@ class ViewAllListPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               color: Colors.black,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -251,6 +251,7 @@ class ViewAllListPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -259,7 +260,6 @@ class ViewAllListPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               color: Colors.black,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -278,6 +278,7 @@ class ViewAllListPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -285,7 +286,6 @@ class ViewAllListPage extends StatelessWidget {
             item.status,
             style: const TextStyle(
               color: Colors.black,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],

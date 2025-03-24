@@ -8,6 +8,7 @@ class PromotionProgramInputState {
       customerNameOrDiscountGroupInputPageDropdownState;
   InputPageDropdownState<String>? itemGroupInputPageDropdownState;
   InputPageDropdownState<IdAndValue<String>>? selectProductPageDropdownState;
+  InputPageDropdownState<IdAndValue<String>>? supplyItem;
   WrappedInputPageDropdownState<IdAndValue<String>>? wareHousePageDropdownState;
   WrappedInputPageDropdownState<IdAndValue<String>>?
       productTransactionPageDropdownState;
@@ -34,7 +35,7 @@ class PromotionProgramInputState {
   TextEditingController? priceToCustomer;
   TextEditingController? value1;
   TextEditingController? value2;
-  InputPageDropdownState<IdAndValue<String>>? supplyItem;
+
   TextEditingController? qtyItem;
   InputPageDropdownState<String>? unitSupplyItem;
 

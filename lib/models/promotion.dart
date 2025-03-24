@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/assets/constant/api_constant.dart';
 import 'package:noo_sms/models/lines.dart';
@@ -7,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class Promotion {
   dynamic id;
-  String? nomorPP; // nullable if they can be null
+  String? nomorPP;
   String? ppType;
   dynamic namePP;
   dynamic date;
@@ -46,7 +47,6 @@ class Promotion {
   dynamic detailpromotion;
   String? axStatus;
 
-  // Constructor
   Promotion({
     this.id,
     this.nomorPP,
@@ -179,7 +179,7 @@ class Promotion {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token')!;
     String url =
-        "$apiSMS/api/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
+        "$apiSMS/PromosiHeader?username=${prefs.getString("username")}&userId=${prefs.getInt("userid")}";
 
     final response = await http.get(
       Uri.parse(url),
@@ -198,7 +198,7 @@ class Promotion {
   static Future<List<Promotion>> getListPromotionApproved() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url =
-        "$apiSMS/api/PromosiHeader?usernames=${prefs.getString("username")}&userIds=${prefs.getInt("userid")}";
+        "$apiSMS/PromosiHeader?usernames=${prefs.getString("username")}&userIds=${prefs.getInt("userid")}";
     String token = prefs.getString('token')!;
     final response = await http.get(
       Uri.parse(url),
@@ -219,7 +219,7 @@ class Promotion {
     String token = prefs.getString('token')!;
 
     String url =
-        "$apiSMS/api/Promosi?username=${prefs.getString('username')}&userId=${prefs.getInt('userid')}";
+        "$apiSMS/Promosi?username=${prefs.getString('username')}&userId=${prefs.getInt('userid')}";
     Map<String, String> headers = {
       'Authorization': token,
       'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ class Promotion {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String username = prefs.getString('username')!;
     String token = prefs.getString('token')!;
-    final url = '$apiSMS/api/PromosiLines/$nomorPP?username=$username';
+    final url = '$apiSMS/PromosiLines/$nomorPP?username=$username';
 
     final response = await http.get(
       Uri.parse(url),
@@ -267,7 +267,7 @@ class Promotion {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String username = prefs.getString('username')!;
     String token = prefs.getString('token')!;
-    final url = '$apiSMS/api/PromosiLines/$nomorPP?username=$username&type=1';
+    final url = '$apiSMS/PromosiLines/$nomorPP?username=$username&type=1';
 
     final response = await http.get(
       Uri.parse(url),
@@ -289,7 +289,7 @@ class Promotion {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String username = prefs.getString('username')!;
     String token = prefs.getString('token')!;
-    final url = '$apiSMS/api/PromosiLines/$nomorPP?username=$username';
+    final url = '$apiSMS/PromosiLines/$nomorPP?username=$username';
 
     final dio = Dio()..options.headers['Authorization'] = token;
     final response = await dio.get(url);
@@ -311,7 +311,7 @@ class Promotion {
     String token = prefs.getString('token')!;
 
     String url =
-        "$apiSMS/api/SalesOrder?idProduct=$idProduct&idCustomer=$idCustomer&username=$username";
+        "$apiSMS/SalesOrder?idProduct=$idProduct&idCustomer=$idCustomer&username=$username";
 
     final response = await http.get(
       Uri.parse(url),
@@ -328,7 +328,7 @@ class Promotion {
   }
 
   static Future<Promotion> approveSalesOrder(List<Lines> listLines) async {
-    String url = "$apiSMS/api/PromosiHeader/";
+    String url = "$apiSMS/PromosiHeader/";
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json; charset=UTF-8'},

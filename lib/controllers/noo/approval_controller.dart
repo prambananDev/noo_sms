@@ -131,9 +131,8 @@ class ApprovalController extends GetxController {
     isLoading.value = true;
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt("id")?.toString();
-
     final url = '${apiNOO}FindApproval/$id?page=${page.value}';
-    debugPrint(url);
+
     final response = await makeApiCall(url);
 
     if (response.statusCode == 200) {
@@ -179,7 +178,6 @@ class ApprovalController extends GetxController {
         update(['approval-$id', 'payment-terms-$id']);
       }
     } catch (e) {
-      debugPrint('Error fetching approval detail: $e');
     } finally {
       isLoading.value = false;
     }
@@ -410,8 +408,7 @@ class ApprovalController extends GetxController {
         '${apiNOO}CreditLimits/BySegment/$segment',
         timeout: const Duration(seconds: 5),
       );
-      debugPrint('${apiNOO}CreditLimits/BySegment/$segment');
-      debugPrint(response.statusCode.toString());
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data.isNotEmpty) {
@@ -427,12 +424,8 @@ class ApprovalController extends GetxController {
           maxCreditLimit.value = max;
         }
       } else if (response.statusCode == 408) {
-        debugPrint('Credit limit range fetch timed out');
-      } else {
-        debugPrint('Error fetching credit limit range: ${response.statusCode}');
-      }
+      } else {}
     } catch (e) {
-      debugPrint('Unexpected error fetching credit limit range: $e');
     } finally {
       isCreditLimitLoading.value = false;
 
@@ -507,8 +500,6 @@ class ApprovalController extends GetxController {
         headers: {'content-type': 'application/json'},
       );
     } catch (e) {
-      debugPrint('API call error: $e');
-
       return http.Response(
         '{"error": "API call failed: $e"}',
         500,

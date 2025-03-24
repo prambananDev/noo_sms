@@ -20,9 +20,7 @@ class DashboardController extends GetxController {
   Future<void> loadSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     addressDetail.value = (prefs.getString("getAddressDetail") ?? "");
-    fullName.value = (prefs.getString("fullname") ?? "");
-    debugPrint("Username loaded: ${fullName.value}");
-    debugPrint("address loaded: ${addressDetail.value}");
+    fullName.value = (prefs.getString("scs_name") ?? "");
   }
 
   void loadMenuItems() {
@@ -39,9 +37,9 @@ class DashboardController extends GetxController {
         "route": "/sample"
       },
       {
-        "title": "Order\nTacking",
-        "svgPath": "assets/icons/order_taking_icon.svg",
-        "route": ""
+        "title": "Customer\nVisit",
+        "svgPath": "assets/icons/customer_visit.svg",
+        "route": "/sfa_dashboard"
       },
     ];
   }

@@ -321,18 +321,14 @@ class TransactionHistorySampleController extends GetxController {
             directUri,
             mode: LaunchMode.externalApplication,
           );
-        } catch (e) {
-          debugPrint('Could not open folder: $e');
-        }
+        } catch (e) {}
       }
     } else {
       final directory = Directory(path).parent;
       final uri = Uri.file(directory.path);
       try {
         await launchUrl(uri);
-      } catch (e) {
-        debugPrint('Could not open folder: $e');
-      }
+      } catch (e) {}
     }
   }
 
@@ -442,7 +438,7 @@ class TransactionHistorySampleController extends GetxController {
           int index = paths.indexOf('Android');
           if (index > 0) {
             paths = paths.sublist(0, index);
-            downloadPath = paths.join('/') + '/Download';
+            downloadPath = '${paths.join('/')}/Download';
           }
 
           if (downloadPath != null) {
@@ -453,7 +449,6 @@ class TransactionHistorySampleController extends GetxController {
             downloadDirectory = dir;
           }
         } catch (e) {
-          debugPrint('Error accessing download directory: $e');
           // Fallback to app's directory
           downloadDirectory = await getApplicationDocumentsDirectory();
         }
@@ -478,7 +473,6 @@ class TransactionHistorySampleController extends GetxController {
         onReceiveProgress: (received, total) {
           if (total != -1) {
             final progress = (received / total * 100).toStringAsFixed(0);
-            debugPrint('Download Progress: $progress%');
           }
         },
       );
@@ -489,7 +483,6 @@ class TransactionHistorySampleController extends GetxController {
 
       return true;
     } catch (e) {
-      debugPrint('Download error: $e');
       if (!context.mounted) return false;
       Navigator.of(context).pop();
 
@@ -548,8 +541,7 @@ class TransactionHistorySampleController extends GetxController {
       Uri.parse('$apiSCS/api/SampleApprovalInfo/$id'),
       headers: {'Content-Type': 'application/json'},
     );
-    debugPrint(response.body);
-    debugPrint(Uri.parse('$apiSCS/api/SampleApprovalInfo/$id').toString());
+
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
       return data.map((json) => ApprovalInfo.fromJson(json)).toList();

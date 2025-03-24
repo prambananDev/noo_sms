@@ -31,7 +31,6 @@ class Approved {
     );
   }
 
-  // Helper method to format date if needed
   String getFormattedDate() {
     DateTime parsedDate = DateTime.parse(date);
     return DateFormat('dd-MM-yyyy').format(parsedDate);

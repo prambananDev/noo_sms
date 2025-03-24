@@ -152,25 +152,25 @@ class ApprovedViewState extends State<ApprovedView> {
       child: Row(
         children: [
           Expanded(
-            flex: 2, // Adjust flex values as needed
+            flex: 2,
             child: Text(
               "$label : ",
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
           Expanded(
-            flex: 3, // Adjust flex values as needed
+            flex: 3,
             child: Text(
               value ?? '-',
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black,
-                fontWeight: FontWeight.bold,
               ),
-              overflow: TextOverflow.ellipsis, // Handle overflow
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -190,17 +190,17 @@ class ApprovedViewState extends State<ApprovedView> {
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
           Expanded(
-            flex: 3, // Adjust flex values as needed
+            flex: 3,
             child: Text(
               value ?? '-',
               style: TextStyle(
                 fontSize: 16,
                 color: _getStatusColor(value),
-                fontWeight: FontWeight.bold,
               ),
               overflow: TextOverflow.ellipsis, // Handle overflow
             ),

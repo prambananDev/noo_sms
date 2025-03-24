@@ -29,11 +29,11 @@ class SCSUser extends HiveObject {
 
   factory SCSUser.fromJson(Map<String, dynamic> json) {
     return SCSUser(
-      idEmp: json['idEmp'],
-      idSales: json['idSales'],
-      name: json['name'],
-      wh: json['wh'],
-      token: json['token'],
+      idEmp: json['idEmp']?.toString(),
+      idSales: json['idSales']?.toString(),
+      name: json['name']?.toString(),
+      wh: json['wh']?.toString(),
+      token: json['token']?.toString(),
     );
   }
 
@@ -45,5 +45,12 @@ class SCSUser extends HiveObject {
       'wh': wh,
       'token': token,
     };
+  }
+
+  static int? safeParseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 }

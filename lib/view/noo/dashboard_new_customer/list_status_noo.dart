@@ -164,7 +164,6 @@ class StatusPage extends StatelessWidget {
                   style: TextStyle(
                     color: colorNetral,
                     fontSize: 16,
-                    // letterSpacing: 1,
                   ),
                 ),
               ),
@@ -186,6 +185,7 @@ class StatusPage extends StatelessWidget {
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -194,7 +194,6 @@ class StatusPage extends StatelessWidget {
             style: const TextStyle(
               color: Colors.black,
               fontSize: 16,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -213,6 +212,7 @@ class StatusPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -221,7 +221,6 @@ class StatusPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               color: Colors.black,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -250,6 +249,7 @@ class StatusPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -258,7 +258,6 @@ class StatusPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               color: Colors.black,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -277,14 +276,15 @@ class StatusPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
           Text(
             item.status,
             style: const TextStyle(
+              fontSize: 16,
               color: Colors.black,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],

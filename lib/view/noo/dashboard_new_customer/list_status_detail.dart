@@ -298,38 +298,47 @@ class StatusDetailView extends GetView<StatusDetailController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Approval Status'),
-        ...controller.approvalStatusList.map((status) {
-          final level = status['Level']?.toString() ?? '';
-          final statusText = status['Status']?.toString() ?? '';
-          final statusColor = getStatusColor(statusText);
+        if (controller.approvalStatusList.isEmpty)
+          // Add an empty container with full width
+          Container(
+            width: double.infinity,
+            height: 60, // Provide some height for the empty space
+            color: Colors.white, // Ensure it's white
+          )
+        else
+          // If not empty, map through and display as before
+          ...controller.approvalStatusList.map((status) {
+            final level = status['Level']?.toString() ?? '';
+            final statusText = status['Status']?.toString() ?? '';
+            final statusColor = getStatusColor(statusText);
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  level,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    level,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: statusColor,
-                    fontWeight: FontWeight.w500,
+                  const SizedBox(height: 4),
+                  Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: statusColor,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const Divider(height: 16),
-              ],
-            ),
-          );
-        }).toList(),
+                  const Divider(height: 16),
+                ],
+              ),
+            );
+          }).toList(),
       ],
     );
   }
@@ -354,7 +363,7 @@ class StatusDetailView extends GetView<StatusDetailController> {
         title,
         style: const TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
       ),

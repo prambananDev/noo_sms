@@ -57,7 +57,7 @@ class ApprovedController extends GetxController {
     }
 
     var urlGetApproved = "${apiNOO}ApprovedNOO/$id?page=${page.value}";
-    debugPrint(urlGetApproved);
+
     final response = await http
         .get(Uri.parse(urlGetApproved), headers: {'authorization': basicAuth});
 

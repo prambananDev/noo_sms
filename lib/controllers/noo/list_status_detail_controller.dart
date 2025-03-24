@@ -20,14 +20,13 @@ class StatusDetailController extends GetxController {
   String? statusDataApprovalDetail;
   final customerFormController =
       Get.put(CustomerFormController(), permanent: true);
+  final authorization = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
 
   Future<void> initializeData(int id) async {
     try {
       isLoading(true);
-      await Future.wait([
-        fetchStatusDetail(id),
-        fetchApprovalStatus(id),
-      ]);
+      await fetchStatusDetail(id);
+      await fetchApprovalStatus(id);
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {
@@ -37,10 +36,9 @@ class StatusDetailController extends GetxController {
 
   Future<void> fetchStatusDetail(int id) async {
     try {
-      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
         Uri.parse('${apiNOO}NOOCustTables/$id'),
-        headers: {'authorization': auth},
+        headers: {'authorization': authorization},
       );
 
       if (response.statusCode == 200) {
@@ -60,31 +58,35 @@ class StatusDetailController extends GetxController {
 
   Future<void> fetchApprovalStatus(int id) async {
     try {
-      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
         Uri.parse('${apiNOO}Approval/$id'),
-        headers: {'authorization': auth},
+        headers: {'authorization': authorization},
       );
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         approvalStatusList.value = data.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 404) {
+        approvalStatusList.value = [];
       } else {
         throw Exception(
             'Failed to load approval status: ${response.statusCode}');
       }
     } catch (e) {
-      errorMessage.value = 'Error getting approval status: $e';
-      rethrow;
+      if (!e.toString().contains('404')) {
+        errorMessage.value = 'Error getting approval status: $e';
+        rethrow;
+      }
+
+      approvalStatusList.value = [];
     }
   }
 
   Future<Uint8List> getImage(String fileName) async {
     try {
-      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
       final response = await http.get(
         Uri.parse('${apiNOO}Files/GetFiles?fileName=$fileName'),
-        headers: {'authorization': auth},
+        headers: {'authorization': authorization},
       );
 
       if (response.statusCode == 200) {
@@ -101,11 +103,11 @@ class StatusDetailController extends GetxController {
   Future<bool> updateStatus(int id, Map<String, dynamic> data) async {
     try {
       isLoading(true);
-      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+
       final response = await http.put(
         Uri.parse('${apiNOO}NOOCustTables/$id'),
         headers: {
-          'authorization': auth,
+          'authorization': authorization,
           'Content-Type': 'application/json',
         },
         body: jsonEncode(data),
@@ -128,11 +130,11 @@ class StatusDetailController extends GetxController {
       String signatureBase64, String fileName) async {
     try {
       isLoading(true);
-      final auth = 'Basic ${base64Encode(utf8.encode('test:test456'))}';
+
       final response = await http.post(
         Uri.parse('${apiNOO}Files/UploadFile'),
         headers: {
-          'authorization': auth,
+          'authorization': authorization,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({

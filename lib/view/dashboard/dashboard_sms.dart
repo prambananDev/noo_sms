@@ -81,7 +81,7 @@ class DashboardPageState extends State<DashboardPage> {
       title: Text(
         'Dashboard SMS',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: 16,
           fontWeight: FontWeight.w800,
           color: colorNetral,
           letterSpacing: 0.5,

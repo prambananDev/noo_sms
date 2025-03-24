@@ -44,7 +44,7 @@ class HistoryLinesController extends GetxController {
   approveNew(String apprroveOrReject) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     dynamic id = prefs.getInt("userid");
-    String url = "$apiSMS/api/Approve/$id";
+    String url = "$apiSMS/Approve/$id";
     List<Promotion> data = _listHistorySO != null
         ? List<Promotion>.from(_listHistorySO!.cast<Promotion>())
         : [];

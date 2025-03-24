@@ -70,9 +70,7 @@ class DashboardNooState extends State<DashboardNoo>
     if (Get.isRegistered<CustomerFormController>()) {
       try {
         Get.delete<CustomerFormController>();
-      } catch (e) {
-        debugPrint("Error deleting controller: $e");
-      }
+      } catch (e) {}
     }
 
     super.dispose();
@@ -83,7 +81,6 @@ class DashboardNooState extends State<DashboardNoo>
 
     setState(() {
       role = prefs.getString("Role");
-      debugPrint("User role: $role");
     });
   }
 

@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:noo_sms/models/noo_user.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/assets/constant/api_constant.dart';
@@ -18,7 +18,6 @@ class AuthService {
   Future<String?> getDeviceId() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-
       String? cachedId = prefs.getString("idDevice");
       if (cachedId != null && cachedId.isNotEmpty) {
         return cachedId;
@@ -34,9 +33,7 @@ class AuthService {
         await prefs.setString("idDevice", deviceId);
         return deviceId;
       }
-    } catch (e) {
-      debugPrint("Error getting device ID: $e");
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -45,50 +42,50 @@ class AuthService {
       String? deviceId = await getDeviceId();
       if (deviceId == null) {
         return LoginResult(
-            success: false, message: "Could not retrieve device ID");
+          success: false,
+          message: "Could not retrieve device ID",
+        );
       }
 
       User? nooUser = await _loginNOO(username, password, deviceId);
       if (nooUser == null) {
         return LoginResult(
-            success: false, message: "Invalid username or password");
+          success: false,
+          message: "Invalid username or password",
+        );
       }
+
+      User? smsUser;
+      SCSUser? scsUser;
 
       try {
-        User smsUser = await _loginSMS(username, password, deviceId);
+        smsUser = await _loginSMS(username, password, deviceId);
+      } catch (smsError) {}
 
-        SCSUser? scsUser;
-        try {
-          scsUser = await _loginSCS(username, password);
-        } catch (scsError) {
-          debugPrint("SCS Login error: $scsError");
-        }
+      try {
+        scsUser = await _loginSCS(username, password);
+      } catch (scsError) {}
 
-        await _storeLoginSession(nooUser, smsUser, scsUser);
+      await _storeLoginSession(nooUser, smsUser, scsUser);
 
-        return LoginResult(
-            success: true, user: nooUser, message: "Login successful");
-      } catch (smsError) {
-        debugPrint("SMS Login error: $smsError");
-
-        SCSUser? scsUser;
-        try {
-          scsUser = await _loginSCS(username, password);
-        } catch (scsError) {
-          debugPrint("SCS Login error: $scsError");
-        }
-
-        await _storeLoginSession(nooUser, null, scsUser);
-
-        return LoginResult(
-            success: true,
-            user: nooUser,
-            message: "Login successful (SMS integration incomplete)");
+      String message = "Login successful";
+      if (smsUser == null) {
+        message += " (SMS integration incomplete)";
       }
-    } catch (e) {
-      debugPrint("Login error: $e");
+      if (scsUser == null) {
+        message += " (SCS integration incomplete)";
+      }
+
       return LoginResult(
-          success: false, message: "Login failed: ${e.toString()}");
+        success: true,
+        user: nooUser,
+        message: message,
+      );
+    } catch (e) {
+      return LoginResult(
+        success: false,
+        message: "Login failed: ${e.toString()}",
+      );
     }
   }
 
@@ -110,14 +107,13 @@ class AuthService {
 
       return null;
     } catch (e) {
-      debugPrint("NOO Login error: $e");
       return null;
     }
   }
 
   Future<User> _loginSMS(
       String username, String password, String deviceId) async {
-    final url = "$apiSMS/api/LoginSMS?playerId=$deviceId";
+    final url = "$apiSMS/LoginSMS?playerId=$deviceId";
     final Map<String, dynamic> dataLogin = {
       "username": username,
       "password": password
@@ -168,53 +164,32 @@ class AuthService {
       }
       throw Exception('SCS Login failed: Invalid response format');
     } catch (e) {
-      debugPrint("Error fetching SCS data: $e");
       throw Exception('SCS Login failed: ${e.toString()}');
     }
   }
 
   Future<void> _storeLoginSession(
-      User nooUser, User? smsUser, SCSUser? scsUser) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Box userBox = await Hive.openBox('users');
+    User nooUser,
+    User? smsUser,
+    SCSUser? scsUser,
+  ) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    prefs.setInt("id", nooUser.id ?? 0);
-    prefs.setString("Username", nooUser.username ?? '');
-    prefs.setString("Role", nooUser.role ?? '');
-    prefs.setString("SO", nooUser.SO ?? '');
-    prefs.setString("BU", nooUser.bu ?? '');
-    prefs.setInt("ApprovalRole", nooUser.approvalRole ?? 0);
-    prefs.setInt("EditApproval", nooUser.editApproval ?? 0);
+      // Store NOO user data
+      await _storeNOOUserData(nooUser, prefs);
 
-    if (smsUser != null) {
-      prefs.setString("username", smsUser.username!);
-      prefs.setString("fullname", smsUser.fullname ?? '');
-      prefs.setString("token", smsUser.token ?? '');
-      prefs.setInt("userid", smsUser.id!);
-      prefs.setString("bu", smsUser.bu ?? '');
-      prefs.setString("so", smsUser.so.toString());
+      // Store SMS user data if available
+      if (smsUser != null) {
+        await _storeSMSUserData(smsUser, prefs);
+      }
 
-      userBox.add(smsUser);
-
-      final DateTime now = DateTime.now();
-      final DateFormat formatter = DateFormat('ddMMyyyy');
-      final String dateLogin = formatter.format(now);
-
-      prefs.setInt("code", 1);
-      prefs.setString("date", dateLogin);
-      prefs.setInt("flag", 1);
-      prefs.setString("result", "");
-    }
-
-    if (scsUser != null) {
-      Box scsBox = await Hive.openBox('scs_users');
-      scsBox.add(scsUser);
-
-      prefs.setString("scs_idEmp", scsUser.idEmp ?? '');
-      prefs.setString("scs_idSales", scsUser.idSales ?? '');
-      prefs.setString("scs_name", scsUser.name ?? '');
-      prefs.setString("scs_wh", scsUser.wh ?? '');
-      prefs.setString("scs_token", scsUser.token ?? '');
+      // Store SCS user data if available
+      if (scsUser != null) {
+        await _storeSCSUserData(scsUser, prefs);
+      }
+    } catch (e) {
+      throw Exception("Failed to store login session: $e");
     }
   }
 
@@ -222,8 +197,75 @@ class AuthService {
     try {
       return await _loginSCS(username, password);
     } catch (e) {
-      debugPrint("Error fetching SCS data: $e");
       return null;
+    }
+  }
+
+  Future<void> _storeNOOUserData(User user, SharedPreferences prefs) async {
+    try {
+      prefs.setInt("id", user.id ?? 0);
+      prefs.setString("Username", user.username ?? '');
+      prefs.setString("Role", user.role ?? '');
+      prefs.setString("SO", user.SO ?? '');
+      prefs.setString("BU", user.bu ?? '');
+      prefs.setInt("ApprovalRole", user.approvalRole ?? 0);
+      prefs.setInt("EditApproval", user.editApproval ?? 0);
+    } catch (e) {
+      throw Exception("Failed to store NOO user data");
+    }
+  }
+
+  Future<void> _storeSMSUserData(User user, SharedPreferences prefs) async {
+    try {
+      prefs.setString("username", user.username ?? '');
+      prefs.setString("fullname", user.fullname ?? '');
+      prefs.setString("token", user.token ?? '');
+      prefs.setInt("userid", user.id ?? 0);
+      prefs.setString("bu", user.bu ?? '');
+      prefs.setString("so", user.so?.toString() ?? '');
+
+      // Store in Hive
+      try {
+        var dir = await getApplicationDocumentsDirectory();
+        if (!Hive.isBoxOpen('users')) {
+          Hive.init(dir.path);
+        }
+
+        Box userBox = await Hive.openBox('users');
+        await userBox.clear(); // Clear existing data
+        await userBox.add(user);
+      } catch (e) {
+        // Continue since SharedPreferences worked
+      }
+    } catch (e) {
+      throw Exception("Failed to store SMS user data: $e");
+    }
+  }
+
+  Future<void> _storeSCSUserData(SCSUser user, SharedPreferences prefs) async {
+    try {
+      prefs.setString("scs_idEmp", user.idEmp ?? '');
+      prefs.setString("scs_idSales", user.idSales ?? '');
+      prefs.setString("scs_name", user.name ?? '');
+      prefs.setString("scs_wh", user.wh ?? '');
+      prefs.setString("scs_token", user.token ?? '');
+
+      // Store in Hive
+      try {
+        var dir = await getApplicationDocumentsDirectory();
+        Hive.init(dir.path);
+
+        // Clear existing box first
+        Box scsBox = await Hive.openBox('scs_users');
+        await scsBox.clear();
+
+        // Add new user data
+        await scsBox.add(user);
+      } catch (e) {
+        // Don't throw here, as SharedPreferences data is still saved
+      }
+    } catch (e) {
+      throw Exception("Failed to store SCS user data");
     }
   }
 
@@ -249,7 +291,6 @@ class AuthService {
 
       return null;
     } catch (e) {
-      debugPrint("Error getting cached SCS user: $e");
       return null;
     }
   }
@@ -275,16 +316,13 @@ class AuthService {
       try {
         Box scsBox = await Hive.openBox('scs_users');
         await scsBox.clear();
-      } catch (e) {
-        debugPrint("Error clearing SCS box: $e");
-      }
+      } catch (e) {}
 
       // Clear preferences
       await prefs.clear();
 
       return true;
     } catch (e) {
-      debugPrint("Logout error: $e");
       return false;
     }
   }

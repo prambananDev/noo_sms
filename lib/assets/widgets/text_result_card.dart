@@ -23,6 +23,7 @@ class TextResultCard extends StatelessWidget {
             title,
             style: TextStyle(
               color: colorBlack,
+              fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),

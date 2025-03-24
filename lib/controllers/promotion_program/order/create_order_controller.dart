@@ -97,7 +97,7 @@ class TransactionController extends GetxController {
     locationInputPageDropdownStateRx.value.loadingState = 1;
     _updateState();
     try {
-      var urlGetLocation = "$apiSMS/api/SalesOffices";
+      var urlGetLocation = "$apiSMS/SalesOffices";
       final response = await get(Uri.parse(urlGetLocation));
       var listData = jsonDecode(response.body);
 
@@ -113,7 +113,7 @@ class TransactionController extends GetxController {
   }
 
   Future<void> loadProgramData(String programNumber) async {
-    var url = '$apiSMS/api/activity/$programNumber';
+    var url = '$apiSMS/activity/$programNumber';
     final response = await get(Uri.parse(url));
 
     if (response.statusCode == 200) {

@@ -100,13 +100,9 @@ class TransactionSampleController extends GetxController
   void onInit() {
     super.onInit();
     tabController = TabController(length: 4, vsync: this);
-    loadInitialData();
+    _loadCustomerNameByUsername();
     _loadProduct();
     _loadSampleType();
-  }
-
-  void loadInitialData() {
-    _loadCustomerNameByUsername();
   }
 
   void _loadSampleType() {
@@ -306,7 +302,6 @@ class TransactionSampleController extends GetxController
       var urlGetCustomer = "$apiSCS/api/AllCustomer?username=$username";
       final response = await http.get(Uri.parse(urlGetCustomer));
       var listData = jsonDecode(response.body);
-
       List<IdAndValue<String>> customers = listData
           .map<IdAndValue<String>>((element) => IdAndValue<String>(
               id: element["codeCust"], value: element["nameCust"]))
@@ -478,13 +473,9 @@ class TransactionSampleController extends GetxController
         String extension = result.files.first.extension ?? 'jpg';
         String fileName = await generateFileName(extension);
 
-        debugPrint('Selected file: ${selectedFile.path}');
-        debugPrint('Generated filename: $fileName');
-
         await uploadFile(selectedFile, fileName);
       }
     } catch (e) {
-      debugPrint('Error picking file: $e');
       Get.snackbar(
         'Error',
         'Failed to pick file: $e',
@@ -522,7 +513,6 @@ class TransactionSampleController extends GetxController
       );
 
       if (response.statusCode == 200) {
-        debugPrint('Upload response: ${response.data}');
         Get.snackbar(
           'Success',
           'File uploaded successfully',
@@ -691,7 +681,7 @@ class TransactionSampleController extends GetxController
       },
       body: isiBody,
     );
-    debugPrint(response.body);
+
     if (response.statusCode == 201 || response.statusCode == 200) {
       Get.dialog(
         const SimpleDialog(

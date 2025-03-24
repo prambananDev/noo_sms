@@ -13,6 +13,7 @@ import 'package:noo_sms/view/dashboard/dashboard.dart';
 import 'package:noo_sms/view/dashboard/dashboard_noo.dart';
 import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
+import 'package:noo_sms/view/dashboard/dashboard_sfa.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:noo_sms/view/login/login_view.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
@@ -221,6 +222,25 @@ class MainAppState extends State {
         GetPage(
           name: '/noo_approve',
           page: () => const DashboardNoo(initialIndex: 3),
+          transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/sfa_dashboard',
+          page: () => const DashboardSfa(),
+          transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/sfa_new',
+          page: () => const DashboardSfa(
+            initialIndex: 0,
+          ),
+          transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/sfa_list',
+          page: () => const DashboardSfa(
+            initialIndex: 1,
+          ),
           transition: Transition.fadeIn,
         ),
       ],

@@ -20,19 +20,7 @@ class ViewAllController extends GetxController {
   void onInit() {
     super.onInit();
     loadInitialData();
-    // setupScrollController();
   }
-
-  // void setupScrollController() {
-  //   scrollController.addListener(() {
-  //     if (scrollController.position.pixels ==
-  //         scrollController.position.maxScrollExtent) {
-  //       if (hasMoreData.value) {
-  //         loadMoreData();
-  //       }
-  //     }
-  //   });
-  // }
 
   Future<void> loadInitialData() async {
     isLoading.value = true;

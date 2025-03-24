@@ -32,112 +32,216 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
     super.dispose();
   }
 
-  void _closeKeyboard() {
-    _principalNameFocusNode.unfocus();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (presenter.approvalList.isEmpty) {
+      if (presenter.isLoading.value) {
         return const Center(
-          child: Text(
-            'Data Tidak Ditemukan',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Loading data...',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
           ),
         );
       }
-      return ListView.builder(
-        itemCount: presenter.approvalList.length,
-        itemBuilder: (context, index) {
-          final approval = presenter.approvalList[index];
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: ListTile(
-              leading: Icon(
-                Icons.description,
-                color: colorAccent,
+
+      if (presenter.errorMessage.value.isNotEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red[300],
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Text(
-                        "Order Number : ",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        approval.salesOrder ?? "N/A",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: colorBlack),
-                      ),
-                    ],
+              const SizedBox(height: 16),
+              Text(
+                presenter.errorMessage.value,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.red[700],
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => presenter.refreshData(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
                   ),
-                  Text(
-                    'Order Date : ${approval.getFormattedDate()}',
-                    style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (presenter.approvalList.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.assignment_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'No Data Found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Pull down to refresh',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => presenter.refreshData(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Refresh'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
                   ),
-                  Text(
-                    'Customer Name : ${approval.customer ?? "N/A"}',
-                    style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: () => presenter.refreshData(),
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: presenter.approvalList.length,
+          itemBuilder: (context, index) {
+            final approval = presenter.approvalList[index];
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    blurRadius: 8,
+                    spreadRadius: 1,
                   ),
-                  if (approval.desc != null)
-                    Text('Purpose Description : ${approval.desc}',
-                        style: const TextStyle(fontSize: 16)),
-                  Text('Purpose : ${approval.purpose}',
-                      style: const TextStyle(fontSize: 16)),
-                  Text('Purpose Type : ${approval.purposeType}',
-                      style: const TextStyle(fontSize: 16)),
-                  Row(
-                    children: [
-                      const Text(
-                        "Status : ",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        approval.status,
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: colorBlack),
-                      ),
-                    ],
-                  ),
-                  Text('Is Claim ? : ${approval.isClaimed == 1 ? 'Yes' : 'No'}',
-                      style: const TextStyle(fontSize: 16)),
-                  Text('Principal : ${approval.principal ?? ' '} ',
-                      style: const TextStyle(fontSize: 16)),
-                  Text('New Principal : ${approval.newPrincipal ?? ' '}',
-                      style: const TextStyle(fontSize: 16)),
                 ],
               ),
-              isThreeLine: true,
-              onTap: () => presenter.showApprovalDetail(
-                  context, approval.id, showApprovalDialog),
-            ),
-          );
-        },
+              child: ListTile(
+                leading: Icon(
+                  Icons.description,
+                  color: colorAccent,
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          "Order Number : ",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                        Text(
+                          approval.salesOrder ?? "N/A",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colorBlack,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'Order Date : ${approval.getFormattedDate()}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Text(
+                      'Customer Name : ${approval.customer ?? "N/A"}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    if (approval.desc != null)
+                      Text(
+                        'Purpose Description : ${approval.desc}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    Text(
+                      'Purpose : ${approval.purpose}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Text(
+                      'Purpose Type : ${approval.purposeType}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          "Status : ",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                        Text(
+                          approval.status,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colorBlack,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'Is Claim ? : ${approval.isClaimed == 1 ? 'Yes' : 'No'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Text(
+                      'Principal : ${approval.principal ?? ' '} ',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Text(
+                      'New Principal : ${approval.newPrincipal ?? ' '}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                isThreeLine: true,
+                onTap: () => presenter.showApprovalDetail(
+                  context,
+                  approval.id,
+                  showApprovalDialog,
+                ),
+              ),
+            );
+          },
+        ),
       );
     });
   }
