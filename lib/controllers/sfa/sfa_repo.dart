@@ -50,7 +50,7 @@ class SfaRepository {
       var response = await _client.get(
         url,
         headers: {'Connection': 'keep-alive'},
-      ).timeout(_timeout);
+      );
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
@@ -61,6 +61,25 @@ class SfaRepository {
         return records;
       } else {
         throw Exception('Failed to load SFA records: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<SfaRecordDetail> fetchSfaDetail(int id) async {
+    try {
+      var url = Uri.parse('$apiSMS/VisitCustomer/$id');
+      var response = await _client.get(
+        url,
+        headers: {'Connection': 'keep-alive'},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        return SfaRecordDetail.fromJson(data);
+      } else {
+        throw Exception('Failed to load SFA detail: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Network error: $e');
@@ -116,9 +135,7 @@ class SfaRepository {
         url,
         headers: {'Connection': 'keep-alive'},
       );
-      debugPrint("initialize purpose1");
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body);
+
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
         final purpose =
@@ -267,7 +284,7 @@ class SfaRepository {
       );
 
       var responseBody = response.body;
-      debugPrint(responseBody);
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         _sfaRecordsCache.clear();
         return true;

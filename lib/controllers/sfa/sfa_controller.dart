@@ -14,6 +14,7 @@ class SfaController extends GetxController {
   final SfaRepository _repository = SfaRepository();
 
   final RxList<SfaRecord> sfaRecords = <SfaRecord>[].obs;
+  final Rx<SfaRecordDetail?> sfaDetailRecord = Rx<SfaRecordDetail?>(null);
   final RxBool isLoading = false.obs;
   final RxBool isPhotoLoading = false.obs;
 
@@ -39,6 +40,7 @@ class SfaController extends GetxController {
   final RxInt currentVisitId = RxInt(-1);
 
   final RxString username = ''.obs;
+
   final Map<bool, List<VisitCustomer>> _cachedCustomers = {false: [], true: []};
   final Map<bool, List<VisitPurpose>> _cachedPurpose = {false: [], true: []};
 
@@ -55,8 +57,6 @@ class SfaController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    getUserData();
     getCurrentLocation();
   }
 
@@ -73,18 +73,17 @@ class SfaController extends GetxController {
     selectedCustomer.value = null;
     selectedCustomerName.value = '';
     selectedCustomerId.value = '';
-    customerInfo.value = null;
     image.value = null;
     imageName.value = '';
     photoUploaded.value = false;
     uploadedPhotoName.value = '';
     isCheckedIn.value = false;
     currentVisitId.value = -1;
-
     purposeController.clear();
     resultsController.clear();
     followupController.clear();
     followupDateController.text = '';
+    customerInfo.value = null;
   }
 
   Future<void> initializeData() async {
@@ -93,6 +92,8 @@ class SfaController extends GetxController {
       await getUserData();
       if (username.value.isNotEmpty) {
         await fetchSfaRecords();
+
+        debugPrint('fetching user');
       }
     } catch (e) {
       errorMessage.value = 'Failed to initialize: $e';
@@ -157,6 +158,24 @@ class SfaController extends GetxController {
       sfaRecords.value = records;
     } catch (e) {
       errorMessage.value = 'Failed to load SFA records: $e';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchSfaDetails(int recordId) async {
+    debugPrint('fetching detail for id: $recordId');
+
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final detail = await _repository.fetchSfaDetail(recordId);
+
+      sfaDetailRecord.value = detail;
+    } catch (e) {
+      errorMessage.value = 'Failed to load SFA details: $e';
+      debugPrint('Error: $e');
     } finally {
       isLoading.value = false;
     }

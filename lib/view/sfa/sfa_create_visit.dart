@@ -32,8 +32,6 @@ class _SfaCreateState extends State<SfaCreate> {
     super.initState();
     isEditMode = widget.record != null;
 
-    if (isEditMode) {}
-
     _setupControllerListeners();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (isEditMode) {
@@ -298,7 +296,7 @@ class _SfaCreateState extends State<SfaCreate> {
           ),
           const SizedBox(height: 8),
           if (controller.isLoadingCustomerInfo.value) ...[
-            const Center(child: CircularProgressIndicator()),
+            // const Center(child: CircularProgressIndicator()),
           ] else ...[
             _buildInfoTextField("Name", nameController, readOnly: true),
             _buildInfoTextField("Address", addressController, readOnly: true),

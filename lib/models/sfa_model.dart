@@ -274,3 +274,135 @@ class SfaType {
     };
   }
 }
+
+class SfaRecordDetail {
+  final int? id;
+  final int? type;
+  final String? typeName;
+  final int? employees;
+  final String? fullName;
+  final dynamic status;
+  final String? statusName;
+  final String? createdDate;
+  final String? modifiedDate;
+  final dynamic customer;
+  final String? customerName;
+  final String? contactTitle;
+  final String? contactPerson;
+  final String? contactNumber;
+  final String? purpose;
+  final String? purposeDesc;
+  final String? result;
+  final String? followup;
+  final String? followupDate;
+  final String? address;
+  final String? checkIn;
+  final String? checkOut;
+  final String? checkInFoto;
+  final int? prospect;
+  final String? long;
+  final String? lat;
+  final String? createdBy;
+  final dynamic employee;
+  final dynamic sfaType;
+
+  SfaRecordDetail({
+    this.id,
+    this.type,
+    this.typeName,
+    this.employees,
+    this.fullName,
+    this.status,
+    this.statusName,
+    this.createdDate,
+    this.modifiedDate,
+    this.customer,
+    this.customerName,
+    this.contactTitle,
+    this.contactPerson,
+    this.contactNumber,
+    this.purpose,
+    this.purposeDesc,
+    this.result,
+    this.followup,
+    this.followupDate,
+    this.address,
+    this.checkIn,
+    this.checkOut,
+    this.checkInFoto,
+    this.prospect,
+    this.long,
+    this.lat,
+    this.createdBy,
+    this.employee,
+    this.sfaType,
+  });
+
+  factory SfaRecordDetail.fromJson(Map<String, dynamic> json) {
+    return SfaRecordDetail(
+      id: json['id'],
+      type: json['type'],
+      typeName: json['typeName'],
+      employees: json['employees'],
+      fullName: json['fullName'],
+      status: json['status'],
+      statusName: json['statusName'],
+      createdDate: json['createdDate'],
+      modifiedDate: json['modifiedDate'],
+      customer: json['customer'],
+      customerName: json['customerName'],
+      contactTitle: json['contactTitle'],
+      contactPerson: json['contactPerson'],
+      contactNumber: json['contactNumber'],
+      purpose: json['purpose'],
+      purposeDesc: json['purposeDesc'],
+      result: json['result'],
+      followup: json['followup'],
+      followupDate: json['followupDate'],
+      address: json['address'],
+      checkIn: json['checkIn'],
+      checkOut: json['checkOut'],
+      checkInFoto: json['checkInFoto'],
+      prospect: json['prospect'],
+      long: json['long'],
+      lat: json['lat'],
+      createdBy: json['createdBy'],
+      employee: json['employee'],
+      sfaType: json['sfaType'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'typeName': typeName,
+      'employees': employees,
+      'fullName': fullName,
+      'status': status,
+      'statusName': statusName,
+      'createdDate': createdDate,
+      'modifiedDate': modifiedDate,
+      'customer': customer,
+      'customerName': customerName,
+      'contactTitle': contactTitle,
+      'contactPerson': contactPerson,
+      'contactNumber': contactNumber,
+      'purpose': purpose,
+      'purposeDesc': purposeDesc,
+      'result': result,
+      'followup': followup,
+      'followupDate': followupDate,
+      'address': address,
+      'checkIn': checkIn,
+      'checkOut': checkOut,
+      'checkInFoto': checkInFoto,
+      'prospect': prospect,
+      'long': long,
+      'lat': lat,
+      'createdBy': createdBy,
+      'employee': employee,
+      'sfaType': sfaType,
+    };
+  }
+}

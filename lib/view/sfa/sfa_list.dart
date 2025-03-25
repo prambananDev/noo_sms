@@ -5,6 +5,7 @@ import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 import 'package:noo_sms/models/sfa_model.dart';
 import 'package:noo_sms/view/sfa/sfa_create_visit.dart';
+import 'package:noo_sms/view/sfa/sfa_detail.dart';
 
 class SfaListView extends StatefulWidget {
   const SfaListView({Key? key}) : super(key: key);
@@ -288,7 +289,16 @@ class _SfaListViewState extends State<SfaListView> {
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.02),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    if (record.id != null) {
+                      Get.to(() => SfaDetail(
+                            recordId: record.id!,
+                            status: record.statusName!,
+                          ));
+
+                      debugPrint(record.statusName);
+                    }
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: colorAccent,
