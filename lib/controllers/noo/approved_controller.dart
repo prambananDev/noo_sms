@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/models/approval_status.dart';
 import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/approved/approved_page.dart';
@@ -71,6 +71,7 @@ class ApprovedController extends GetxController {
   Future<void> getStatusDetail(int id) async {
     isLoading(true);
     var urlGetApprovalDetail = "${apiNOO}NOOCustTables/$id";
+    debugPrint(urlGetApprovalDetail);
     final response = await http.get(Uri.parse(urlGetApprovalDetail),
         headers: <String, String>{'authorization': basicAuth});
     (response.body);
@@ -111,7 +112,7 @@ class ApprovedController extends GetxController {
         Get.snackbar(
           'Success',
           'Signature uploaded successfully',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
       } else {
         throw Exception('Failed to upload signature');
@@ -120,7 +121,7 @@ class ApprovedController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to upload signature: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }

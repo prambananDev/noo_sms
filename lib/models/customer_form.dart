@@ -12,6 +12,20 @@ class SalesOffice {
   }
 }
 
+class CustomerGroup {
+  final String value;
+  final String name;
+
+  CustomerGroup({required this.value, required this.name});
+
+  factory CustomerGroup.fromJson(Map<String, dynamic> json) {
+    return CustomerGroup(
+      value: json['value'],
+      name: json['Name'],
+    );
+  }
+}
+
 class BusinessUnit {
   final String name;
 

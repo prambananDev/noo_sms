@@ -68,15 +68,6 @@ class _HistoryLinesState extends State<HistoryLines> {
     );
   }
 
-  // Widget? _buildFloatingButton() {
-  //   if (!_controller.startApp) return null;
-
-  //   return FloatingActionButton.extended(
-  //     label: const Text("Select All"),
-  //     onPressed: () => setState(() => _controller.toggleSelectAll()),
-  //   );
-  // }
-
   Widget _buildBody() {
     return RefreshIndicator(
       onRefresh: _controller.loadData,

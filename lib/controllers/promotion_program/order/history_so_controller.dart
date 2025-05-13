@@ -54,7 +54,7 @@ class HistorySOController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to load sales orders',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
         duration: const Duration(seconds: 3),

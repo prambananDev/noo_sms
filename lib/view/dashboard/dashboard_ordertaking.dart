@@ -1,4 +1,3 @@
-// views/dashboard/dashboard_ordertaking.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
@@ -23,15 +22,14 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
   @override
   void initState() {
     super.initState();
-    // Use Get.lazyPut to ensure proper reinitialization when navigating back
+
     tabController = Get.put(
         DashboadOrderTakingTabController(initialIndex: widget.initialIndex));
-    tabController.initController(this); // Properly pass the TickerProvider
+    tabController.initController(this);
   }
 
   @override
   void dispose() {
-    // Use Get.delete() to clean up the controller properly when navigating away
     Get.delete<DashboadOrderTakingTabController>();
     super.dispose();
   }

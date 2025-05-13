@@ -15,7 +15,7 @@ class DashboardSfa extends StatefulWidget {
 
 class DashboardSfaState extends State<DashboardSfa>
     with TickerProviderStateMixin {
-  static late TabController tabController;
+  late TabController tabController;
 
   @override
   void initState() {
@@ -63,7 +63,7 @@ class DashboardSfaState extends State<DashboardSfa>
             },
           ),
           title: Text(
-            'SFA Dashboard',
+            'Customer Visit',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,

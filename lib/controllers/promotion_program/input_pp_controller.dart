@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:money_formatter/money_formatter.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -26,7 +26,7 @@ class InputPageController extends GetxController {
   RxString valPrincipal = "".obs;
   RxBool isProspectValid = false.obs;
   Rx<bool> isClaim = false.obs;
-  Map<String, List<IdAndValue<String>>> _productCache = {};
+  final Map<String, List<IdAndValue<String>>> _productCache = {};
 
   Rx<InputPageWrapper> promotionProgramInputStateRx =
       InputPageWrapper(promotionProgramInputState: [], isAddItem: false).obs;

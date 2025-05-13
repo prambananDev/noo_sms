@@ -26,6 +26,7 @@ class NOOModel {
   final String priceGroup;
   final String salesman;
   final String salesOffice;
+  final String customerGroup;
   final String businessUnit;
   final String? notes;
   final String? fotoNPWP;
@@ -88,6 +89,7 @@ class NOOModel {
     required this.priceGroup,
     required this.salesman,
     required this.salesOffice,
+    required this.customerGroup,
     required this.businessUnit,
     this.notes,
     this.fotoNPWP,
@@ -152,6 +154,7 @@ class NOOModel {
       priceGroup: json['PriceGroup']?.toString() ?? '',
       salesman: json['Salesman']?.toString() ?? '',
       salesOffice: json['SalesOffice']?.toString() ?? '',
+      customerGroup: json['CustSubGroup']?.toString() ?? '',
       businessUnit: json['BusinessUnit']?.toString() ?? '',
       notes: json['Notes']?.toString(),
       fotoNPWP: json['FotoNPWP']?.toString(),

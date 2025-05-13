@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:noo_sms/assets/global.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -25,16 +26,22 @@ class CustomTextField extends StatelessWidget {
     final bool isNPWP = label.toUpperCase() == 'NPWP';
     const int ktpNPWPLength = 16;
 
-    return Container(
-      padding: const EdgeInsets.only(bottom: 8),
-      width: double.infinity,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             flex: 1,
-            child: Text(label),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: TextFormField(
@@ -43,7 +50,7 @@ class CustomTextField extends StatelessWidget {
                   (isKTP || isNPWP) ? TextInputType.number : inputType,
               textCapitalization: capitalization,
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               maxLength: (isKTP || isNPWP) ? ktpNPWPLength : maxLength,
               inputFormatters: (isKTP || isNPWP)
                   ? [
@@ -51,14 +58,51 @@ class CustomTextField extends StatelessWidget {
                       LengthLimitingTextInputFormatter(ktpNPWPLength),
                     ]
                   : null,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
               decoration: InputDecoration(
                 hintText: (isKTP || isNPWP)
                     ? '$label (Max $ktpNPWPLength digit)'
-                    : label,
+                    : 'Enter $label',
+                hintStyle: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
                 isDense: true,
-                filled: true,
-                contentPadding: const EdgeInsets.all(5),
+                contentPadding: const EdgeInsets.only(bottom: 8),
                 counterText: '',
+                border: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade300,
+                    width: 1.0,
+                  ),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade300,
+                    width: 1.0,
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: colorAccent,
+                    width: 2.0,
+                  ),
+                ),
+                errorBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.red.shade400,
+                    width: 1.0,
+                  ),
+                ),
+                focusedErrorBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.red.shade400,
+                    width: 2.0,
+                  ),
+                ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {

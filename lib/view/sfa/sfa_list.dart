@@ -6,6 +6,7 @@ import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 import 'package:noo_sms/models/sfa_model.dart';
 import 'package:noo_sms/view/sfa/sfa_create_visit.dart';
 import 'package:noo_sms/view/sfa/sfa_detail.dart';
+import 'package:noo_sms/view/sfa/sfa_followup_comment.dart';
 
 class SfaListView extends StatefulWidget {
   const SfaListView({Key? key}) : super(key: key);
@@ -295,8 +296,6 @@ class _SfaListViewState extends State<SfaListView> {
                             recordId: record.id!,
                             status: record.statusName!,
                           ));
-
-                      debugPrint(record.statusName);
                     }
                   },
                   child: Container(
@@ -314,6 +313,11 @@ class _SfaListViewState extends State<SfaListView> {
                       ),
                     ),
                   ),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                FollowUpButton(
+                  recordId: record.id!,
+                  controller: controller,
                 ),
               ],
             ),

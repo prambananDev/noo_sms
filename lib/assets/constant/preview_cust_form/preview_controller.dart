@@ -61,7 +61,7 @@ class PreviewController extends GetxController {
   TextEditingController get kelurahanControllerDelivery =>
       customerFormController.kelurahanControllerDelivery;
   TextEditingController get kecamatanControllerDelivery =>
-      customerFormController.kecamatanControllerDelivery;
+      customerFormController.kecamatanControllerDelivery.value;
   TextEditingController get cityControllerDelivery =>
       customerFormController.cityControllerDelivery;
   TextEditingController get provinceControllerDelivery =>
@@ -78,7 +78,7 @@ class PreviewController extends GetxController {
   TextEditingController get kelurahanControllerDelivery2 =>
       customerFormController.kelurahanControllerDelivery2;
   TextEditingController get kecamatanControllerDelivery2 =>
-      customerFormController.kecamatanControllerDelivery2;
+      customerFormController.kecamatanControllerDelivery2.value;
   TextEditingController get cityControllerDelivery2 =>
       customerFormController.cityControllerDelivery2;
   TextEditingController get provinceControllerDelivery2 =>

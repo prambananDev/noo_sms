@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/image_detail.dart';
 import 'package:noo_sms/controllers/noo/list_status_detail_controller.dart';
@@ -122,6 +122,7 @@ class ViewAllListDetail extends GetView<StatusDetailController> {
         _buildDetailRow('Customer Name', data.custName),
         _buildDetailRow('Brand Name', data.brandName),
         _buildDetailRow('Sales Office', data.salesOffice),
+        _buildDetailRow('Customer Grouo', data.customerGroup),
         _buildDetailRow('Business Unit', data.businessUnit),
         _buildDetailRow('Category', data.category),
         _buildDetailRow('Distribution Channels', data.segment),

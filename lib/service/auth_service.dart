@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/models/noo_user.dart';
@@ -7,7 +6,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:noo_sms/models/user.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/constant/app_id.dart';
 
 class AuthService {
@@ -16,24 +15,23 @@ class AuthService {
   AuthService._internal();
 
   Future<String?> getDeviceId() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? cachedId = prefs.getString("idDevice");
-      if (cachedId != null && cachedId.isNotEmpty) {
-        return cachedId;
-      }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? cachedId = prefs.getString("idDevice");
+    if (cachedId != null && cachedId.isNotEmpty) {
+      return cachedId;
+    }
 
-      OneSignal.initialize(appId);
-      await OneSignal.Notifications.requestPermission(true);
-      await Future.delayed(const Duration(seconds: 2));
+    OneSignal.initialize(appId);
+    await OneSignal.Notifications.requestPermission(true);
+    await Future.delayed(const Duration(seconds: 2));
 
-      final pushSubscription = OneSignal.User.pushSubscription;
-      if (pushSubscription.id != null) {
-        String deviceId = pushSubscription.id!;
-        await prefs.setString("idDevice", deviceId);
-        return deviceId;
-      }
-    } catch (e) {}
+    final pushSubscription = OneSignal.User.pushSubscription;
+    if (pushSubscription.id != null) {
+      String deviceId = pushSubscription.id!;
+      await prefs.setString("idDevice", deviceId);
+      return deviceId;
+    }
+
     return null;
   }
 
@@ -58,23 +56,13 @@ class AuthService {
       User? smsUser;
       SCSUser? scsUser;
 
-      try {
-        smsUser = await _loginSMS(username, password, deviceId);
-      } catch (smsError) {}
+      smsUser = await _loginSMS(username, password, deviceId);
 
-      try {
-        scsUser = await _loginSCS(username, password);
-      } catch (scsError) {}
+      scsUser = await _loginSCS(username, password);
 
       await _storeLoginSession(nooUser, smsUser, scsUser);
 
       String message = "Login successful";
-      if (smsUser == null) {
-        message += " (SMS integration incomplete)";
-      }
-      if (scsUser == null) {
-        message += " (SCS integration incomplete)";
-      }
 
       return LoginResult(
         success: true,
@@ -176,15 +164,12 @@ class AuthService {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // Store NOO user data
       await _storeNOOUserData(nooUser, prefs);
 
-      // Store SMS user data if available
       if (smsUser != null) {
         await _storeSMSUserData(smsUser, prefs);
       }
 
-      // Store SCS user data if available
       if (scsUser != null) {
         await _storeSCSUserData(scsUser, prefs);
       }
@@ -224,7 +209,6 @@ class AuthService {
       prefs.setString("bu", user.bu ?? '');
       prefs.setString("so", user.so?.toString() ?? '');
 
-      // Store in Hive
       try {
         var dir = await getApplicationDocumentsDirectory();
         if (!Hive.isBoxOpen('users')) {
@@ -232,11 +216,9 @@ class AuthService {
         }
 
         Box userBox = await Hive.openBox('users');
-        await userBox.clear(); // Clear existing data
+        await userBox.clear();
         await userBox.add(user);
-      } catch (e) {
-        // Continue since SharedPreferences worked
-      }
+      } catch (e) {}
     } catch (e) {
       throw Exception("Failed to store SMS user data: $e");
     }
@@ -250,20 +232,15 @@ class AuthService {
       prefs.setString("scs_wh", user.wh ?? '');
       prefs.setString("scs_token", user.token ?? '');
 
-      // Store in Hive
       try {
         var dir = await getApplicationDocumentsDirectory();
         Hive.init(dir.path);
 
-        // Clear existing box first
         Box scsBox = await Hive.openBox('scs_users');
         await scsBox.clear();
 
-        // Add new user data
         await scsBox.add(user);
-      } catch (e) {
-        // Don't throw here, as SharedPreferences data is still saved
-      }
+      } catch (e) {}
     } catch (e) {
       throw Exception("Failed to store SCS user data");
     }
@@ -308,17 +285,12 @@ class AuthService {
         );
       }
 
-      // Clear user data
       Box userBox = await Hive.openBox('users');
       await userBox.clear();
 
-      // Clear SCS data
-      try {
-        Box scsBox = await Hive.openBox('scs_users');
-        await scsBox.clear();
-      } catch (e) {}
+      Box scsBox = await Hive.openBox('scs_users');
+      await scsBox.clear();
 
-      // Clear preferences
       await prefs.clear();
 
       return true;

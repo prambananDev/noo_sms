@@ -143,7 +143,15 @@ class AuthController extends GetxController {
       );
 
       if (result.success) {
-        Get.offAll(() => const DashboardMain());
+        final context = Get.context;
+        if (context != null && context.mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const DashboardMain()),
+            (route) => false,
+          );
+        } else {
+          Get.offAll(() => const DashboardMain());
+        }
       } else {
         if (result.message.contains("Invalid username or password") ||
             result.message.contains("incorrect") ||
@@ -163,23 +171,55 @@ class AuthController extends GetxController {
 
           showNotRegisteredDialog(apiName: apiName);
         } else {
-          Get.snackbar(
-            'Login Failed',
-            result.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withOpacity(0.8),
-            colorText: Colors.white,
-          );
+          final context = Get.context;
+          if (context != null && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Login Failed: ${result.message}'),
+                backgroundColor: Colors.red.withOpacity(0.8),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            try {
+              Get.snackbar(
+                'Login Failed',
+                result.message,
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.red.withOpacity(0.8),
+                colorText: Colors.white,
+              );
+            } catch (e) {
+              print('Error showing snackbar: $e');
+              print('Login failed: ${result.message}');
+            }
+          }
         }
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'An unexpected error occurred',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
+      final context = Get.context;
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An unexpected error occurred'),
+            backgroundColor: Colors.red.withOpacity(0.8),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        try {
+          Get.snackbar(
+            'Error',
+            'An unexpected error occurred',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white,
+          );
+        } catch (e) {
+          print('Error showing snackbar: $e');
+          print('Login error: $e');
+        }
+      }
     } finally {
       isLoggingIn.value = false;
     }

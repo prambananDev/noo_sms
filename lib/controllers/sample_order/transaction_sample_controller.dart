@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/id_valaue.dart';
 import 'package:noo_sms/models/state_management/promotion_program/input_pp_dropdown_state.dart';
@@ -100,12 +100,12 @@ class TransactionSampleController extends GetxController
   void onInit() {
     super.onInit();
     tabController = TabController(length: 4, vsync: this);
-    _loadCustomerNameByUsername();
-    _loadProduct();
-    _loadSampleType();
+    loadCustomerNameByUsername();
+    loadProduct();
+    loadSampleType();
   }
 
-  void _loadSampleType() {
+  void loadSampleType() {
     typesList.value = InputPageDropdownState<IdAndValue<String>>(
       choiceList: types.map<IdAndValue<String>>((type) {
         return IdAndValue<String>(
@@ -118,14 +118,13 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  void changeSampleType(IdAndValue<String>? selectedChoice) async {
+  changeSampleType(IdAndValue<String>? selectedChoice) async {
     typesList.value = InputPageDropdownState<IdAndValue<String>>(
       choiceList: typesList.value.choiceList,
       selectedChoice: selectedChoice,
     );
     update();
-    await _loadPurpose();
-    await _loadDept();
+    await loadPurpose();
 
     update();
   }
@@ -141,7 +140,7 @@ class TransactionSampleController extends GetxController
   void changeSelectCustomer(IdAndValue<String>? selectedChoice) {
     customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
     checkAddItemStatus();
-    _loadDistrChannel();
+    // loadDistrChannel();
     update();
     if (selectedChoice?.id == 'prospect') {
       validateProspectFields();
@@ -157,29 +156,47 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  _loadPurpose() async {
+  Future<void> loadPurpose() async {
     final selectSampleType = typesList.value.selectedChoice?.id;
-    var urlGetPurpose =
-        "http://sms.prb.co.id/sample/SamplePurpose?type=$selectSampleType";
 
-    var response = await dio.Dio().get(urlGetPurpose);
-    var listData = response.data;
+    try {
+      final url = Uri.parse(
+          "http://sms.prb.co.id/sample/SamplePurpose?type=$selectSampleType");
 
-    List<IdAndValue<String>> mappedList =
-        (listData as List).map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(
-        id: element["Value"].toString(),
-        value: element["Text"],
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final listData = jsonDecode(response.body) as List;
+
+        List<IdAndValue<String>> mappedList =
+            listData.map<IdAndValue<String>>((element) {
+          return IdAndValue<String>(
+            id: element["Value"].toString(),
+            value: element["Text"],
+          );
+        }).toList();
+
+        purposeList.value = InputPageDropdownState<IdAndValue<String>>(
+          choiceList: mappedList,
+          selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+          loadingState: 2,
+        );
+      } else {
+        purposeList.value = InputPageDropdownState<IdAndValue<String>>(
+          choiceList: [],
+          selectedChoice: null,
+          loadingState: -1,
+        );
+      }
+      update();
+    } catch (e) {
+      purposeList.value = InputPageDropdownState<IdAndValue<String>>(
+        choiceList: [],
+        selectedChoice: null,
+        loadingState: -1,
       );
-    }).toList();
-
-    purposeList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: mappedList,
-      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-      loadingState: 2,
-    );
-
-    update();
+      update();
+    }
   }
 
   void changePurpose(IdAndValue<String>? newValue) {
@@ -191,7 +208,7 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  Future<void> _loadUnit(int index) async {
+  Future<void> loadUnit(int index) async {
     final promotionProgram =
         promotionProgramInputStateRx.value.promotionProgramInputState[index];
     final selectedProductId = promotionProgram
@@ -227,33 +244,6 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  _loadDept() async {
-    var urlGetDept = "http://sms.prb.co.id/sample/SampleDept";
-
-    final response = await http.get(Uri.parse(urlGetDept));
-    if (response.statusCode == 200) {
-      var listData = jsonDecode(response.body);
-
-      List<IdAndValue<String>> mappedList =
-          listData.map<IdAndValue<String>>((element) {
-        return IdAndValue<String>(
-          id: element["Value"].toString(),
-          value: element["Text"],
-        );
-      }).toList();
-
-      deptList.value = InputPageDropdownState<IdAndValue<String>>(
-        choiceList: mappedList,
-        selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-        loadingState: 2,
-      );
-    } else {
-      throw Exception('Failed to load department data');
-    }
-
-    update();
-  }
-
   void changeDept(IdAndValue<String>? newValue) {
     deptList.value = InputPageDropdownState<IdAndValue<String>>(
       choiceList: deptList.value.choiceList,
@@ -263,26 +253,26 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  void _loadDistrChannel() async {
-    var urlGetDistr = "http://sms.prb.co.id/sample/SampleDistChannel";
-    final response = await http.get(Uri.parse(urlGetDistr));
-    var listData = jsonDecode(response.body);
+  // void loadDistrChannel() async {
+  //   var urlGetDistr = "http://sms.prb.co.id/sample/SampleDistChannel";
+  //   final response = await http.get(Uri.parse(urlGetDistr));
+  //   var listData = jsonDecode(response.body);
 
-    List<IdAndValue<String>> mappedList =
-        listData.map<IdAndValue<String>>((element) {
-      return IdAndValue<String>(
-        id: element["Value"].toString(),
-        value: element["Text"],
-      );
-    }).toList();
-    distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
-      choiceList: mappedList,
-      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-      loadingState: 2,
-    );
+  //   List<IdAndValue<String>> mappedList =
+  //       listData.map<IdAndValue<String>>((element) {
+  //     return IdAndValue<String>(
+  //       id: element["Value"].toString(),
+  //       value: element["Text"],
+  //     );
+  //   }).toList();
+  //   distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
+  //     choiceList: mappedList,
+  //     selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+  //     loadingState: 2,
+  //   );
 
-    update();
-  }
+  //   update();
+  // }
 
   void changeDistributionChannel(IdAndValue<String>? newValue) {
     distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
@@ -293,7 +283,7 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  void _loadCustomerNameByUsername() async {
+  void loadCustomerNameByUsername() async {
     customerNameInputPageDropdownStateRx.value.loadingState = 1;
     update();
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -334,7 +324,7 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  void _loadProduct() async {
+  void loadProduct() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String? username = preferences.getString("username");
     productInputPageDropdownState.loadingStateWrapper?.value = 1;
@@ -375,7 +365,7 @@ class TransactionSampleController extends GetxController
 
     promotionProgramInputStateRx.refresh();
 
-    await _loadUnit(index);
+    await loadUnit(index);
 
     promotionProgramInputStateRx.refresh();
     update();
@@ -695,7 +685,7 @@ class TransactionSampleController extends GetxController
 
       Future.delayed(const Duration(seconds: 1), () {
         Get.back();
-        _resetAllControllers();
+        resetAllControllers();
         DashboardOrderSampleState.tabController.animateTo(1);
       });
     } else {
@@ -717,7 +707,7 @@ class TransactionSampleController extends GetxController
     }
   }
 
-  void _resetAllControllers() {
+  void resetAllControllers() {
     purposeDescTextEditingControllerRx.value.clear();
     custNameTextEditingControllerRx.value.clear();
     custPicTextEditingControllerRx.value.clear();

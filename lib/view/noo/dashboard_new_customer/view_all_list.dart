@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/view_all_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
-import 'package:noo_sms/view/noo/dashboard_new_customer/list_status_detail.dart';
-
 import 'package:intl/intl.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/view_all_list_detail.dart';
 

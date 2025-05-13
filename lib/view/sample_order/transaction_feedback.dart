@@ -66,8 +66,7 @@ class FeedbackPageState extends State<FeedbackPage> {
       if (pickedFile != null) {
         setState(() {
           _selectedImage = File(pickedFile.path);
-          _uploadedImage =
-              null; // Reset uploaded image when a new image is picked
+          _uploadedImage = null;
         });
       }
     } finally {

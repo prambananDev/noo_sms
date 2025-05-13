@@ -24,12 +24,11 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
     super.initState();
     tabController = Get.put(
         DashboardApprovalPPTabController(initialIndex: widget.initialIndex));
-    tabController.initController(this); // Pass `this` as the TickerProvider
+    tabController.initController(this);
   }
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed
     Get.delete<DashboardApprovalPPTabController>();
     super.dispose();
   }
@@ -38,7 +37,6 @@ class _DashboardApprovalPPState extends State<DashboardApprovalPP>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorNetral,
-      // Add Scaffold here
       body: GetBuilder<DashboardApprovalPPTabController>(
         builder: (_) {
           return Column(

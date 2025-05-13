@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/debounce.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
@@ -127,7 +127,7 @@ class HistoryAllState extends State<HistoryAll> {
         Get.snackbar(
           'Error',
           'Session expired. Please login again.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red[100],
           colorText: Colors.red[900],
           duration: const Duration(seconds: 3),
@@ -143,7 +143,7 @@ class HistoryAllState extends State<HistoryAll> {
       Get.snackbar(
         'Error',
         'Failed to load user data',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
       );
@@ -342,7 +342,6 @@ class HistoryAllState extends State<HistoryAll> {
                         return;
                       }
 
-                      // Show status dialog with data
                       Get.dialog(
                         Dialog(
                           child: Container(
@@ -382,7 +381,6 @@ class HistoryAllState extends State<HistoryAll> {
                         ),
                       );
                     } catch (e) {
-                      // Remove loading dialog and show timeout dialog
                       Navigator.pop(context);
                       Get.dialog(
                         AlertDialog(
@@ -437,10 +435,6 @@ class HistoryAllState extends State<HistoryAll> {
                     backgroundColor: colorAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      // side: const BorderSide(
-                      //   style: BorderStyle.solid,
-                      //   width: 0.5,
-                      // ),
                     ),
                     padding: const EdgeInsets.all(7),
                   ),

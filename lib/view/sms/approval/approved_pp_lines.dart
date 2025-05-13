@@ -97,7 +97,7 @@ class HistoryLinesApprovedState extends State<HistoryLinesApproved> {
       Get.snackbar(
         'Error',
         'Failed to load data: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

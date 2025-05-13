@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/models/approved.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,7 +36,7 @@ class TransactionApprovedController extends GetxController {
 
     if (idEmpString == null || idEmpString.isEmpty) {
       Get.snackbar('Error', 'Employee ID not found',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
       isLoading.value = false;
       return;
     }
@@ -44,7 +44,7 @@ class TransactionApprovedController extends GetxController {
     final int idEmp = int.tryParse(idEmpString) ?? 0;
     if (idEmp == 0) {
       Get.snackbar('Error', 'Invalid Employee ID',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
       isLoading.value = false;
       return;
     }
@@ -63,7 +63,7 @@ class TransactionApprovedController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
       approvedList.clear();
     }
     isLoading.value = false;
@@ -128,11 +128,11 @@ class TransactionApprovedController extends GetxController {
         );
       } else {
         Get.snackbar('Error', 'Failed to fetch detail: ${response.statusCode}',
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.TOP);
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     }
   }
 }

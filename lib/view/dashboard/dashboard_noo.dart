@@ -5,6 +5,7 @@ import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/view/noo/approval/approval_page.dart';
 import 'package:noo_sms/view/noo/approved/approved_page.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
+import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form_coba.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/list_status_noo.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/view_all_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ class DashboardNooState extends State<DashboardNoo>
   late TabController tabController;
   CustomerFormController? controller;
   String? role;
-  // String role = "2";
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool isTabControllerInitialized = false;
 
@@ -68,9 +69,7 @@ class DashboardNooState extends State<DashboardNoo>
     }
 
     if (Get.isRegistered<CustomerFormController>()) {
-      try {
-        Get.delete<CustomerFormController>();
-      } catch (e) {}
+      Get.delete<CustomerFormController>();
     }
 
     super.dispose();
@@ -92,8 +91,17 @@ class DashboardNooState extends State<DashboardNoo>
     controller = Get.put(CustomerFormController());
   }
 
+  void _clearAndExit() {
+    final controller = Get.find<CustomerFormController>();
+    controller.clearForm();
+    controller.isEditMode.value = false;
+    Navigator.pop(context);
+  }
+
   Future<bool> _onWillPop() async {
+    _clearAndExit();
     Get.offAllNamed('/dashboard');
+
     return false;
   }
 
@@ -113,7 +121,6 @@ class DashboardNooState extends State<DashboardNoo>
     final List<Widget> tabsBasedOnRole = role == "2"
         ? const [
             Tab(text: "New"),
-            // Tab(text: "List NOO"),
             Tab(text: "All List"),
             Tab(text: "Pending"),
             Tab(text: "Approved"),
@@ -134,7 +141,6 @@ class DashboardNooState extends State<DashboardNoo>
                 controller: ctrl,
               ),
             ),
-            // const StatusPage(),
             const ViewAllListPage(),
             ApprovalPage(role: role),
             const ApprovedView(),
@@ -200,7 +206,6 @@ class DashboardNooState extends State<DashboardNoo>
                 ),
               ),
               tabs: tabsBasedOnRole,
-              // isScrollable: role == "2",
             ),
           ),
         ),

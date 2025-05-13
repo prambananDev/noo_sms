@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/models/feedback_detail.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -87,7 +87,7 @@ class TransactionHistorySampleController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to submit feedback: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }
@@ -316,19 +316,17 @@ class TransactionHistorySampleController extends GetxController {
         );
       } catch (e) {
         final directUri = Uri.parse('file:///storage/emulated/0/Download');
-        try {
-          await launchUrl(
-            directUri,
-            mode: LaunchMode.externalApplication,
-          );
-        } catch (e) {}
+
+        await launchUrl(
+          directUri,
+          mode: LaunchMode.externalApplication,
+        );
       }
     } else {
       final directory = Directory(path).parent;
       final uri = Uri.file(directory.path);
-      try {
-        await launchUrl(uri);
-      } catch (e) {}
+
+      await launchUrl(uri);
     }
   }
 

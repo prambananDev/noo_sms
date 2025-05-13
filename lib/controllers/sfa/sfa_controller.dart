@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/controllers/sfa/sfa_repo.dart';
 import 'package:noo_sms/models/sfa_model.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sfa.dart';
+import 'package:noo_sms/view/sfa/sfa_create_visit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -17,13 +18,14 @@ class SfaController extends GetxController {
   final Rx<SfaRecordDetail?> sfaDetailRecord = Rx<SfaRecordDetail?>(null);
   final RxBool isLoading = false.obs;
   final RxBool isPhotoLoading = false.obs;
-
   final RxBool isLoadingCustomerInfo = false.obs;
+  final RxBool isLoadingComments = false.obs;
 
   final RxString errorMessage = ''.obs;
 
   final RxBool isProspect = false.obs;
   final RxList<VisitCustomer> customers = <VisitCustomer>[].obs;
+  final RxList<SfaComment> sfaComments = <SfaComment>[].obs;
   final Rx<VisitCustomer?> selectedCustomer = Rx<VisitCustomer?>(null);
   final RxList<VisitPurpose> purpose = <VisitPurpose>[].obs;
   final Rx<VisitPurpose?> selectedPurpose = Rx<VisitPurpose?>(null);
@@ -38,6 +40,7 @@ class SfaController extends GetxController {
 
   final RxBool isCheckedIn = false.obs;
   final RxInt currentVisitId = RxInt(-1);
+  final RxList<int> _closedVisits = <int>[].obs;
 
   final RxString username = ''.obs;
 
@@ -49,6 +52,11 @@ class SfaController extends GetxController {
   final RxString currentLat = ''.obs;
   final RxString currentLong = ''.obs;
 
+  TextEditingController nameController = TextEditingController();
+  TextEditingController jobTitleController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+  TextEditingController contactPersonController = TextEditingController();
+  TextEditingController contactNumberController = TextEditingController();
   TextEditingController purposeController = TextEditingController();
   TextEditingController resultsController = TextEditingController();
   TextEditingController followupController = TextEditingController();
@@ -90,11 +98,8 @@ class SfaController extends GetxController {
     try {
       isLoading.value = true;
       await getUserData();
-      if (username.value.isNotEmpty) {
-        await fetchSfaRecords();
 
-        debugPrint('fetching user');
-      }
+      await fetchCustomers();
     } catch (e) {
       errorMessage.value = 'Failed to initialize: $e';
     } finally {
@@ -106,41 +111,22 @@ class SfaController extends GetxController {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       username.value = prefs.getString('username') ?? '';
-      if (username.value.isNotEmpty) {
-        await fetchSfaRecords();
-      }
     } catch (e) {
       errorMessage.value = 'Failed to load user data';
     }
   }
 
   Future<void> getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return;
-      }
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return;
+    }
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return;
-        }
-      }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      if (permission == LocationPermission.deniedForever) {
-        return;
-      }
+    currentLat.value = prefs.getString("getLatitude")!;
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      Position position = await Geolocator.getCurrentPosition();
-      currentLat.value =
-          prefs.getString("getLatitude") ?? position.latitude.toString();
-
-      currentLong.value =
-          prefs.getString("getLongitude") ?? position.longitude.toString();
-    } catch (e) {}
+    currentLong.value = prefs.getString("getLongitude")!;
   }
 
   Future<void> fetchSfaRecords() async {
@@ -164,8 +150,6 @@ class SfaController extends GetxController {
   }
 
   Future<void> fetchSfaDetails(int recordId) async {
-    debugPrint('fetching detail for id: $recordId');
-
     try {
       isLoading.value = true;
       errorMessage.value = '';
@@ -175,7 +159,6 @@ class SfaController extends GetxController {
       sfaDetailRecord.value = detail;
     } catch (e) {
       errorMessage.value = 'Failed to load SFA details: $e';
-      debugPrint('Error: $e');
     } finally {
       isLoading.value = false;
     }
@@ -190,12 +173,15 @@ class SfaController extends GetxController {
     selectedCustomerId.value = '';
     customerInfo.value = null;
 
+    _cachedCustomers[isExisting.value] = [];
+
     fetchCustomers();
   }
 
   Future<void> fetchCustomers() async {
     try {
-      if (_cachedCustomers[isExisting.value]!.isNotEmpty) {
+      bool shouldForceFetch = customers.isEmpty;
+      if (!shouldForceFetch && _cachedCustomers[isExisting.value]!.isNotEmpty) {
         customers.value = _cachedCustomers[isExisting.value]!;
         return;
       }
@@ -247,18 +233,35 @@ class SfaController extends GetxController {
     selectedCustomer.value = customer;
     selectedCustomerName.value = customer.customerName;
     selectedCustomerId.value = customer.id.toString();
+
+    customerInfo.value = null;
+
     await fetchCustomerInfo();
   }
 
   Future<void> fetchCustomerInfo() async {
     try {
+      if (selectedCustomerId.value.isEmpty) {
+        customerInfo.value ??= CustomerInfo(
+          name: selectedCustomerName.value,
+          address: "",
+          contact: "",
+          contactNum: "",
+          contactTitle: "",
+        );
+        return;
+      }
+
       isLoadingCustomerInfo.value = true;
       errorMessage.value = '';
 
       final info = await _repository.fetchCustInfo(selectedCustomerId.value);
-      customerInfo.value = info;
+
+      if (info != null) {
+        customerInfo.value = info;
+      }
     } catch (e) {
-      errorMessage.value = 'Failed to load customers';
+      errorMessage.value = 'Failed to load customer: $e';
     } finally {
       isLoadingCustomerInfo.value = false;
     }
@@ -281,7 +284,7 @@ class SfaController extends GetxController {
         Get.snackbar(
           'Photo Captured',
           'Tap Upload Photo to upload it to the server',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 3),
         );
       }
@@ -296,7 +299,7 @@ class SfaController extends GetxController {
       Get.snackbar(
         'Error',
         'Please take a photo first',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
       );
@@ -308,7 +311,7 @@ class SfaController extends GetxController {
       Get.snackbar(
         'Error',
         'Please select a customer first',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
       );
@@ -328,7 +331,7 @@ class SfaController extends GetxController {
       Get.snackbar(
         'Success',
         'Photo uploaded successfully! You can now check-in.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green[100],
         colorText: Colors.green[900],
         duration: const Duration(seconds: 4),
@@ -340,7 +343,7 @@ class SfaController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to upload photo: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
       );
@@ -367,7 +370,7 @@ class SfaController extends GetxController {
         Get.snackbar(
           'Photo Selected',
           'Tap Upload Photo to upload it to the server',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 3),
         );
       }
@@ -382,7 +385,7 @@ class SfaController extends GetxController {
         Get.snackbar(
           'Error',
           'Please upload a photo first',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red[100],
           colorText: Colors.red[900],
         );
@@ -393,7 +396,7 @@ class SfaController extends GetxController {
         Get.snackbar(
           'Error',
           'Customer information is required',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red[100],
           colorText: Colors.red[900],
         );
@@ -413,15 +416,22 @@ class SfaController extends GetxController {
         "prospect": isExisting.value ? 0 : 1,
         "type": 1,
         "customer": selectedCustomerId.value,
+        "contactTitle": jobTitleController.text.isNotEmpty
+            ? jobTitleController.text
+            : "N/A",
         "customerName": selectedCustomerName.value,
-        "contactTitle": customerInfo.value?.alias ?? "N/A",
-        "address": customerInfo.value?.address ?? "",
-        "contactPerson": customerInfo.value?.contact ?? "",
-        "contactNumber": customerInfo.value?.contactNum ?? "",
-        "purpose": purposeController.text,
-        "results": resultsController.text,
-        "followup": followupController.text,
-        "followupDate": followupDateController.text,
+        "address": addressController.text,
+        "contactPerson": contactPersonController.text,
+        "contactNumber": contactNumberController.text,
+        "purpose":
+            purposeController.text.isEmpty ? null : purposeController.text,
+        "results":
+            resultsController.text.isEmpty ? null : resultsController.text,
+        "followup":
+            followupController.text.isEmpty ? null : followupController.text,
+        "followupDate": followupDateController.text.isEmpty
+            ? null
+            : followupDateController.text,
         "checkInFoto": uploadedPhotoName.value,
         "long": currentLong.value,
         "lat": currentLat.value,
@@ -430,7 +440,6 @@ class SfaController extends GetxController {
 
       final response = await _repository.submitCheckIn(checkInData);
 
-      currentVisitId.value = response.visitId;
       isCheckedIn.value = true;
 
       Get.snackbar(
@@ -442,13 +451,18 @@ class SfaController extends GetxController {
         duration: const Duration(seconds: 5),
       );
 
+      final createdRecord = _createRecordFromCurrentData(response.visitId);
+
+      Get.off(() => SfaCreate(record: createdRecord, isDirectCheckIn: true),
+          transition: Transition.fadeIn);
+
       return true;
     } catch (e) {
       errorMessage.value = 'Failed to check-in: $e';
       Get.snackbar(
         'Error',
         'Failed to check-in: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
       );
@@ -464,7 +478,7 @@ class SfaController extends GetxController {
         Get.snackbar(
           'Error',
           'No active check-in found',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red[100],
           colorText: Colors.red[900],
         );
@@ -481,12 +495,15 @@ class SfaController extends GetxController {
         "type": selectedPurpose.value?.id ?? "NA",
         "customer": selectedCustomerId.value,
         "customerName": selectedCustomerName.value,
-        "contactTitle": customerInfo.value?.alias ?? "N/A",
+        "contactTitle": jobTitleController.text.isNotEmpty
+            ? jobTitleController.text
+            : "N/A",
         "address": customerInfo.value?.address ?? "",
-        "contactPerson": customerInfo.value?.contact ?? "",
-        "contactNumber": customerInfo.value?.contactNum ?? "",
+        "contactPerson": contactPersonController.text,
+        "contactNumber": contactNumberController.text,
         "purpose": purposeController.text,
-        "results": resultsController.text,
+        "purposeDesc": "",
+        "result": resultsController.text,
         "followup": followupController.text,
         "followupDate": followupDateController.text,
         "checkInFoto": uploadedPhotoName.value,
@@ -509,7 +526,9 @@ class SfaController extends GetxController {
 
         await fetchSfaRecords();
 
-        Navigator.pop(context);
+        Get.off(() => const DashboardSfa(initialIndex: 1),
+            transition: Transition.fadeIn);
+
         isCheckedIn.value = false;
         currentVisitId.value = -1;
 
@@ -522,7 +541,7 @@ class SfaController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to check-out: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[900],
       );
@@ -532,15 +551,54 @@ class SfaController extends GetxController {
     }
   }
 
+  SfaRecord _createRecordFromCurrentData(int visitId) {
+    return SfaRecord(
+      id: visitId,
+      type: 1,
+      status: 1,
+      customer: selectedCustomerId.value,
+      customerName: selectedCustomerName.value,
+      contactTitle: jobTitleController.text,
+      contactPerson: contactPersonController.text,
+      contactNumber: contactNumberController.text,
+      purpose: selectedPurpose.value?.id.toString(),
+      purposeDesc: purposeController.text,
+      result: resultsController.text,
+      followup: followupController.text,
+      followupDate: followupDateController.text,
+      address: addressController.text,
+      checkIn: DateTime.now().toIso8601String(),
+      checkOut: null,
+      checkInFoto: uploadedPhotoName.value,
+      prospect: isExisting.value ? 0 : 1,
+      long: currentLong.value,
+      lat: currentLat.value,
+      createdBy: username.value,
+    );
+  }
+
   void loadRecordForEdit(SfaRecord record) async {
     selectedCustomerId.value = record.customer ?? "";
     selectedCustomerName.value = record.customerName ?? "";
+
+    nameController.text = record.customerName ?? "";
+    addressController.text = record.address ?? "";
+    contactPersonController.text = record.contactPerson ?? "";
+    contactNumberController.text = record.contactNumber ?? "";
+    jobTitleController.text = record.contactTitle ?? "";
+
+    customerInfo.value = CustomerInfo(
+      name: record.customerName,
+      address: record.address,
+      contact: record.contactPerson,
+      contactNum: record.contactNumber,
+      contactTitle: record.contactTitle,
+    );
 
     final bool hasCheckIn =
         record.checkIn != null && record.checkIn!.isNotEmpty;
     final bool hasCheckOut =
         record.checkOut != null && record.checkOut!.isNotEmpty;
-
     isCheckedIn.value = hasCheckIn && !hasCheckOut;
 
     if (record.id != null) {
@@ -549,26 +607,39 @@ class SfaController extends GetxController {
 
     if (record.checkInFoto != null && record.checkInFoto!.isNotEmpty) {
       uploadedPhotoName.value = record.checkInFoto!;
-
       isPhotoLoading.value = true;
       bool exists = await _repository.checkPhotoExists(uploadedPhotoName.value);
       isPhotoLoading.value = false;
-
       photoUploaded.value = exists;
-
-      if (!exists) {
-        uploadedPhotoName.value = '';
-        Get.snackbar(
-          'Photo Not Found',
-          'The previously uploaded photo could not be found on the server.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange[100],
-          colorText: Colors.orange[900],
-        );
-      }
     }
 
-    fetchCustomerInfo();
+    if (record.customer != null && record.customer!.isNotEmpty) {
+      try {
+        isLoadingCustomerInfo.value = true;
+        final info = await _repository.fetchCustInfo(record.customer!);
+
+        if (info != null) {
+          customerInfo.value = CustomerInfo(
+            name: info.name!.isNotEmpty
+                ? info.name
+                : customerInfo.value?.name ?? "",
+            address:
+                info.address!.isNotEmpty ? info.address : record.address ?? "",
+            contact: info.contact!.isNotEmpty
+                ? info.contact
+                : record.contactPerson ?? "",
+            contactNum: info.contactNum!.isNotEmpty
+                ? info.contactNum
+                : record.contactNumber ?? "",
+            contactTitle: info.contactTitle!.isNotEmpty
+                ? info.contactTitle
+                : record.contactTitle ?? "",
+          );
+        }
+      } finally {
+        isLoadingCustomerInfo.value = false;
+      }
+    }
   }
 
   String formatDateString(String? dateStr) {
@@ -617,18 +688,149 @@ class SfaController extends GetxController {
     return '$apiSMS/VisitCustomer/CheckIn?filename=${uploadedPhotoName.value}';
   }
 
+  Future<void> fetchComments(int recordId) async {
+    try {
+      isLoadingComments.value = true;
+      errorMessage.value = '';
+
+      final comments = await _repository.fetchComments(recordId);
+
+      sfaComments.value = comments;
+    } catch (e) {
+      errorMessage.value = 'Failed to load comments: $e';
+    } finally {
+      isLoadingComments.value = false;
+    }
+  }
+
+  Future<bool> addComment(int recordId, String comment) async {
+    try {
+      isSubmitting.value = true;
+      errorMessage.value = '';
+
+      final success = await _repository.addComment(recordId, comment);
+
+      if (success) {
+        Get.snackbar(
+          'Success',
+          'Comment added successfully!',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green[100],
+          colorText: Colors.green[900],
+          duration: const Duration(seconds: 2),
+        );
+        return true;
+      } else {
+        throw Exception('Failed to add comment');
+      }
+    } catch (e) {
+      errorMessage.value = 'Failed to add comment: $e';
+      Get.snackbar(
+        'Error',
+        'Failed to add comment: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
+      );
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  Future<bool> deleteComment(int commentId) async {
+    try {
+      isSubmitting.value = true;
+      errorMessage.value = '';
+
+      final success = await _repository.deleteComment(commentId);
+
+      if (success) {
+        sfaComments.removeWhere((comment) => comment.id == commentId);
+
+        Get.snackbar(
+          'Success',
+          'Comment deleted successfully!',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green[100],
+          colorText: Colors.green[900],
+          duration: const Duration(seconds: 2),
+        );
+        return true;
+      } else {
+        throw Exception('Failed to delete comment');
+      }
+    } catch (e) {
+      errorMessage.value = 'Failed to delete comment: $e';
+      Get.snackbar(
+        'Error',
+        'Failed to delete comment: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
+      );
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  bool isVisitClosed(int recordId) {
+    return _closedVisits.contains(recordId);
+  }
+
+  Future<bool> closeVisit(int recordId) async {
+    try {
+      isSubmitting.value = true;
+      errorMessage.value = '';
+
+      final success = await _repository.closeVisit(recordId);
+
+      if (success) {
+        Get.snackbar(
+          'Success',
+          'Visit closed successfully!',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green[100],
+          colorText: Colors.green[900],
+          duration: const Duration(seconds: 3),
+        );
+
+        if (!_closedVisits.contains(recordId)) {
+          _closedVisits.add(recordId);
+        }
+
+        final index = sfaRecords.indexWhere((record) => record.id == recordId);
+        if (index != -1) {
+          sfaRecords[index] = sfaRecords[index].copyWith(
+            statusName: 'Closed',
+            status: 2,
+          );
+        }
+
+        await fetchSfaRecords();
+
+        return true;
+      } else {
+        throw Exception('Failed to close visit');
+      }
+    } catch (e) {
+      errorMessage.value = 'Failed to close visit: $e';
+      Get.snackbar(
+        'Error',
+        'Failed to close visit: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
+      );
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
   void clearCache() {
     _cachedCustomers[true] = [];
     _cachedCustomers[false] = [];
-  }
-
-  Future<void> refreshCustomers() async {
-    _cachedCustomers[isExisting.value] = [];
-    await fetchCustomers();
-  }
-
-  Future<void> refreshCustomerInfo() async {
-    customerInfo.value = null;
-    await fetchCustomerInfo();
   }
 }

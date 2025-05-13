@@ -398,6 +398,10 @@ class _TransactionPageState extends State<TransactionSample> {
               inputPagePresenter.typesList.value.selectedChoice?.value ==
                   'Commercial';
 
+          final isBonus =
+              inputPagePresenter.purposeList.value.selectedChoice?.value ==
+                  'Bonus';
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -697,149 +701,152 @@ class _TransactionPageState extends State<TransactionSample> {
                           },
                         ),
                       ],
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "Sales ID AX",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.only(top: 4, bottom: 16.0),
-                        child: TextField(
-                          keyboardType: TextInputType.text,
-                          focusNode: _salesIdFocusNode,
-                          controller: inputPagePresenter
-                              .salesIdTextEditingControllerRx.value,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                  width: 1, color: Colors.black),
+                      if (isBonus) ...[
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "Sales ID AX",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "Invoice ID AX",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.only(top: 4, bottom: 16.0),
-                        child: TextField(
-                          keyboardType: TextInputType.text,
-                          focusNode: _invoiceIdFocusNode,
-                          controller: inputPagePresenter
-                              .invoiceIdTextEditingControllerRx.value,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                  width: 1, color: Colors.black),
+                        Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          child: TextField(
+                            keyboardType: TextInputType.text,
+                            focusNode: _salesIdFocusNode,
+                            controller: inputPagePresenter
+                                .salesIdTextEditingControllerRx.value,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                    width: 1, color: Colors.black),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Obx(() => GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text("Attach Document"),
-                                      content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                              inputPagePresenter
-                                                  .pickAndUploadFile();
-                                            },
-                                            style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStateProperty.all<
-                                                      Color>(colorAccent),
-                                              foregroundColor:
-                                                  WidgetStateProperty.all<
-                                                      Color>(Colors.white),
-                                              elevation: WidgetStateProperty
-                                                  .all<double>(6.0),
-                                              padding: WidgetStateProperty.all<
-                                                      EdgeInsets>(
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 20,
-                                                      vertical: 12)),
-                                              shape: WidgetStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          16.0),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "Invoice ID AX",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          child: TextField(
+                            keyboardType: TextInputType.text,
+                            focusNode: _invoiceIdFocusNode,
+                            controller: inputPagePresenter
+                                .invoiceIdTextEditingControllerRx.value,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                    width: 1, color: Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Obx(() => GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text("Attach Document"),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                inputPagePresenter
+                                                    .pickAndUploadFile();
+                                              },
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    WidgetStateProperty.all<
+                                                        Color>(colorAccent),
+                                                foregroundColor:
+                                                    WidgetStateProperty.all<
+                                                        Color>(Colors.white),
+                                                elevation: WidgetStateProperty
+                                                    .all<double>(6.0),
+                                                padding: WidgetStateProperty
+                                                    .all<EdgeInsets>(
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 20,
+                                                            vertical: 12)),
+                                                shape: WidgetStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16.0),
+                                                  ),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                "Choose File",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
-                                            child: const Text(
-                                              "Choose File",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
+                                      );
+                                    });
+                              },
+                              child: inputPagePresenter
+                                      .uploadedFileName.value.isEmpty
+                                  ? Container(
+                                      width: inputPagePresenter
+                                              .uploadedFileName.value.isEmpty
+                                          ? MediaQuery.of(context).size.width *
+                                              0.5
+                                          : null,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: colorAccent,
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
-                                    );
-                                  });
-                            },
-                            child: inputPagePresenter
-                                    .uploadedFileName.value.isEmpty
-                                ? Container(
-                                    width: inputPagePresenter
-                                            .uploadedFileName.value.isEmpty
-                                        ? MediaQuery.of(context).size.width *
-                                            0.5
-                                        : null,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: colorAccent,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: const Text(
-                                      "Attach Document",
-                                      style: TextStyle(
-                                        color: Colors.white,
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        "Attach Document",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    )
+                                  : Text(
+                                      inputPagePresenter.uploadedFileName.value,
+                                      style: const TextStyle(
+                                        color: Colors.black,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                  )
-                                : Text(
-                                    inputPagePresenter.uploadedFileName.value,
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                          )),
+                            )),
+                      ],
                     ],
                   );
                 }),

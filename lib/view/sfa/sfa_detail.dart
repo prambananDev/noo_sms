@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/textfield_sfa.dart';
 import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
@@ -46,8 +46,6 @@ class _SfaDetailState extends State<SfaDetail> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initData();
     });
-
-    debugPrint("Status " + widget.status);
   }
 
   bool _isCheckInStatus(String status) {
@@ -75,20 +73,17 @@ class _SfaDetailState extends State<SfaDetail> {
     contactTitleController.text = detail.contactTitle ?? 'N/A';
     purposeTypeController.text = detail.typeName ?? 'N/A';
 
-    // For controllers managed by SfaController, copy values
     controller.resultsController.text = detail.result ?? '';
     controller.followupController.text = detail.followup ?? '';
     controller.followupDateController.text =
         controller.formatDateString(detail.followupDate);
 
-    // For display-only date fields
     checkinTimeController.text = _formatDate(detail.checkIn);
     checkoutTimeController.text = _formatDate(detail.checkOut);
   }
 
   @override
   void dispose() {
-    // Dispose all controllers to avoid memory leaks
     idController.dispose();
     nameController.dispose();
     addressController.dispose();
@@ -138,7 +133,6 @@ class _SfaDetailState extends State<SfaDetail> {
           );
         }
 
-        // Display the detail record
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: _buildDetailCard(controller.sfaDetailRecord.value!),
@@ -183,32 +177,23 @@ class _SfaDetailState extends State<SfaDetail> {
 
     final detail = controller.sfaDetailRecord.value!;
 
-    // Setup data needed for checkout
     controller.currentVisitId.value = detail.id ?? -1;
     controller.selectedCustomerId.value = detail.customer?.toString() ?? "";
     controller.selectedCustomerName.value = detail.customerName ?? "";
     controller.uploadedPhotoName.value = detail.checkInFoto ?? "";
 
-    // Get values from text fields
     controller.purposeController.text = purposeTypeController.text;
-    // resultsController and followupController already set via _populateTextControllers
-    // followupDateController already set via _populateTextControllers
 
-    // Set this so the controller knows we're checked in
     controller.isCheckedIn.value = true;
 
-    // Execute checkout
     final success = await controller.submitCheckOut(context);
     if (success) {
-      // Refresh the detail after checkout
       await controller.fetchSfaDetails(widget.recordId);
 
-      // Hide the checkout button since status has changed
       setState(() {
         isCheckoutAllowed = false;
       });
 
-      // Show success message
       Get.snackbar(
         'Success',
         'Check-out completed successfully!',
@@ -240,23 +225,27 @@ class _SfaDetailState extends State<SfaDetail> {
           _buildSectionTitle('Transaction Information'),
           _buildDetailItem('ID', '${detail.id ?? 'N/A'}'),
           _buildDetailItem('Customer', detail.customerName ?? 'N/A'),
-          _buildTextFieldItem('Address', addressController),
+          _buildTextFieldItem('Address', addressController,
+              readOnly: !isCheckoutAllowed),
           _buildDetailItem('Purpose', detail.typeName ?? 'N/A'),
           const SizedBox(height: 16),
           _buildSectionTitle('Customer Information'),
-          _buildTextFieldItem('Contact Person', contactPersonController),
-          _buildTextFieldItem('Contact Number', contactNumberController),
-          _buildTextFieldItem('Contact Title', contactTitleController),
+          _buildTextFieldItem('Contact Person', contactPersonController,
+              readOnly: !isCheckoutAllowed),
+          _buildTextFieldItem('Contact Number', contactNumberController,
+              readOnly: !isCheckoutAllowed),
+          _buildTextFieldItem('Contact Title', contactTitleController,
+              readOnly: !isCheckoutAllowed),
           const SizedBox(height: 16),
           _buildSectionTitle('Visit Details'),
           _buildTextFieldItem(
               'Purpose Description', controller.purposeController,
-              maxLines: 3),
+              maxLines: 3, readOnly: !isCheckoutAllowed),
           _buildTextFieldItem('Results', controller.resultsController,
-              maxLines: 3),
-          _buildDatePickerField(),
+              maxLines: 3, readOnly: !isCheckoutAllowed),
+          _buildDatePickerField(!isCheckoutAllowed),
           _buildTextFieldItem('Follow-up', controller.followupController,
-              maxLines: 3),
+              maxLines: 3, readOnly: !isCheckoutAllowed),
           if (detail.checkInFoto != null && detail.checkInFoto!.isNotEmpty) ...[
             const SizedBox(height: 16),
             _buildSectionTitle('Check-in Photo'),
@@ -293,7 +282,6 @@ class _SfaDetailState extends State<SfaDetail> {
             color: colorAccent,
           ),
         ),
-        const Divider(),
         const SizedBox(height: 8),
       ],
     );
@@ -317,12 +305,19 @@ class _SfaDetailState extends State<SfaDetail> {
             ),
           ),
           Expanded(
-            child: StableTextField(
-              controller: controller,
-              readOnly: readOnly,
-              maxLines: maxLines,
-              hintText: readOnly ? "" : "Enter $label",
-            ),
+            child: readOnly
+                ? Text(
+                    controller.text.isEmpty ? 'N/A' : controller.text,
+                    style: const TextStyle(fontSize: 14),
+                    maxLines: maxLines,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : StableTextField(
+                    controller: controller,
+                    readOnly: readOnly,
+                    maxLines: maxLines,
+                    hintText: readOnly ? "" : "Enter $label",
+                  ),
           ),
         ],
       ),
@@ -356,7 +351,7 @@ class _SfaDetailState extends State<SfaDetail> {
     );
   }
 
-  Widget _buildDatePickerField() {
+  Widget _buildDatePickerField([bool isReadOnly = false]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -373,28 +368,35 @@ class _SfaDetailState extends State<SfaDetail> {
             ),
           ),
           Expanded(
-            child: StableTextField(
-              controller: controller.followupDateController,
-              readOnly: true,
-              hintText: "Select date",
-              style: const TextStyle(fontSize: 14),
-              isCalendar: true,
-              onTap: () async {
-                final currentContext = context;
+            child: isReadOnly
+                ? Text(
+                    controller.followupDateController.text.isEmpty
+                        ? 'N/A'
+                        : controller.followupDateController.text,
+                    style: const TextStyle(fontSize: 14),
+                  )
+                : StableTextField(
+                    controller: controller.followupDateController,
+                    readOnly: true,
+                    hintText: "Select date",
+                    style: const TextStyle(fontSize: 14),
+                    isCalendar: true,
+                    onTap: () async {
+                      final currentContext = context;
 
-                final DateTime? pickedDate = await showDatePicker(
-                  context: currentContext,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: currentContext,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
 
-                if (pickedDate != null && mounted) {
-                  controller.followupDateController.text =
-                      DateFormat('dd-MM-yyyy').format(pickedDate);
-                }
-              },
-            ),
+                      if (pickedDate != null && mounted) {
+                        controller.followupDateController.text =
+                            DateFormat('dd-MM-yyyy').format(pickedDate);
+                      }
+                    },
+                  ),
           ),
         ],
       ),
@@ -402,7 +404,6 @@ class _SfaDetailState extends State<SfaDetail> {
   }
 
   Widget _buildPhotoPreview(String photoName) {
-    // Get the photo URL from the controller
     final String photoUrl = '$apiSMS/VisitCustomer/CheckIn?filename=$photoName';
 
     return Column(
@@ -462,7 +463,6 @@ class _SfaDetailState extends State<SfaDetail> {
                 right: 8,
                 child: GestureDetector(
                   onTap: () {
-                    // Show full screen photo
                     showDialog(
                       context: context,
                       builder: (context) => Dialog(

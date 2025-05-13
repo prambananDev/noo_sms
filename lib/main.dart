@@ -7,9 +7,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:noo_sms/assets/constant/splash_screen.dart';
 import 'package:noo_sms/controllers/login/location_controller.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
+import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 import 'package:noo_sms/models/noo_user.dart';
 import 'package:noo_sms/models/user.dart';
 import 'package:noo_sms/view/dashboard/dashboard.dart';
+import 'package:noo_sms/view/dashboard/dashboard_asset_submission.dart';
 import 'package:noo_sms/view/dashboard/dashboard_noo.dart';
 import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sample.dart';
@@ -17,6 +19,7 @@ import 'package:noo_sms/view/dashboard/dashboard_sfa.dart';
 import 'package:noo_sms/view/dashboard/dashboard_sms.dart';
 import 'package:noo_sms/view/login/login_view.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
+import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form_coba.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -54,6 +57,9 @@ class MainAppState extends State {
   final customerFormController =
       Get.put(CustomerFormController(), permanent: true);
 
+  final sfaController =
+      Get.put<SfaController>(SfaController(), permanent: true);
+
   @override
   void initState() {
     super.initState();
@@ -61,9 +67,18 @@ class MainAppState extends State {
   }
 
   Future _initializeApp() async {
+    await clearHiveData();
     await registeredAdapter();
     await checkAutoLogin();
     await getOneSignal();
+  }
+
+  Future clearHiveData() async {
+    if (Hive.isBoxOpen('users')) {
+      await Hive.box('users').clear();
+    } else {
+      await Hive.openBox('users').then((box) => box.clear());
+    }
   }
 
   Future checkAutoLogin() async {
@@ -228,6 +243,11 @@ class MainAppState extends State {
           name: '/sfa_dashboard',
           page: () => const DashboardSfa(),
           transition: Transition.fadeIn,
+          binding: BindingsBuilder(
+            () {
+              sfaController;
+            },
+          ),
         ),
         GetPage(
           name: '/sfa_new',
@@ -242,6 +262,14 @@ class MainAppState extends State {
             initialIndex: 1,
           ),
           transition: Transition.fadeIn,
+        ),
+        GetPage(
+          name: '/asset_dashboard',
+          page: () => const DashboardAsset(),
+          transition: Transition.fadeIn,
+          binding: BindingsBuilder(
+            () {},
+          ),
         ),
       ],
     );

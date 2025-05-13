@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/assets/widgets/textfield_sfa.dart';
 import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 import 'package:noo_sms/models/sfa_model.dart';
@@ -9,8 +11,13 @@ import 'package:search_choices/search_choices.dart';
 
 class SfaCreate extends StatefulWidget {
   final SfaRecord? record;
+  final bool isDirectCheckIn;
 
-  const SfaCreate({Key? key, this.record}) : super(key: key);
+  const SfaCreate({
+    Key? key,
+    this.record,
+    this.isDirectCheckIn = false,
+  }) : super(key: key);
 
   @override
   State<SfaCreate> createState() => _SfaCreateState();
@@ -20,12 +27,10 @@ class _SfaCreateState extends State<SfaCreate> {
   late final SfaController controller = Get.put(SfaController());
 
   late final bool isEditMode;
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController contactPersonController = TextEditingController();
-  final TextEditingController contactNumberController = TextEditingController();
-  final TextEditingController jobTitleController = TextEditingController();
+  bool get isCheckedOut =>
+      isEditMode &&
+      widget.record != null &&
+      (widget.record!.status == 2 || widget.record!.status == 3);
 
   @override
   void initState() {
@@ -33,62 +38,76 @@ class _SfaCreateState extends State<SfaCreate> {
     isEditMode = widget.record != null;
 
     _setupControllerListeners();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (isEditMode) {
         _initializeEditMode();
       } else {
         controller.clearForm();
-        controller.fetchCustomers();
+        controller.isExisting.value = true;
+        controller.toggleExistingVal.value = false;
+        controller.initializeData();
+      }
+
+      if (widget.isDirectCheckIn && widget.record != null) {
+        _initializeEditMode();
       }
     });
   }
 
   void _setupControllerListeners() {
     ever(controller.customerInfo, (CustomerInfo? info) {
-      if (info != null) {
-        nameController.text = info.name ?? "";
-        addressController.text = info.address ?? "";
-        contactPersonController.text = info.contact ?? "";
-        contactNumberController.text = info.contactNum ?? "";
-      } else {
-        nameController.text = "";
-        addressController.text = "";
-        contactPersonController.text = "";
-        contactNumberController.text = "";
+      if (mounted && !isEditMode) {
+        setState(() {
+          controller.nameController.text = info?.name ?? "";
+          controller.addressController.text = info?.address ?? "";
+          controller.contactPersonController.text = info?.contact ?? "";
+          controller.contactNumberController.text = info?.contactNum ?? "";
+          controller.jobTitleController.text = info?.contactTitle ?? "";
+        });
       }
     });
   }
 
   void _initializeEditMode() {
-    nameController.text = widget.record!.customerName ?? "";
-    addressController.text = widget.record!.address ?? "";
-    contactPersonController.text = widget.record!.contactPerson ?? "";
-    contactNumberController.text = widget.record!.contactNumber ?? "";
-    jobTitleController.text = widget.record!.contactTitle ?? "";
+    controller.nameController.text = widget.record?.customerName ?? "";
+    controller.addressController.text = widget.record?.address ?? "";
+    controller.contactPersonController.text =
+        widget.record?.contactPerson ?? "";
+    controller.contactNumberController.text =
+        widget.record?.contactNumber ?? "";
+    controller.jobTitleController.text = widget.record?.contactTitle ?? "";
 
-    controller.purposeController.text = widget.record!.purposeDesc ?? "";
-    controller.resultsController.text = widget.record!.result ?? "";
-    controller.followupController.text = widget.record!.followup ?? "";
+    controller.purposeController.text = widget.record?.purposeDesc ?? "";
+    controller.resultsController.text = widget.record?.result ?? "";
+    controller.followupController.text = widget.record?.followup ?? "";
     controller.followupDateController.text =
-        controller.formatDateString(widget.record!.followupDate);
+        controller.formatDateString(widget.record?.followupDate);
+
+    controller.selectedCustomerId.value = widget.record?.customer ?? "";
+    controller.selectedCustomerName.value = widget.record?.customerName ?? "";
 
     controller.fetchPurpose();
 
-    if (widget.record!.checkInFoto != null &&
+    if (widget.record?.checkInFoto != null &&
         widget.record!.checkInFoto!.isNotEmpty) {
       controller.uploadedPhotoName.value = widget.record!.checkInFoto!;
       controller.photoUploaded.value = true;
     }
 
-    Future.microtask(() {
+    controller.customerInfo.value = CustomerInfo(
+      name: widget.record?.customerName ?? "",
+      address: widget.record?.address ?? "",
+      contact: widget.record?.contactPerson ?? "",
+      contactNum: widget.record?.contactNumber ?? "",
+      contactTitle: widget.record?.contactTitle ?? "",
+    );
+
+    Future.delayed(const Duration(milliseconds: 100), () {
       controller.loadRecordForEdit(widget.record!);
     });
 
-    if (widget.record!.status == 1) {
-      controller.isCheckedIn.value = true;
-    } else if (widget.record!.status == 2) {
-      controller.isCheckedIn.value = false;
-    }
+    controller.isCheckedIn.value = widget.record?.status == 1;
   }
 
   @override
@@ -109,7 +128,7 @@ class _SfaCreateState extends State<SfaCreate> {
                 ),
               ),
               title: Text(
-                'Edit Visit Record',
+                'Customer Visit Update',
                 style: TextStyle(
                     color: colorNetral,
                     fontSize: 16,
@@ -137,13 +156,12 @@ class _SfaCreateState extends State<SfaCreate> {
             final bool hasPhoto = controller.image.value != null ||
                 controller.photoUploaded.value;
 
-            final bool isEditModeAndCheckedOut = isEditMode &&
-                widget.record != null &&
-                widget.record!.status == 2;
-
-            if (isEditMode && widget.record!.status == 1 && hasPhoto) {
+            if (isEditMode &&
+                widget.record!.status == 1 &&
+                hasPhoto &&
+                !isCheckedOut) {
               return _buildActionButton();
-            } else if (isEditModeAndCheckedOut) {
+            } else if (isCheckedOut) {
               return _buildCheckedOutIndicator();
             } else if (!isEditMode && hasPhoto) {
               return _buildActionButton();
@@ -160,13 +178,13 @@ class _SfaCreateState extends State<SfaCreate> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Row(
+        Row(
           children: [
             Text(
               'Prospect : ',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: ResponsiveUtil.scaleSize(context, 16),
               ),
             ),
           ],
@@ -184,26 +202,36 @@ class _SfaCreateState extends State<SfaCreate> {
 
   Widget _buildCustomerDropdown() {
     return Obx(() {
+      if (controller.isLoading.value) {
+        return Padding(
+          padding: EdgeInsets.symmetric(
+              vertical: ResponsiveUtil.scaleSize(context, 16.0)),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
       if (controller.customers.isEmpty) {
+        if (controller.isLoading.value) {
+          return Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: ResponsiveUtil.scaleSize(context, 16.0)),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
         return const Center(
           child: Text('No customers available'),
         );
       }
 
-      if (controller.isLoading.value) {
-        return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16.0),
-          child: Center(child: CircularProgressIndicator()),
-        );
-      }
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'Customer :',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: ResponsiveUtil.scaleSize(context, 16),
             ),
           ),
           Expanded(
@@ -214,16 +242,37 @@ class _SfaCreateState extends State<SfaCreate> {
                   value: customer,
                   child: Text(
                     customer.customerName,
-                    overflow: TextOverflow.fade,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: ResponsiveUtil.scaleSize(context, 14),
+                    ),
                   ),
                 );
               }).toList(),
               value: controller.selectedCustomer.value,
-              onChanged: (value) {
-                setState(() {
-                  controller.saveSelectedCustomer(value);
-                });
+              onChanged: (VisitCustomer? value) {
+                if (value != null) {
+                  setState(() {
+                    controller.saveSelectedCustomer(value);
+                  });
+                }
               },
+              searchFn: (String keyword,
+                  List<DropdownMenuItem<VisitCustomer>> items) {
+                List<int> matchedIndexes = [];
+                for (int i = 0; i < items.length; i++) {
+                  VisitCustomer customer = items[i].value as VisitCustomer;
+                  if (customer.customerName
+                      .toLowerCase()
+                      .contains(keyword.toLowerCase())) {
+                    matchedIndexes.add(i);
+                  }
+                }
+                return matchedIndexes;
+              },
+              style: TextStyle(
+                fontSize: ResponsiveUtil.scaleSize(context, 14),
+              ),
             ),
           )
         ],
@@ -235,11 +284,13 @@ class _SfaCreateState extends State<SfaCreate> {
     final String checkOutTime = widget.record?.checkOut ?? 'Unknown';
 
     return Container(
-      margin: const EdgeInsets.only(top: 24),
-      padding: const EdgeInsets.all(16),
+      margin:
+          EdgeInsets.symmetric(vertical: ResponsiveUtil.scaleSize(context, 24)),
+      padding: EdgeInsets.all(ResponsiveUtil.scaleSize(context, 16)),
       decoration: BoxDecoration(
         color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius:
+            BorderRadius.circular(ResponsiveUtil.scaleSize(context, 8)),
         border: Border.all(color: Colors.grey[400]!),
       ),
       child: Column(
@@ -250,25 +301,25 @@ class _SfaCreateState extends State<SfaCreate> {
               Icon(
                 Icons.check_circle,
                 color: Colors.green[700],
-                size: 24,
+                size: ResponsiveUtil.scaleSize(context, 24),
               ),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: ResponsiveUtil.scaleSize(context, 8)),
+              Text(
                 'CHECKED OUT',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: ResponsiveUtil.scaleSize(context, 18),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 8)),
           Text(
             'Visit completed on ${_formatCheckoutTime(checkOutTime)}',
             style: TextStyle(
               color: Colors.grey[700],
-              fontSize: 14,
+              fontSize: ResponsiveUtil.scaleSize(context, 14),
             ),
             textAlign: TextAlign.center,
           ),
@@ -283,52 +334,87 @@ class _SfaCreateState extends State<SfaCreate> {
         return const SizedBox.shrink();
       }
 
+      if (controller.isLoadingCustomerInfo.value) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: ResponsiveUtil.scaleSize(context, 16.0)),
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
-          const Text(
+          Text(
             'Customer Information',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: ResponsiveUtil.scaleSize(context, 24),
             ),
           ),
-          const SizedBox(height: 8),
-          if (controller.isLoadingCustomerInfo.value) ...[
-            // const Center(child: CircularProgressIndicator()),
-          ] else ...[
-            _buildInfoTextField("Name", nameController, readOnly: true),
-            _buildInfoTextField("Address", addressController, readOnly: true),
-            _buildInfoTextField("Contact Person", contactPersonController),
-            _buildInfoTextField("Contact Number", contactNumberController),
-            const SizedBox(height: 16),
-            const Text(
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 8)),
+          isCheckedOut
+              ? _buildInfoDisplay("Name", controller.nameController.text)
+              : _buildInfoTextField("Name", controller.nameController,
+                  readOnly: false),
+          isCheckedOut
+              ? _buildInfoDisplay("Address", controller.addressController.text)
+              : _buildInfoTextField("Address", controller.addressController,
+                  readOnly: false),
+          isCheckedOut
+              ? _buildInfoDisplay(
+                  "Contact Person", controller.contactPersonController.text)
+              : _buildInfoTextField(
+                  "Contact Person", controller.contactPersonController,
+                  readOnly: false),
+          isCheckedOut
+              ? _buildInfoDisplay(
+                  "Contact Number", controller.contactNumberController.text)
+              : _buildInfoTextField(
+                  "Contact Number", controller.contactNumberController,
+                  readOnly: false),
+          isCheckedOut
+              ? _buildInfoDisplay(
+                  "Job Title", controller.jobTitleController.text)
+              : _buildInfoTextField("Job Title", controller.jobTitleController,
+                  readOnly: false),
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 16)),
+          if (isEditMode) ...[
+            SizedBox(height: ResponsiveUtil.scaleSize(context, 16)),
+            Text(
               'Visit Information',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: ResponsiveUtil.scaleSize(context, 24),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: ResponsiveUtil.scaleSize(context, 8)),
             _buildPurposeDropdown(),
-            const SizedBox(height: 12),
-            _buildInfoTextField(
-              "Purpose",
-              controller.purposeController,
-              maxLines: 3,
-            ),
-            _buildInfoTextField(
-              "Results",
-              controller.resultsController,
-              maxLines: 3,
-            ),
-            _buildDatePickerField(),
-            _buildInfoTextField(
-              "Follow-up",
-              controller.followupController,
-              maxLines: 3,
-            ),
+            SizedBox(height: ResponsiveUtil.scaleSize(context, 12)),
+            isCheckedOut
+                ? _buildInfoDisplay(
+                    "Purpose Description", controller.purposeController.text)
+                : _buildInfoSection(
+                    "Purpose Description", controller.purposeController.text,
+                    isCheckedOut: isCheckedOut),
+            isCheckedOut
+                ? _buildInfoDisplay(
+                    "Results", controller.resultsController.text)
+                : _buildInfoSection(
+                    "Results", controller.resultsController.text,
+                    isCheckedOut: isCheckedOut),
+            isCheckedOut
+                ? _buildInfoDisplay("Follow-up Plan Date",
+                    controller.followupDateController.text)
+                : _buildDatePickerField(),
+            isCheckedOut
+                ? _buildInfoDisplay(
+                    "Follow-up Plan Action", controller.followupController.text)
+                : _buildInfoSection(
+                    "Follow-up Plan Action", controller.followupController.text,
+                    isCheckedOut: isCheckedOut),
           ],
         ],
       );
@@ -340,42 +426,65 @@ class _SfaCreateState extends State<SfaCreate> {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(
-            width: 120,
+          SizedBox(
+            width: ResponsiveUtil.scaleSize(context, 120),
             child: Text(
               "Purpose :",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: ResponsiveUtil.scaleSize(context, 16),
               ),
             ),
           ),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: DropdownButton<VisitPurpose>(
-                value: controller.selectedPurpose.value,
-                isExpanded: true,
-                underline: Container(),
-                hint: const Text("Select a purpose"),
-                onChanged: (VisitPurpose? newValue) {
-                  if (newValue != null) {
-                    controller.selectedPurpose.value = newValue;
-                  }
-                },
-                items: controller.purpose.map<DropdownMenuItem<VisitPurpose>>(
-                    (VisitPurpose purpose) {
-                  return DropdownMenuItem<VisitPurpose>(
-                    value: purpose,
-                    child: Text(purpose.name),
-                  );
-                }).toList(),
-              ),
-            ),
+            child: isCheckedOut
+                ? Text(
+                    controller.selectedPurpose.value?.name ??
+                        widget.record?.purposeDesc ??
+                        "No purpose specified",
+                    style: TextStyle(
+                      fontSize: ResponsiveUtil.scaleSize(context, 16),
+                      color: Colors.black87,
+                    ),
+                  )
+                : Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveUtil.scaleSize(context, 12)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(
+                          ResponsiveUtil.scaleSize(context, 4)),
+                    ),
+                    child: DropdownButton<VisitPurpose>(
+                      value: controller.selectedPurpose.value,
+                      isExpanded: true,
+                      underline: Container(),
+                      hint: Text(
+                        "Select a purpose",
+                        style: TextStyle(
+                          fontSize: ResponsiveUtil.scaleSize(context, 14),
+                        ),
+                      ),
+                      onChanged: (VisitPurpose? newValue) {
+                        if (newValue != null) {
+                          controller.selectedPurpose.value = newValue;
+                        }
+                      },
+                      items: controller.purpose
+                          .map<DropdownMenuItem<VisitPurpose>>(
+                              (VisitPurpose purpose) {
+                        return DropdownMenuItem<VisitPurpose>(
+                          value: purpose,
+                          child: Text(
+                            purpose.name,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtil.scaleSize(context, 14),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
           ),
         ],
       );
@@ -391,21 +500,22 @@ class _SfaCreateState extends State<SfaCreate> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 24)),
+          Text(
             'Visit Check-In Photo',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: ResponsiveUtil.scaleSize(context, 18),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 16)),
           Container(
             width: double.infinity,
-            height: 200,
+            height: ResponsiveUtil.scaleSize(context, 200),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius:
+                  BorderRadius.circular(ResponsiveUtil.scaleSize(context, 16)),
             ),
             child: controller.image.value != null
                 ? _buildLocalPhotoPreview()
@@ -413,80 +523,91 @@ class _SfaCreateState extends State<SfaCreate> {
                     ? _buildRemotePhotoPreview()
                     : _buildEmptyPhotoPlaceholder(),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 8)),
           if (controller.image.value != null) ...[
             Text(
               'File: ${controller.imageName.value}',
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: ResponsiveUtil.scaleSize(context, 12),
                 color: Colors.grey,
               ),
             ),
           ] else if (controller.photoUploaded.value) ...[
             Text(
               'File: ${controller.uploadedPhotoName.value}',
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: ResponsiveUtil.scaleSize(context, 12),
                 color: Colors.grey,
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          if (!controller.isCheckedIn.value) ...[
-            if (!controller.photoUploaded.value) ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: controller.isSubmitting.value
-                      ? null
-                      : () {
-                          if (controller.image.value == null) {
-                            _showPhotoOptionsDialog();
-                          } else {
-                            controller.uploadPhoto();
-                          }
-                        },
-                  icon: Icon(
-                    controller.image.value == null
-                        ? Icons.add_photo_alternate
-                        : Icons.cloud_upload,
-                    color: colorNetral,
-                  ),
-                  label: Text(
-                    controller.isSubmitting.value
-                        ? 'Uploading...'
-                        : controller.image.value == null
-                            ? 'Select Photo'
-                            : 'Upload Photo',
-                    style: TextStyle(
+          if (!isCheckedOut && !controller.isCheckedIn.value) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: controller.isSubmitting.value
+                        ? null
+                        : () {
+                            controller.takePhoto().then((_) {
+                              if (controller.image.value != null) {
+                                controller.uploadPhoto();
+                              }
+                            });
+                          },
+                    icon: Icon(
+                      Icons.camera_alt,
                       color: colorNetral,
-                      fontSize: 16,
+                      size: ResponsiveUtil.scaleSize(context, 18),
+                    ),
+                    label: Text(
+                      'Camera',
+                      style: TextStyle(
+                        color: colorNetral,
+                        fontSize: ResponsiveUtil.scaleSize(context, 16),
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorAccent,
+                      padding: EdgeInsets.symmetric(
+                          vertical: ResponsiveUtil.scaleSize(context, 14)),
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                SizedBox(width: ResponsiveUtil.scaleSize(context, 10)),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: controller.isSubmitting.value
+                        ? null
+                        : () {
+                            controller.pickImageFromGallery().then((_) {
+                              if (controller.image.value != null) {
+                                controller.uploadPhoto();
+                              }
+                            });
+                          },
+                    icon: Icon(
+                      Icons.photo_library,
+                      color: colorNetral,
+                      size: ResponsiveUtil.scaleSize(context, 18),
+                    ),
+                    label: Text(
+                      'Gallery',
+                      style: TextStyle(
+                        color: colorNetral,
+                        fontSize: ResponsiveUtil.scaleSize(context, 16),
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorAccent,
+                      padding: EdgeInsets.symmetric(
+                          vertical: ResponsiveUtil.scaleSize(context, 14)),
+                    ),
                   ),
                 ),
-              ),
-            ],
-            if (controller.image.value != null &&
-                !controller.photoUploaded.value) ...[
-              const SizedBox(height: 12),
-              TextButton.icon(
-                onPressed: controller.isSubmitting.value
-                    ? null
-                    : () {
-                        controller.image.value = null;
-                        controller.imageName.value = '';
-                      },
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                label: const Text(
-                  'Remove Photo',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+              ],
+            ),
           ],
         ],
       );
@@ -498,29 +619,30 @@ class _SfaCreateState extends State<SfaCreate> {
       fit: StackFit.expand,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(ResponsiveUtil.scaleSize(context, 8)),
           child: Image.file(
             controller.image.value!,
             fit: BoxFit.cover,
           ),
         ),
         Positioned(
-          top: 8,
-          right: 8,
+          top: ResponsiveUtil.scaleSize(context, 8),
+          right: ResponsiveUtil.scaleSize(context, 8),
           child: GestureDetector(
             onTap: () {
               _showFullScreenPhotoPreview(isLocal: true);
             },
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(ResponsiveUtil.scaleSize(context, 4)),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.zoom_in,
                 color: Colors.white,
-                size: 20,
+                size: ResponsiveUtil.scaleSize(context, 20),
               ),
             ),
           ),
@@ -534,7 +656,8 @@ class _SfaCreateState extends State<SfaCreate> {
       fit: StackFit.expand,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius:
+              BorderRadius.circular(ResponsiveUtil.scaleSize(context, 8)),
           child: Image.network(
             controller.getPhotoUrl(),
             fit: BoxFit.cover,
@@ -556,14 +679,15 @@ class _SfaCreateState extends State<SfaCreate> {
                   children: [
                     Icon(
                       Icons.error_outline,
-                      size: 48,
+                      size: ResponsiveUtil.scaleSize(context, 48),
                       color: Colors.red[400],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: ResponsiveUtil.scaleSize(context, 8)),
+                    Text(
                       'Error loading image',
                       style: TextStyle(
                         color: Colors.red,
+                        fontSize: ResponsiveUtil.scaleSize(context, 14),
                       ),
                     ),
                   ],
@@ -573,27 +697,87 @@ class _SfaCreateState extends State<SfaCreate> {
           ),
         ),
         Positioned(
-          top: 8,
-          right: 8,
+          top: ResponsiveUtil.scaleSize(context, 8),
+          right: ResponsiveUtil.scaleSize(context, 8),
           child: GestureDetector(
             onTap: () {
               _showFullScreenPhotoPreview(isLocal: false);
             },
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(ResponsiveUtil.scaleSize(context, 4)),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.zoom_in,
                 color: Colors.white,
-                size: 20,
+                size: ResponsiveUtil.scaleSize(context, 20),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showFullScreenPhotoPreview({required bool isLocal}) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: EdgeInsets.all(ResponsiveUtil.scaleSize(context, 8)),
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            InteractiveViewer(
+              panEnabled: true,
+              boundaryMargin:
+                  EdgeInsets.all(ResponsiveUtil.scaleSize(context, 20)),
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: isLocal
+                  ? Image.file(
+                      controller.image.value!,
+                      fit: BoxFit.contain,
+                    )
+                  : Image.network(
+                      controller.getPhotoUrl(),
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            Material(
+              color: Colors.transparent,
+              child: Container(
+                margin: EdgeInsets.all(ResponsiveUtil.scaleSize(context, 16)),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: ResponsiveUtil.scaleSize(context, 24),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -604,14 +788,15 @@ class _SfaCreateState extends State<SfaCreate> {
         children: [
           Icon(
             Icons.photo_library_outlined,
-            size: 48,
+            size: ResponsiveUtil.scaleSize(context, 48),
             color: Colors.grey[400],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtil.scaleSize(context, 8)),
           Text(
             'No photo selected',
             style: TextStyle(
               color: Colors.grey[600],
+              fontSize: ResponsiveUtil.scaleSize(context, 14),
             ),
           ),
         ],
@@ -619,57 +804,13 @@ class _SfaCreateState extends State<SfaCreate> {
     );
   }
 
-  void _showFullScreenPhotoPreview({required bool isLocal}) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(8),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            isLocal
-                ? Image.file(
-                    controller.image.value!,
-                    fit: BoxFit.contain,
-                  )
-                : Image.network(
-                    controller.getPhotoUrl(),
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
-            IconButton(
-              icon: const Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 30,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildActionButton() {
     return Column(
       children: [
-        const SizedBox(height: 24),
-        const Divider(thickness: 1),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveUtil.scaleSize(context, 24)),
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: ResponsiveUtil.scaleSize(context, 50),
           child: ElevatedButton.icon(
             onPressed: controller.isSubmitting.value
                 ? null
@@ -693,15 +834,15 @@ class _SfaCreateState extends State<SfaCreate> {
                   ? Icons.logout
                   : Icons.check_circle,
               color: Colors.white,
-              size: 24,
+              size: ResponsiveUtil.scaleSize(context, 24),
             ),
             label: Text(
               (isEditMode || controller.isCheckedIn.value)
                   ? 'CHECK OUT'
                   : 'CHECK IN',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: ResponsiveUtil.scaleSize(context, 18),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -713,24 +854,57 @@ class _SfaCreateState extends State<SfaCreate> {
             ),
           ),
         ),
+        SizedBox(height: ResponsiveUtil.scaleSize(context, 24)),
       ],
+    );
+  }
+
+  Widget _buildInfoDisplay(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          vertical: ResponsiveUtil.scaleSize(context, 8.0)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: ResponsiveUtil.scaleSize(context, 120),
+            child: Text(
+              "$label :",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: ResponsiveUtil.scaleSize(context, 16),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : "No $label specified",
+              style: TextStyle(
+                fontSize: ResponsiveUtil.scaleSize(context, 16),
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildInfoTextField(String label, TextEditingController controller,
       {bool readOnly = false, int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(
+          vertical: ResponsiveUtil.scaleSize(context, 8.0)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: ResponsiveUtil.scaleSize(context, 120),
             child: Text(
               "$label :",
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: ResponsiveUtil.scaleSize(context, 16),
               ),
             ),
           ),
@@ -740,6 +914,12 @@ class _SfaCreateState extends State<SfaCreate> {
               readOnly: readOnly,
               maxLines: maxLines,
               hintText: readOnly ? "" : "Enter $label",
+              keyboardType: label.toLowerCase().contains("contact number")
+                  ? TextInputType.phone
+                  : TextInputType.text,
+              inputFormatters: label.toLowerCase().contains("contact number")
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
             ),
           ),
         ],
@@ -747,19 +927,71 @@ class _SfaCreateState extends State<SfaCreate> {
     );
   }
 
+  Widget _buildInfoSection(String label, String value,
+      {bool isCheckedOut = false}) {
+    if (isCheckedOut) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+            vertical: ResponsiveUtil.scaleSize(context, 8.0)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: ResponsiveUtil.scaleSize(context, 120),
+              child: Text(
+                "$label : ",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: ResponsiveUtil.scaleSize(context, 16),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value.isNotEmpty ? value : "No $label specified",
+                style: TextStyle(
+                  fontSize: ResponsiveUtil.scaleSize(context, 16),
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    TextEditingController textController;
+    if (label == "Purpose Description") {
+      textController = controller.purposeController;
+    } else if (label == "Results") {
+      textController = controller.resultsController;
+    } else if (label == "Follow-up Plan Action") {
+      textController = controller.followupController;
+    } else {
+      textController = TextEditingController(text: value);
+    }
+
+    return _buildInfoTextField(
+      label,
+      textController,
+      maxLines: 3,
+    );
+  }
+
   Widget _buildDatePickerField() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(
+          vertical: ResponsiveUtil.scaleSize(context, 8.0)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(
-            width: 120,
+          SizedBox(
+            width: ResponsiveUtil.scaleSize(context, 120),
             child: Text(
-              "Follow-up Date :",
+              "Follow-up Plan Date : ",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: ResponsiveUtil.scaleSize(context, 16),
               ),
             ),
           ),
@@ -768,7 +1000,7 @@ class _SfaCreateState extends State<SfaCreate> {
               controller: controller.followupDateController,
               readOnly: true,
               hintText: "Select date",
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: ResponsiveUtil.scaleSize(context, 16)),
               isCalendar: true,
               onTap: () async {
                 final currentContext = context;
@@ -792,80 +1024,18 @@ class _SfaCreateState extends State<SfaCreate> {
     );
   }
 
-  void _showPhotoOptionsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Select Photo Source',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(
-                Icons.camera_alt,
-                color: colorBlack,
-              ),
-              title: Text(
-                'Take a photo',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: colorBlack,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                controller.takePhoto();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.photo_library, color: colorBlack),
-              title: Text(
-                'Choose from gallery',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: colorBlack,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                controller.pickImageFromGallery();
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-          ),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-  }
-
   String _formatCheckoutTime(String checkOutTime) {
     final DateTime dateTime = DateTime.parse(checkOutTime).toLocal();
     return DateFormat('dd MMM yyyy, HH:mm').format(dateTime);
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
-    nameController.dispose();
-    addressController.dispose();
-    contactPersonController.dispose();
-    contactNumberController.dispose();
-    jobTitleController.dispose();
     super.dispose();
   }
 }

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_approved_controller.dart';
 import 'package:noo_sms/models/approval.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -39,7 +39,7 @@ class TransactionPendingController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      await Future.wait([_loadPrincipal(), fetchApprovals()]);
+      await Future.wait([loadPrincipal(), fetchApprovals()]);
     } catch (e) {
       errorMessage.value = 'Failed to initialize data';
     } finally {
@@ -47,7 +47,7 @@ class TransactionPendingController extends GetxController {
     }
   }
 
-  Future<void> _loadPrincipal() async {
+  Future<void> loadPrincipal() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
@@ -159,8 +159,8 @@ class TransactionPendingController extends GetxController {
     await _initializeData();
   }
 
-  void showApprovalDetail(BuildContext context, int id,
-      Function(int, List<ApprovalDetail>) showDialog) async {
+  showApprovalDetail(
+      int id, Function(int, List<ApprovalDetail>) showDialog) async {
     final url = '$apiSCS/api/SampleApproval/$id?detail=true';
     try {
       final response = await http.get(Uri.parse(url));
@@ -176,15 +176,15 @@ class TransactionPendingController extends GetxController {
         showDialog(id, details);
       } else {
         Get.snackbar('Error', 'Failed to fetch detail: ${response.statusCode}',
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.TOP);
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     }
   }
 
-  void sendApproval(int id, bool isApproved, String message,
+  sendApproval(int id, bool isApproved, String message,
       List<ApprovalDetail> details) async {
     final prefs = await SharedPreferences.getInstance();
     final int idEmp = int.tryParse(prefs.getString("scs_idEmp") ?? '0') ?? 0;
@@ -224,7 +224,7 @@ class TransactionPendingController extends GetxController {
             isApproved
                 ? 'Approval status updated to Approved.'
                 : 'Approval status updated to Rejected.',
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.TOP);
 
         fetchApprovals();
         if (Get.isRegistered<TransactionApprovedController>()) {
@@ -234,11 +234,11 @@ class TransactionPendingController extends GetxController {
       } else {
         Get.snackbar('Error',
             'Failed to update status: ${response.statusCode}\nResponse Body: ${response.body}',
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.TOP);
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     }
   }
 

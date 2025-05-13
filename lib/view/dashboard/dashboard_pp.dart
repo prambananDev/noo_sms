@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/view/sms/approval/approval_pending_pp.dart';
 import 'package:noo_sms/view/sms/approval/approved_pp.dart';
 import 'package:noo_sms/view/sms/history_pp.dart';
@@ -47,23 +48,29 @@ class DashboardPPState extends State<DashboardPP>
 
   @override
   Widget build(BuildContext context) {
+    const double tabFontSize = 16.0;
+    const double paddingSize = 16.0;
+
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildTabBar(),
-          _buildTabContent(),
+          _buildTabBar(context, tabFontSize),
+          _buildTabContent(context, paddingSize),
         ],
       ),
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(BuildContext context, double baseFontSize) {
+    final double scaledFontSize =
+        ResponsiveUtil.scaleSize(context, baseFontSize);
+
     return TabBar(
-      labelStyle: const TextStyle(
+      labelStyle: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 16,
+        fontSize: scaledFontSize,
       ),
       controller: tabController,
       labelColor: colorAccent,
@@ -73,7 +80,7 @@ class DashboardPPState extends State<DashboardPP>
         border: Border(
           bottom: BorderSide(
             color: colorAccent,
-            width: 2,
+            width: ResponsiveUtil.scaleSize(context, 2.0),
           ),
         ),
       ),
@@ -81,9 +88,11 @@ class DashboardPPState extends State<DashboardPP>
     );
   }
 
-  Widget _buildTabContent() {
+  Widget _buildTabContent(BuildContext context, double basePadding) {
+    final double scaledPadding = ResponsiveUtil.scaleSize(context, basePadding);
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(scaledPadding),
       width: Get.width,
       height: Get.height,
       child: TabBarView(

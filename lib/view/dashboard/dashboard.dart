@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/menu_card.dart';
-import 'package:noo_sms/controllers/dashboard/dashboard_sms_controller.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
+import 'package:noo_sms/controllers/dashboard/dashboard_controller.dart';
 
 class DashboardMain extends StatefulWidget {
   const DashboardMain({Key? key}) : super(key: key);
@@ -16,6 +17,9 @@ class DashboardMainState extends State<DashboardMain> {
 
   @override
   Widget build(BuildContext context) {
+    double responsiveSize(double size) =>
+        ResponsiveUtil.scaleSize(context, size);
+
     return Scaffold(
       backgroundColor: colorNetral,
       body: SingleChildScrollView(
@@ -23,12 +27,17 @@ class DashboardMainState extends State<DashboardMain> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 50, 24, 70),
+              padding: EdgeInsets.fromLTRB(
+                responsiveSize(24),
+                responsiveSize(50),
+                responsiveSize(24),
+                responsiveSize(70),
+              ),
               decoration: BoxDecoration(
                 color: colorAccent,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(responsiveSize(24)),
+                  bottomRight: Radius.circular(responsiveSize(24)),
                 ),
               ),
               child: Column(
@@ -40,28 +49,28 @@ class DashboardMainState extends State<DashboardMain> {
                       onTap: () {
                         _showLogoutDialog(context);
                       },
-                      child: const Icon(
+                      child: Icon(
                         Icons.person_outline,
                         color: Colors.white,
-                        size: 40,
+                        size: responsiveSize(40),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  const Text(
+                  SizedBox(height: responsiveSize(40)),
+                  Text(
                     'Hello,',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: responsiveSize(28),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Obx(
                     () => Text(
                       _controller.fullName.value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 28,
+                        fontSize: responsiveSize(28),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -70,18 +79,18 @@ class DashboardMainState extends State<DashboardMain> {
               ),
             ),
             Transform.translate(
-              offset: const Offset(0, -50),
+              offset: Offset(0, -responsiveSize(50)),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(16),
+                margin: EdgeInsets.symmetric(horizontal: responsiveSize(24)),
+                padding: EdgeInsets.all(responsiveSize(16)),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(responsiveSize(24)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 1,
+                      blurRadius: responsiveSize(10),
+                      spreadRadius: responsiveSize(1),
                     ),
                   ],
                 ),
@@ -90,12 +99,12 @@ class DashboardMainState extends State<DashboardMain> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_on,
-                          color: Color(0xFF1A3B80),
-                          size: 24,
+                          color: const Color(0xFF1A3B80),
+                          size: responsiveSize(24),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: responsiveSize(8)),
                         Expanded(
                           child: Obx(
                             () => Text(
@@ -104,15 +113,15 @@ class DashboardMainState extends State<DashboardMain> {
                               style: TextStyle(
                                 color: colorAccent,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                fontSize: responsiveSize(16),
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Obx(() => _buildMenuGrid()),
+                    SizedBox(height: responsiveSize(16)),
+                    Obx(() => _buildMenuGrid(context)),
                   ],
                 ),
               ),
@@ -124,23 +133,38 @@ class DashboardMainState extends State<DashboardMain> {
   }
 
   void _showLogoutDialog(BuildContext context) {
+    double responsiveSize(double size) =>
+        ResponsiveUtil.scaleSize(context, size);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Logout"),
-          content: const Text("Are you sure you want to logout?"),
+          title: Text(
+            "Logout",
+            style: TextStyle(fontSize: responsiveSize(18)),
+          ),
+          content: Text(
+            "Are you sure you want to logout?",
+            style: TextStyle(fontSize: responsiveSize(16)),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel"),
+              child: Text(
+                "Cancel",
+                style: TextStyle(fontSize: responsiveSize(16)),
+              ),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _controller.logout();
               },
-              child: const Text("Logout"),
+              child: Text(
+                "Logout",
+                style: TextStyle(fontSize: responsiveSize(16)),
+              ),
             ),
           ],
         );
@@ -148,11 +172,13 @@ class DashboardMainState extends State<DashboardMain> {
     );
   }
 
-  Widget _buildMenuGrid() {
+  Widget _buildMenuGrid(BuildContext context) {
     final items = _controller.menuItems;
+    double responsiveSize(double size) =>
+        ResponsiveUtil.scaleSize(context, size);
 
     if (items.isEmpty) {
-      return const SizedBox(height: 68);
+      return SizedBox(height: responsiveSize(68));
     }
 
     final int itemCount = items.length;
@@ -163,7 +189,8 @@ class DashboardMainState extends State<DashboardMain> {
         children: items
             .map((item) => Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: responsiveSize(8)),
                     child: MenuCard(
                       title: item["title"],
                       svgPath: item["svgPath"],
@@ -180,10 +207,10 @@ class DashboardMainState extends State<DashboardMain> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: responsiveSize(8),
+        mainAxisSpacing: responsiveSize(8),
         childAspectRatio: 1.2,
       ),
       itemCount: itemCount,

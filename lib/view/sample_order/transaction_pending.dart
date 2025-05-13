@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_pending_controller.dart';
@@ -234,7 +233,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                 ),
                 isThreeLine: true,
                 onTap: () => presenter.showApprovalDetail(
-                  context,
                   approval.id,
                   showApprovalDialog,
                 ),
@@ -386,7 +384,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                   ],
                                 );
                               }).toList(),
-
                               Obx(() => CheckboxListTile(
                                     title: const Text('Claim to Principal'),
                                     value: presenter.isClaim.value,
@@ -395,7 +392,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                       controller.update();
                                     },
                                   )),
-
                               if (presenter.isClaim.value)
                                 Obx(() {
                                   final principalList =
@@ -418,7 +414,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                     },
                                   );
                                 }),
-
                               if (presenter.isClaim.value &&
                                   presenter.principalList.value.selectedChoice
                                           ?.id ==
@@ -437,8 +432,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                     ),
                                   ),
                                 ),
-
-                              // Message Input
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 8.0),
@@ -453,8 +446,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                   ),
                                 ),
                               ),
-
-                              // Action Buttons
                               Row(
                                 children: [
                                   Expanded(
@@ -464,7 +455,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                         foregroundColor: Colors.white,
                                       ),
                                       onPressed: () {
-                                        // Update details with current qty
                                         for (int i = 0;
                                             i < details.length;
                                             i++) {
@@ -478,7 +468,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                           );
                                         }
 
-                                        // Send rejection
                                         presenter.sendApproval(id, false,
                                             messageController.text, details);
                                         Navigator.pop(context);
@@ -494,7 +483,6 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                         foregroundColor: Colors.white,
                                       ),
                                       onPressed: () {
-                                        // Update details with current qty
                                         for (int i = 0;
                                             i < details.length;
                                             i++) {

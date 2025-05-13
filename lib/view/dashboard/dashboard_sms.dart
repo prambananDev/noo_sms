@@ -79,7 +79,7 @@ class DashboardPageState extends State<DashboardPage> {
         onPressed: _handleBackPress,
       ),
       title: Text(
-        'Dashboard SMS',
+        'Promotion Program',
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w800,

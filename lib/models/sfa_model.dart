@@ -129,6 +129,71 @@ class SfaRecord {
       'sfaType': sfaType?.toJson(),
     };
   }
+
+  // Add this method to the SfaRecord class
+  SfaRecord copyWith({
+    int? id,
+    int? type,
+    String? typeName,
+    int? employees,
+    String? fullName,
+    int? status,
+    String? statusName,
+    String? createdDate,
+    String? modifiedDate,
+    String? customer,
+    String? customerName,
+    String? contactTitle,
+    String? contactPerson,
+    String? contactNumber,
+    String? purpose,
+    String? purposeDesc,
+    String? result,
+    String? followup,
+    String? followupDate,
+    String? address,
+    String? checkIn,
+    String? checkOut,
+    String? checkInFoto,
+    int? prospect,
+    String? long,
+    String? lat,
+    String? createdBy,
+    String? employee,
+    SfaType? sfaType,
+  }) {
+    return SfaRecord(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      typeName: typeName ?? this.typeName,
+      employees: employees ?? this.employees,
+      fullName: fullName ?? this.fullName,
+      status: status ?? this.status,
+      statusName: statusName ?? this.statusName,
+      createdDate: createdDate ?? this.createdDate,
+      modifiedDate: modifiedDate ?? this.modifiedDate,
+      customer: customer ?? this.customer,
+      customerName: customerName ?? this.customerName,
+      contactTitle: contactTitle ?? this.contactTitle,
+      contactPerson: contactPerson ?? this.contactPerson,
+      contactNumber: contactNumber ?? this.contactNumber,
+      purpose: purpose ?? this.purpose,
+      purposeDesc: purposeDesc ?? this.purposeDesc,
+      result: result ?? this.result,
+      followup: followup ?? this.followup,
+      followupDate: followupDate ?? this.followupDate,
+      address: address ?? this.address,
+      checkIn: checkIn ?? this.checkIn,
+      checkOut: checkOut ?? this.checkOut,
+      checkInFoto: checkInFoto ?? this.checkInFoto,
+      prospect: prospect ?? this.prospect,
+      long: long ?? this.long,
+      lat: lat ?? this.lat,
+      createdBy: createdBy ?? this.createdBy,
+      employee: employee ?? this.employee,
+      sfaType: sfaType ?? this.sfaType,
+    );
+  }
 }
 
 // class Customer {
@@ -221,6 +286,7 @@ class CustomerInfo {
   final String? address;
   final String? contact;
   final String? contactNum;
+  final String? contactTitle;
 
   CustomerInfo({
     this.name,
@@ -228,15 +294,17 @@ class CustomerInfo {
     this.address,
     this.contact,
     this.contactNum,
+    this.contactTitle,
   });
 
   factory CustomerInfo.fromJson(Map<String, dynamic> json) {
     return CustomerInfo(
-      name: json['CustName'],
-      alias: json['CustAlias'],
-      address: json['CustAddress'],
-      contact: json['CustContact'],
-      contactNum: json['CustContactNum'],
+      name: json['CustName'] ?? "",
+      alias: json['CustAlias'] ?? "",
+      address: json['CustAddress'] ?? "",
+      contact: json['CustContact'] ?? "",
+      contactNum: json['CustContactNum'] ?? "",
+      contactTitle: json['CustContactTitle'] ?? "",
     );
   }
 
@@ -247,6 +315,7 @@ class CustomerInfo {
       'address': address,
       'contact': contact,
       'contactNum': contactNum,
+      'CustContactTitle': contactTitle,
     };
   }
 }
@@ -404,5 +473,31 @@ class SfaRecordDetail {
       'employee': employee,
       'sfaType': sfaType,
     };
+  }
+}
+
+class SfaComment {
+  final int? id;
+  final int? sfaTransId;
+  final String? comment;
+  final String? createdDate;
+
+  final String? fullName;
+
+  SfaComment({
+    this.id,
+    this.sfaTransId,
+    this.comment,
+    this.createdDate,
+    this.fullName,
+  });
+
+  factory SfaComment.fromJson(Map<String, dynamic> json) {
+    return SfaComment(
+      id: json['id'],
+      sfaTransId: json['sfaTransId'],
+      comment: json['desc'],
+      createdDate: json['createdAt'],
+    );
   }
 }

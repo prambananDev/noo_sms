@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/image_detail.dart';
 import 'package:noo_sms/controllers/noo/approved_controller.dart';
@@ -105,6 +105,8 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
         detailRow("Customer Name", controller.currentApproval.value.custName),
         detailRow("Brand Name", controller.currentApproval.value.brandName),
         detailRow("Sales Office", controller.currentApproval.value.salesOffice),
+        detailRow(
+            "Customer Group", controller.currentApproval.value.customerGroup),
         detailRow(
             "Business Unit", controller.currentApproval.value.businessUnit),
         detailRow("Category", controller.currentApproval.value.category),

@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/models/approval_status.dart';
 import 'package:noo_sms/models/noo_approval.dart';
 
@@ -146,40 +146,35 @@ class ApprovalController extends GetxController {
     isLoading.value = true;
     initializeApprovalControllers(id);
 
-    try {
-      final response = await makeApiCall('${apiNOO}NOOCustTables/$id');
+    final response = await makeApiCall('${apiNOO}NOOCustTables/$id');
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        currentApproval.value = ApprovalModel.fromJson(data);
-        companyAddress.value = Address.fromJson(data['CompanyAddresses']);
-        deliveryAddress.value = Address.fromJson(data['DeliveryAddresses']);
-        taxAddress.value = Address.fromJson(data['TaxAddresses']);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      currentApproval.value = ApprovalModel.fromJson(data);
+      companyAddress.value = Address.fromJson(data['CompanyAddresses']);
+      deliveryAddress.value = Address.fromJson(data['DeliveryAddresses']);
+      taxAddress.value = Address.fromJson(data['TaxAddresses']);
 
-        fetchCreditLimitRange(currentApproval.value.segment ?? '');
+      fetchCreditLimitRange(currentApproval.value.segment ?? '');
 
-        await fetchPaymentTerms(currentApproval.value.segment ?? '');
-        await fetchApprovalStatuses(id);
+      await fetchPaymentTerms(currentApproval.value.segment ?? '');
+      await fetchApprovalStatuses(id);
 
-        getCreditLimitController(id).text =
-            currentApproval.value.creditLimit?.toString() ?? '';
+      getCreditLimitController(id).text =
+          currentApproval.value.creditLimit?.toString() ?? '';
 
-        final currentPaymentTerm = currentApproval.value.paymentTerm;
-        if (currentPaymentTerm != null &&
-            currentPaymentTerm.isNotEmpty &&
-            paymentTerms.contains(currentPaymentTerm)) {
-          setSelectedPaymentTerm(id, currentPaymentTerm);
-        } else if (paymentTerms.isNotEmpty) {
-          setSelectedPaymentTerm(id, paymentTerms.first);
-        } else {
-          setSelectedPaymentTerm(id, "");
-        }
-
-        update(['approval-$id', 'payment-terms-$id']);
+      final currentPaymentTerm = currentApproval.value.paymentTerm;
+      if (currentPaymentTerm != null &&
+          currentPaymentTerm.isNotEmpty &&
+          paymentTerms.contains(currentPaymentTerm)) {
+        setSelectedPaymentTerm(id, currentPaymentTerm);
+      } else if (paymentTerms.isNotEmpty) {
+        setSelectedPaymentTerm(id, paymentTerms.first);
+      } else {
+        setSelectedPaymentTerm(id, "");
       }
-    } catch (e) {
-    } finally {
-      isLoading.value = false;
+
+      update(['approval-$id', 'payment-terms-$id']);
     }
   }
 
@@ -262,7 +257,7 @@ class ApprovalController extends GetxController {
         Get.snackbar(
           'Success',
           'Approval processed successfully',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
           duration: const Duration(seconds: 2),
@@ -319,7 +314,7 @@ class ApprovalController extends GetxController {
     Get.snackbar(
       'Success',
       message,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
@@ -330,7 +325,7 @@ class ApprovalController extends GetxController {
     Get.snackbar(
       'Error',
       '$message\n$errorDetail',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.red,
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
@@ -425,7 +420,6 @@ class ApprovalController extends GetxController {
         }
       } else if (response.statusCode == 408) {
       } else {}
-    } catch (e) {
     } finally {
       isCreditLimitLoading.value = false;
 

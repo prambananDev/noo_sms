@@ -26,6 +26,7 @@ class ApprovalModel {
   final String? priceGroup;
   final String? salesman;
   final String? salesOffice;
+  final String? customerGroup;
   final String? businessUnit;
   final String? notes;
   final String? fotoNPWP;
@@ -88,6 +89,7 @@ class ApprovalModel {
     this.salesman,
     this.salesOffice,
     this.businessUnit,
+    this.customerGroup,
     this.notes,
     this.fotoNPWP,
     this.fotoKTP,
@@ -170,6 +172,7 @@ class ApprovalModel {
         approval2: json['Approval2'],
         approval3: json['Approval3'],
         status: json['Status'],
+        customerGroup: json['CustSubGroup'],
         createdBy: json['CreatedBy'],
         remark: json['Remark'],
         createdDate: json['CreatedDate'] != null

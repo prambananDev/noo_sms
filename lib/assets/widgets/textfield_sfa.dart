@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:noo_sms/assets/global.dart';
 
-class StableTextField extends StatefulWidget {
+class StableTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool readOnly;
@@ -9,6 +10,8 @@ class StableTextField extends StatefulWidget {
   final TextStyle? style;
   final bool? isCalendar;
   final Function()? onTap;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const StableTextField({
     Key? key,
@@ -19,22 +22,21 @@ class StableTextField extends StatefulWidget {
     this.style,
     this.isCalendar,
     this.onTap,
+    this.keyboardType,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
-  State<StableTextField> createState() => _StableTextFieldState();
-}
-
-class _StableTextFieldState extends State<StableTextField> {
-  @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: widget.controller,
-      readOnly: widget.readOnly,
-      maxLines: widget.maxLines,
-      onTap: widget.onTap,
+      controller: controller,
+      readOnly: readOnly,
+      maxLines: maxLines,
+      onTap: onTap,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
-        hintText: widget.hintText,
+        hintText: hintText,
         border: const OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
@@ -43,16 +45,17 @@ class _StableTextFieldState extends State<StableTextField> {
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        filled: widget.readOnly,
-        fillColor: widget.readOnly ? Colors.grey[200] : null,
-        suffixIcon: widget.isCalendar == true
+        isDense: true,
+        filled: readOnly,
+        fillColor: readOnly ? Colors.grey[200] : null,
+        suffixIcon: isCalendar == true
             ? Icon(Icons.calendar_today, color: colorAccent)
             : null,
       ),
-      style: widget.style ??
+      style: style ??
           TextStyle(
             fontSize: 14,
-            color: widget.readOnly ? Colors.grey[600] : Colors.black,
+            color: readOnly ? Colors.grey[600] : Colors.black,
           ),
     );
   }

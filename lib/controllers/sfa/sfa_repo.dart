@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/models/sfa_model.dart';
 
 class PhotoUploadResult {
@@ -33,8 +33,6 @@ class SfaRepository {
 
   final int _cacheDuration = 300000;
   final Map<String, DateTime> _cacheTimestamps = {};
-
-  final Duration _timeout = const Duration(seconds: 15);
 
   Future<List<SfaRecord>> fetchSfaRecords(String username) async {
     final cacheKey = 'sfa_$username';
@@ -87,35 +85,28 @@ class SfaRepository {
   }
 
   Future<List<VisitCustomer>> fetchCustomers(bool existing) async {
-    if (_customersCache.containsKey(existing) &&
-        _cacheTimestamps.containsKey('customers_$existing') &&
-        DateTime.now()
-                .difference(_cacheTimestamps['customers_$existing']!)
-                .inMilliseconds <
-            _cacheDuration) {
-      return _customersCache[existing]!;
-    }
+    _customersCache[existing] = [];
+    _cacheTimestamps.remove('customers_$existing');
 
-    try {
-      var url = Uri.parse('$apiSMS/VisitCustomer/?existing=$existing');
-      var response = await _client.get(
-        url,
-        headers: {'Connection': 'keep-alive'},
-      );
-      if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        final customers =
-            data.map((data) => VisitCustomer.fromJson(data)).toList();
+    var url = Uri.parse('$apiSMS/VisitCustomer/?existing=$existing');
 
-        _customersCache[existing] = customers;
-        _cacheTimestamps['customers_$existing'] = DateTime.now();
+    var response = await _client.get(
+      url,
+      headers: {'Connection': 'keep-alive'},
+    );
 
-        return customers;
-      } else {
-        throw Exception('Failed to load customers: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Network error: $e');
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+
+      final customers =
+          data.map((data) => VisitCustomer.fromJson(data)).toList();
+
+      _customersCache[existing] = customers;
+      _cacheTimestamps['customers_$existing'] = DateTime.now();
+
+      return customers;
+    } else {
+      throw Exception('Failed to load customers: ${response.statusCode}');
     }
   }
 
@@ -153,7 +144,7 @@ class SfaRepository {
     }
   }
 
-  Future<CustomerInfo> fetchCustInfo(dynamic id) async {
+  Future<CustomerInfo?> fetchCustInfo(dynamic id) async {
     final cacheKey = 'customer_info_$id';
     if (_customerInfoCache.containsKey(id) &&
         _cacheTimestamps.containsKey(cacheKey) &&
@@ -164,6 +155,7 @@ class SfaRepository {
 
     try {
       var url = Uri.parse('$apiSMS/VisitCustomer/?findInfoByCustId=$id');
+
       var response = await _client.get(
         url,
         headers: {'Connection': 'keep-alive'},
@@ -172,17 +164,30 @@ class SfaRepository {
       if (response.statusCode == 200) {
         Map<String, dynamic> data = json.decode(response.body);
 
-        CustomerInfo customerInfo = CustomerInfo.fromJson(data);
+        CustomerInfo customerInfo = CustomerInfo(
+          name: data['CustName'],
+          address: data['CustAddress'],
+          contact: data['CustContact'],
+          contactNum: data['CustContactNum'],
+          contactTitle: data['CustContactTitle'],
+        );
 
         _customerInfoCache[id] = customerInfo;
         _cacheTimestamps[cacheKey] = DateTime.now();
-
         return customerInfo;
+      } else if (response.statusCode == 500) {
+        return null;
       } else {
         throw Exception('Failed to load customer info: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      return CustomerInfo(
+        name: "",
+        address: "",
+        contact: "",
+        contactNum: "",
+        contactTitle: "",
+      );
     }
   }
 
@@ -212,12 +217,11 @@ class SfaRepository {
 
       if (response.statusCode == 200) {
         String serverPhotoName = photoName;
-        try {
-          var responseJson = json.decode(responseBody);
-          if (responseJson.containsKey('fileName')) {
-            serverPhotoName = responseJson['fileName'];
-          }
-        } catch (e) {}
+
+        var responseJson = json.decode(responseBody);
+        if (responseJson.containsKey('fileName')) {
+          serverPhotoName = responseJson['fileName'];
+        }
 
         return PhotoUploadResult(success: true, photoName: serverPhotoName);
       } else {
@@ -231,33 +235,23 @@ class SfaRepository {
   Future<CheckInResponse> submitCheckIn(
       Map<String, dynamic> checkInData) async {
     try {
+      checkInData.removeWhere((key, value) => value == null);
+
       var url = Uri.parse('$apiSMS/VisitCustomer');
 
-      var response = await _client
-          .post(
-            url,
-            headers: {
-              'Content-Type': 'application/json',
-              'Connection': 'keep-alive'
-            },
-            body: json.encode(checkInData),
-          )
-          .timeout(_timeout);
+      var response = await _client.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Connection': 'keep-alive'
+        },
+        body: json.encode(checkInData),
+      );
 
       var responseBody = response.body;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        int visitId = -1;
-        try {
-          var responseJson = json.decode(responseBody);
-          if (responseJson.containsKey('id')) {
-            visitId = responseJson['id'];
-          } else if (responseJson.containsKey('Id')) {
-            visitId = responseJson['Id'];
-          } else if (responseJson.containsKey('ID')) {
-            visitId = responseJson['ID'];
-          }
-        } catch (e) {}
+        int visitId = int.parse(responseBody.trim());
 
         _sfaRecordsCache.clear();
 
@@ -283,8 +277,6 @@ class SfaRepository {
         body: json.encode(checkOutData),
       );
 
-      var responseBody = response.body;
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         _sfaRecordsCache.clear();
         return true;
@@ -309,6 +301,74 @@ class SfaRepository {
       return response.statusCode == 200;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<List<SfaComment>> fetchComments(int recordId) async {
+    final uri = Uri.parse('$apiSMS/VisitCustomer/ViewProgress/$recordId');
+    final response = await _client.get(
+      uri,
+      headers: {'Connection': 'keep-alive'},
+    );
+
+    if (response.statusCode == 200) {
+      final dynamic jsonData = json.decode(response.body);
+
+      if (jsonData is List) {
+        return jsonData
+            .map<SfaComment>((item) => SfaComment.fromJson(item))
+            .toList();
+      } else if (jsonData is Map && jsonData['data'] is List) {
+        return jsonData['data']
+            .map<SfaComment>((item) => SfaComment.fromJson(item))
+            .toList();
+      }
+      return [];
+    } else {
+      throw Exception('Failed to load comments: ${response.statusCode}');
+    }
+  }
+
+  Future<bool> addComment(int recordId, String comment) async {
+    final uri = Uri.parse('$apiSMS/VisitCustomer/AddProgress');
+    final body = json.encode({
+      'sfaTransId': recordId,
+      'desc': comment,
+    });
+
+    final response = await _client.post(
+      uri,
+      headers: {'Content-Type': 'application/json', 'Connection': 'keep-alive'},
+      body: body,
+    );
+
+    return response.statusCode == 200;
+  }
+
+  Future<bool> deleteComment(int commentId) async {
+    final uri = Uri.parse('$apiSMS/VisitCustomer/DelProgress/$commentId');
+    final response = await _client.delete(
+      uri,
+      headers: {'Connection': 'keep-alive'},
+    );
+
+    return response.statusCode == 200;
+  }
+
+  Future<bool> closeVisit(int recordId) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$apiSMS/VisitCustomer/CloseVisit/$recordId'),
+        headers: {'Connection': 'keep-alive'},
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('Failed with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error closing visit: $e');
     }
   }
 

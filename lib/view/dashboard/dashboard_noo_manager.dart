@@ -17,7 +17,6 @@ class DashboardNooState extends State<DashboardNoo>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? role;
-  // CustomerFormController? controller;
 
   @override
   void initState() {
@@ -28,7 +27,6 @@ class DashboardNooState extends State<DashboardNoo>
       initialIndex: widget.initialIndex ?? 0,
     );
     getSharedPrefs();
-    // initializeController();
   }
 
   @override

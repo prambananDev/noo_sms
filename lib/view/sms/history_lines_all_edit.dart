@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/constant/date_time_formatter.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/text_result_card.dart';
@@ -39,7 +39,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   }
 
   void _resetController() {
-    // Reset the controller to avoid accumulation of items
     inputPagePresenter
         .promotionProgramInputStateRx.value.promotionProgramInputState
         .clear();
@@ -115,7 +114,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
   void _initializeActivityLines() {
     if (activityEditModel.activityLinesEdit != null) {
       for (int i = 0; i < activityEditModel.activityLinesEdit!.length; i++) {
-        // Add line only once
         inputPagePresenter.addItem();
         _initializeSingleLine(i);
       }
@@ -411,7 +409,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              // color: colorAccent.withOpacity(0.1),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -443,14 +440,11 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
               ],
             ),
           ),
-
-          // Line content
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Reuse the customCard function but with styling improvements
                 _buildItemSelectionSection(index),
                 _buildQuantitySection(index),
                 _buildPricingSection(index),
@@ -589,8 +583,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           ],
         ),
         const SizedBox(height: 12),
-
-        // Using SearchChoices instead of DropdownButtonFormField
         SearchChoices.single(
           isExpanded: true,
           value: state.unitPageDropdownState?.selectedChoice,
@@ -610,7 +602,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           menuConstraints: BoxConstraints.tight(const Size.fromHeight(350)),
           displayClearIcon: false,
         ),
-
         const SizedBox(height: 16),
       ],
     );
@@ -637,8 +628,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Using SearchChoices instead of DropdownButtonFormField
         SearchChoices.single(
           isExpanded: true,
           value: state.percentValueInputPageDropdownState?.selectedChoice,
@@ -658,9 +647,7 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           menuConstraints: BoxConstraints.tight(const Size.fromHeight(350)),
           displayClearIcon: false,
         ),
-
         const SizedBox(height: 12),
-
         Row(
           children: [
             Expanded(
@@ -689,14 +676,11 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           ],
         ),
         const SizedBox(height: 12),
-
-        // Show either percent or value fields based on the selected discount type
         if (state.percentValueInputPageDropdownState?.selectedChoice ==
             state.percentValueInputPageDropdownState?.choiceList![0])
           _buildPercentDiscountFields(index, state)
         else
           _buildValueDiscountFields(index, state),
-
         const SizedBox(height: 16),
       ],
     );
@@ -815,8 +799,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Using SearchChoices instead of DropdownButtonFormField
         SearchChoices.single(
           isExpanded: true,
           value: state.supplyItem?.selectedChoice,
@@ -836,7 +818,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
           menuConstraints: BoxConstraints.tight(const Size.fromHeight(350)),
           displayClearIcon: false,
         ),
-
         const SizedBox(height: 12),
         Row(
           children: [
@@ -899,7 +880,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
             onPressed: isAddItem ? () => inputPagePresenter.addItem() : null,
           ),
         ),
-
         Visibility(
           visible: !inputPagePresenter.onTap.value,
           child: Container(
@@ -918,8 +898,6 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
             ),
           ),
         ),
-
-        // Loading indicator
         Visibility(
           visible: inputPagePresenter.onTap.value,
           child: const Center(
@@ -957,5 +935,17 @@ class _HistoryLinesAllEditState extends State<HistoryLinesAllEdit> {
       });
       inputPagePresenter.submitPromotionProgram(context);
     }
+  }
+
+  @override
+  void dispose() {
+    if (Get.isRegistered<InputPageController>()) {
+      inputPagePresenter
+          .promotionProgramInputStateRx.value.promotionProgramInputState
+          .clear();
+      inputPagePresenter.onTap.value = false;
+    }
+
+    super.dispose();
   }
 }

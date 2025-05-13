@@ -2,6 +2,7 @@ class DraftModel {
   final String custName;
   final String brandName;
   final String? salesOffice;
+  final String? customerGroup;
   final String? businessUnit;
   final String? category;
   final String? category1;
@@ -40,6 +41,7 @@ class DraftModel {
     required this.custName,
     required this.brandName,
     this.salesOffice,
+    this.customerGroup,
     this.businessUnit,
     this.category,
     this.category1,
@@ -80,6 +82,7 @@ class DraftModel {
       custName: json['CustName'] ?? '',
       brandName: json['BrandName'] ?? '',
       salesOffice: json['SalesOffice'],
+      customerGroup: json['CustSubGroup'],
       businessUnit: json['BusinessUnit'],
       category: json['Category'],
       category1: json['Category1'],

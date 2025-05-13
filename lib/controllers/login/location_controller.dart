@@ -19,7 +19,8 @@ class LocationController extends GetxController {
   var countrys = ''.obs;
   var zipCode = ''.obs;
   var addressDetail = ''.obs;
-  var ward = ''.obs;
+  var village = ''.obs;
+  var subDistrict = ''.obs;
   var districts = ''.obs;
   var isLoading = false.obs;
   var errorMessage = ''.obs;
@@ -148,46 +149,54 @@ class LocationController extends GetxController {
       String street =
           "${placeMark.thoroughfare ?? ''} ${placeMark.subThoroughfare ?? ''}"
               .trim();
-      String subLocality = placeMark.subLocality ?? '';
-      String locality = placeMark.locality ?? '';
-      String administrativeArea = placeMark.administrativeArea ?? '';
-      String subAdministrativeArea = placeMark.subAdministrativeArea ?? '';
-      String postalCode = placeMark.postalCode ?? '';
-      String country = placeMark.country ?? '';
+
+      // String kelurahan =
+      //     placeMark.subLocality ?? placeMark.subAdministrativeArea ?? '';
+
+      // String kecamatan =
+      //     placeMark.subAdministrativeArea ?? placeMark.locality ?? '';
+      String kecamatan =
+          placeMark.subLocality ?? placeMark.subAdministrativeArea ?? '';
+
+      String kota = placeMark.locality ?? placeMark.administrativeArea ?? '';
+
+      String provinsi = placeMark.administrativeArea ?? '';
+      String kodePos = placeMark.postalCode ?? '';
+      String negara = placeMark.country ?? '';
 
       List<String> addressParts = [
         street,
-        // subLocality,
-        // locality,
-        subAdministrativeArea,
-        // administrativeArea,
-        // postalCode,
-        // country,
+        // if (kelurahan.isNotEmpty) "Kel. $kelurahan",
+        if (kecamatan.isNotEmpty) "Kec. $kecamatan",
+        kota,
+        provinsi,
+        if (kodePos.isNotEmpty) kodePos,
+        negara,
       ].where((part) => part.isNotEmpty).toList();
 
       String fullAddress = addressParts.join(", ");
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
+      // Update your reactive values
       longitudeData.value = "${position.longitude}";
       latitudeData.value = "${position.latitude}";
       streetName.value = street;
-      city.value = subAdministrativeArea;
-      state.value = administrativeArea;
-      countrys.value = country;
-      zipCode.value = postalCode;
+      // village.value = kelurahan;
+      subDistrict.value = kecamatan;
+      city.value = kota;
+      state.value = provinsi;
+      countrys.value = negara;
+      zipCode.value = kodePos;
       addressDetail.value = fullAddress;
-      ward.value = subLocality;
-      districts.value = locality;
 
-      // Save to SharedPreferences
       await prefs.setString("getStreetName", street);
-      await prefs.setString("getCity", subAdministrativeArea);
-      await prefs.setString("getCountry", country);
-      await prefs.setString("getState", administrativeArea);
-      await prefs.setString("getZipCode", postalCode);
-      await prefs.setString("getSubLocality", subLocality);
-      await prefs.setString("getLocality", locality);
+      // await prefs.setString("getKelurahan", kelurahan);
+      await prefs.setString("getKecamatan", kecamatan);
+      await prefs.setString("getCity", kota);
+      await prefs.setString("getProvince", provinsi);
+      await prefs.setString("getCountry", negara);
+      await prefs.setString("getZipCode", kodePos);
       await prefs.setString("getAddressDetail", fullAddress);
       await prefs.setString("getLongitude", "${position.longitude}");
       await prefs.setString("getLatitude", "${position.latitude}");

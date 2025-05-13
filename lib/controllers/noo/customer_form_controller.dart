@@ -7,11 +7,13 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:noo_sms/assets/constant/api_constant.dart';
+import 'package:noo_sms/controllers/noo/cached_data.dart';
+import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/constant/preview_cust_form/preview_controller.dart';
 import 'package:noo_sms/models/customer_form.dart';
 import 'package:noo_sms/models/draft_model.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,7 +34,14 @@ class CustomerFormController extends GetxController
   final isEditMode = false.obs;
   final NOOModel? editData;
   final _picker = ImagePicker();
+  final useCompanyAddressForDelivery = false.obs;
+  final useCompanyAddressForDelivery2 = false.obs;
+  final useCompanyAddressForTax = false.obs;
   final RxBool useKtpAddressForTax = false.obs;
+  final RxBool isInitializing = true.obs;
+  final RxString initializationStatus = ''.obs;
+  final RxBool hasInitializationError = false.obs;
+  bool isInitialized = false;
 
   String longitudeData = "";
   String latitudeData = "";
@@ -44,7 +53,7 @@ class CustomerFormController extends GetxController
   String zipCode = "";
   String salesmanId = "";
   String village = "";
-  String district = "";
+  String subDistrict = "";
 
   final Rx<File?> _imageKTP = Rx<File?>(null);
   final Rx<File?> _imageNPWP = Rx<File?>(null);
@@ -109,8 +118,9 @@ class CustomerFormController extends GetxController
       TextEditingController();
   final TextEditingController kelurahanControllerDelivery =
       TextEditingController();
-  final TextEditingController kecamatanControllerDelivery =
-      TextEditingController();
+  Rx<TextEditingController> kecamatanControllerDelivery =
+      TextEditingController().obs;
+
   final TextEditingController cityControllerDelivery = TextEditingController();
   final TextEditingController provinceControllerDelivery =
       TextEditingController();
@@ -123,8 +133,9 @@ class CustomerFormController extends GetxController
       TextEditingController();
   final TextEditingController kelurahanControllerDelivery2 =
       TextEditingController();
-  final TextEditingController kecamatanControllerDelivery2 =
-      TextEditingController();
+  Rx<TextEditingController> kecamatanControllerDelivery2 =
+      TextEditingController().obs;
+
   final TextEditingController cityControllerDelivery2 = TextEditingController();
   final TextEditingController provinceControllerDelivery2 =
       TextEditingController();
@@ -147,7 +158,9 @@ class CustomerFormController extends GetxController
   List<CompanyStatus> companyStatus = [];
   List<Currency> currency = [];
   List<PriceGroup> priceGroup = [];
+  final RxList<CustomerGroup> customerGroups = <CustomerGroup>[].obs;
 
+  String? selectedCustomerGroup;
   String? selectedSalesOffice;
   String? selectedSalesOfficeCode;
   String? selectedBusinessUnit;
@@ -169,11 +182,52 @@ class CustomerFormController extends GetxController
   String? insideImageUrl;
   String? competitorImageUrl;
 
+  String? cityApiValueMain;
+  String? cityApiValueDelivery;
+  String? cityApiValueDelivery2;
+
+  String? cityDisplayValueMain;
+  String? cityDisplayValueDelivery;
+  String? cityDisplayValueDelivery2;
+
+  String? selectedCityId;
+  String? selectedCityIdDelivery;
+  String? selectedCityIdDelivery2;
+
+  String? districtValueMain;
+  String? districtValueDelivery;
+  String? districtValueDelivery2;
+
+  RxList<Map<String, dynamic>> provinces = <Map<String, dynamic>>[].obs;
+  final isProvincesLoading = false.obs;
+
+  RxList<Map<String, dynamic>> cities = <Map<String, dynamic>>[].obs;
+  final isCitiesLoading = false.obs;
+  String? selectedProvinceId;
+
+  RxList<Map<String, dynamic>> citiesDelivery = <Map<String, dynamic>>[].obs;
+  final isCitiesDeliveryLoading = false.obs;
+  String? selectedProvinceIdDelivery;
+
+  RxList<Map<String, dynamic>> citiesDelivery2 = <Map<String, dynamic>>[].obs;
+  final isCitiesDelivery2Loading = false.obs;
+  String? selectedProvinceIdDelivery2;
+
+  RxList<Map<String, dynamic>> districts = <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> districtsDelivery = <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> districtsDelivery2 =
+      <Map<String, dynamic>>[].obs;
+
+  final isDistrictsLoading = false.obs;
+  final isDistrictsDeliveryLoading = false.obs;
+  final isDistrictsDelivery2Loading = false.obs;
+
   CustomerFormController({this.editData});
 
   @override
   void onInit() async {
     super.onInit();
+
     tabController = TabController(length: 4, vsync: this);
     basicAuth =
         'Basic ${base64Encode(utf8.encode('$usernameAuth:$passwordAuth'))}';
@@ -190,6 +244,10 @@ class CustomerFormController extends GetxController
     ktpAddressController.removeListener(_updateTaxAddress);
     customerNameController.removeListener(_updateTaxName);
     super.dispose();
+  }
+
+  Future<void> clearCache() async {
+    await CacheService.clearAllCache();
   }
 
   void _onCompanyNameChanged() {
@@ -211,41 +269,411 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> initializeData() async {
-    autofill();
+    isInitializing.value = true;
+    initializationStatus.value = 'Loading data...';
 
-    await Future.wait([
-      loadLongLatFromSharedPrefs(),
-      loadSharedPreferences(),
-    ]);
-    await Future.wait([
-      fetchSalesOffices(),
-      fetchBusinessUnits(),
-      fetchAXRegionals(),
-      fetchPaymentMode(),
-      fetchCategory(),
-      fetchCategory1(),
-      fetchSegment(),
-      fetchSubSegment(),
-      fetchClass(),
-      fetchCompanyStatus(),
-      fetchCurrency(),
-      fetchPaymentMode(),
-    ]);
+    Map<String, String> loadFailures = {};
+    bool partialSuccess = false;
 
-    if (editData != null) {
-      selectedCategory = editData!.category;
-      selectedCategory1 = editData!.category1;
-      fillFormData(editData!);
-    } else {
-      autofill();
+    await clearCache();
+    await _checkCredentialsChanged();
+
+    try {
+      final bool needsFullInitialization = salesOffices.isEmpty ||
+          businessUnits.isEmpty ||
+          customerGroups.isEmpty;
+
+      await loadSharedPreferences();
+      await loadLongLatFromSharedPrefs();
+
+      if (needsFullInitialization) {
+        try {
+          await _loadSalesOfficesFromCache();
+        } catch (e) {
+          loadFailures['salesOffices'] = e.toString();
+        }
+
+        try {
+          await _loadBusinessUnitsFromCache();
+        } catch (e) {
+          loadFailures['businessUnits'] = e.toString();
+        }
+
+        try {
+          await _loadCustomerGroupsFromCache();
+        } catch (e) {
+          loadFailures['customerGroups'] = e.toString();
+        }
+
+        _setDefaultCriticalSelections();
+
+        partialSuccess = salesOffices.isNotEmpty ||
+            businessUnits.isNotEmpty ||
+            customerGroups.isNotEmpty;
+
+        if (partialSuccess) {
+          _loadRemainingDataAsync();
+        }
+      } else {
+        _setDefaultSelections();
+        partialSuccess = true;
+      }
+
+      if (partialSuccess) {
+        autofill();
+      }
+
+      if (loadFailures.isEmpty) {
+        initializationStatus.value = 'Initialization complete';
+        hasInitializationError.value = false;
+      } else {
+        if (partialSuccess) {
+          initializationStatus.value =
+              'Partial initialization - some data could not be loaded';
+          hasInitializationError.value = true;
+        } else {
+          initializationStatus.value =
+              'Initialization failed: ${loadFailures.values.join(', ')}';
+          hasInitializationError.value = true;
+        }
+      }
+    } catch (e) {
+      hasInitializationError.value = true;
+      initializationStatus.value = 'Initialization failed: ${e.toString()}';
+    } finally {
+      isInitializing.value = false;
+    }
+  }
+
+  Future<void> _checkCredentialsChanged() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? currentSO = prefs.getString("SO");
+    String? currentBU = prefs.getString("BU");
+
+    if ((so != currentSO && currentSO != null) ||
+        (bu != currentBU && currentBU != null)) {
+      so = currentSO;
+      bu = currentBU;
+      isInitialized = false;
+
+      await CacheService.clearCache(CacheService.salesOffices);
+      await CacheService.clearCache(CacheService.businessUnits);
+      await CacheService.clearCache(CacheService.customerGroups);
+
+      salesOffices.clear();
+      businessUnits.clear();
+      customerGroups.clear();
+    }
+  }
+
+  Future<void> _loadCustomerGroupsFromCache() async {
+    try {
+      if (customerGroups.isNotEmpty) return;
+
+      final cachedData =
+          await CacheService.getData(CacheService.customerGroups);
+
+      if (cachedData != null) {
+        customerGroups.value = (cachedData as List)
+            .map((json) => CustomerGroup.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchCustomerGroups());
+    } catch (e) {
+      unawaited(fetchCustomerGroups());
+    }
+  }
+
+  void _setDefaultCriticalSelections() {
+    if (salesOffices.isNotEmpty && selectedSalesOffice == null) {
+      selectedSalesOffice = salesOffices.first.name;
+    }
+
+    if (businessUnits.isNotEmpty && selectedBusinessUnit == null) {
+      selectedBusinessUnit = businessUnits.first.name;
+    }
+
+    if (customerGroups.isNotEmpty && selectedCustomerGroup == null) {
+      selectedCustomerGroup = customerGroups.first.value;
+    }
+
+    update();
+  }
+
+  static Future<void> resetForNewLogin() async {
+    await CacheService.clearCache(CacheService.salesOffices);
+    await CacheService.clearCache(CacheService.businessUnits);
+    await CacheService.clearCache(CacheService.customerGroups);
+    await CacheService.clearCache(CacheService.axRegionals);
+
+    if (Get.isRegistered<CustomerFormController>()) {
+      final controller = Get.find<CustomerFormController>();
+      controller.isInitialized = false;
+      controller.salesOffices.clear();
+      controller.businessUnits.clear();
+      controller.customerGroups.clear();
+    }
+  }
+
+  void _loadRemainingDataAsync() {
+    List<Future> futures = [];
+
+    futures.add(_loadAXRegionalsFromCache());
+    futures.add(_loadPaymentModeFromCache());
+    futures.add(_loadCategoryFromCache());
+    futures.add(_loadCategory1FromCache());
+    futures.add(_loadSegmentFromCache());
+    futures.add(_loadClassFromCache());
+    futures.add(_loadCompanyStatusFromCache());
+    futures.add(_loadCurrencyFromCache());
+    futures.add(fetchProvinces());
+
+    for (var future in futures) {
+      unawaited(future);
     }
 
     if (!Get.isRegistered<PreviewController>()) {
       Get.put(PreviewController());
     }
 
-    longitudeControllerDelivery.text = longitudeData;
-    latitudeControllerDelivery.text = latitudeData;
+    if (editData != null) {
+      unawaited(_prepareEditDataAsync());
+    }
+  }
+
+  Future<void> _prepareEditDataAsync() async {
+    selectedCategory = editData!.category;
+    selectedCategory1 = editData!.category1;
+
+    if (selectedSegment != null) {
+      await _loadSubSegmentFromCache();
+    }
+
+    fillFormData(editData!);
+  }
+
+  Future<void> _loadSalesOfficesFromCache() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? currentSO = prefs.getString("SO");
+
+      if (so != currentSO || !isInitialized) {
+        so = currentSO;
+
+        await CacheService.clearCache(CacheService.salesOffices);
+        salesOffices.clear();
+
+        await fetchSalesOffices();
+        return;
+      }
+
+      final cachedData = await CacheService.getData(CacheService.salesOffices);
+      if (cachedData != null) {
+        salesOffices.value = (cachedData as List)
+            .map((json) => SalesOffice.fromJson(json))
+            .toList();
+
+        return;
+      }
+
+      await fetchSalesOffices();
+    } catch (e) {
+      await fetchSalesOffices();
+    }
+  }
+
+  Future<void> _loadBusinessUnitsFromCache() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? currentBU = prefs.getString("BU");
+
+    if (bu != currentBU || !isInitialized) {
+      bu = currentBU;
+
+      await CacheService.clearCache(CacheService.businessUnits);
+      businessUnits.clear();
+
+      await fetchBusinessUnits();
+      return;
+    }
+  }
+
+  Future<void> _loadAXRegionalsFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.axRegionals);
+
+      if (cachedData != null) {
+        axRegionals.value = (cachedData as List)
+            .map((json) => AXRegional.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchAXRegionals());
+    } catch (e) {
+      unawaited(fetchAXRegionals());
+    }
+  }
+
+  Future<void> _loadPaymentModeFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.paymentMode);
+
+      if (cachedData != null) {
+        paymentMode = (cachedData as List)
+            .map((json) => CustomerPaymentMode.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchPaymentMode());
+    } catch (e) {
+      unawaited(fetchPaymentMode());
+    }
+  }
+
+  Future<void> _loadCategoryFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.category);
+
+      if (cachedData != null) {
+        category = (cachedData as List)
+            .map((json) => Category1.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchCategory());
+    } catch (e) {
+      unawaited(fetchCategory());
+    }
+  }
+
+  Future<void> _loadCategory1FromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.category1);
+
+      if (cachedData != null) {
+        category1 = (cachedData as List)
+            .map((json) => Category2.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchCategory1());
+    } catch (e) {
+      unawaited(fetchCategory1());
+    }
+  }
+
+  Future<void> _loadSegmentFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.segment);
+
+      if (cachedData != null) {
+        segment =
+            (cachedData as List).map((json) => Segment.fromJson(json)).toList();
+        return;
+      }
+
+      unawaited(fetchSegment());
+    } catch (e) {
+      unawaited(fetchSegment());
+    }
+  }
+
+  Future<void> _loadSubSegmentFromCache() async {
+    if (selectedSegment == null) return;
+
+    try {
+      final cacheKey = "${CacheService.subSegment}_$selectedSegment";
+      final cachedData = await CacheService.getData(cacheKey);
+
+      if (cachedData != null) {
+        subSegment = (cachedData as List)
+            .map((json) => SubSegment.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchSubSegment());
+    } catch (e) {
+      unawaited(fetchSubSegment());
+    }
+  }
+
+  Future<void> _loadClassFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.classKey);
+
+      if (cachedData != null) {
+        classList = (cachedData as List)
+            .map((json) => ClassModel.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchClass());
+    } catch (e) {
+      unawaited(fetchClass());
+    }
+  }
+
+  Future<void> _loadCompanyStatusFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.companyStatus);
+
+      if (cachedData != null) {
+        companyStatus = (cachedData as List)
+            .map((json) => CompanyStatus.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchCompanyStatus());
+    } catch (e) {
+      unawaited(fetchCompanyStatus());
+    }
+  }
+
+  Future<void> _loadCurrencyFromCache() async {
+    try {
+      final cachedData = await CacheService.getData(CacheService.currency);
+
+      if (cachedData != null) {
+        currency = (cachedData as List)
+            .map((json) => Currency.fromJson(json))
+            .toList();
+        return;
+      }
+
+      unawaited(fetchCurrency());
+    } catch (e) {
+      unawaited(fetchCurrency());
+    }
+  }
+
+  void _setDefaultSelections() {
+    if (salesOffices.isNotEmpty && selectedSalesOffice == null) {
+      selectedSalesOffice = salesOffices.first.name;
+    }
+
+    if (businessUnits.isNotEmpty && selectedBusinessUnit == null) {
+      selectedBusinessUnit = businessUnits.first.name;
+    }
+
+    if (customerGroups.isNotEmpty && selectedCustomerGroup == null) {
+      selectedCustomerGroup = customerGroups.first.value;
+    }
+
+    if (currency.isNotEmpty && selectedCurrency == null) {
+      selectedCurrency = currency.first.currencyCode;
+    }
+
+    if (paymentMode.isNotEmpty && selectedPaymentMode == null) {
+      selectedPaymentMode = paymentMode.first.paymentMode;
+    }
 
     update();
   }
@@ -263,15 +691,13 @@ class CustomerFormController extends GetxController
     websiteController.text = data.website;
 
     selectedSalesOffice = data.salesOffice;
-
+    selectedCustomerGroup = data.customerGroup;
     selectedBusinessUnit = data.businessUnit;
     selectedAXRegional = data.regional;
     selectedSegment = data.segment;
 
-    if (data.category != null) {
-      selectedCategory =
-          category.firstWhereOrNull((cat) => cat.name == data.category)?.name;
-    }
+    selectedCategory =
+        category.firstWhereOrNull((cat) => cat.name == data.category)?.name;
 
     if (data.category1 != null) {
       selectedCategory1 = category1
@@ -279,21 +705,22 @@ class CustomerFormController extends GetxController
           ?.master;
     }
 
-    if (data.segment != null) {
-      await fetchSubSegment();
-      selectedSubSegment = data.subSegment;
-    }
+    await fetchSubSegment();
+    selectedSubSegment = data.subSegment;
 
     selectedClass = data.classField;
     selectedCompanyStatus = data.companyStatus;
     selectedCurrency = data.currency;
-    if (data.salesOffice != null) {
-      final selectedOffice = salesOffices
-          .firstWhereOrNull((office) => office.name == data.salesOffice);
-      selectedSalesOfficeCode = selectedOffice?.code;
-      await fetchPriceGroup();
-      selectedPriceGroup = data.priceGroup;
-    }
+
+    final selectedOffice = salesOffices
+        .firstWhereOrNull((office) => office.name == data.salesOffice);
+    selectedSalesOfficeCode = selectedOffice?.code;
+    await fetchPriceGroup();
+    selectedPriceGroup = data.priceGroup;
+
+    selectedCustomerGroup = customerGroups
+        .firstWhereOrNull((group) => group.value == data.customerGroup)
+        ?.value;
 
     selectedPaymentMode = data.paymentMode;
 
@@ -303,9 +730,16 @@ class CustomerFormController extends GetxController
       kelurahanController.text = data.companyAddresses?.kelurahan ?? '';
       kecamatanController.text = data.companyAddresses?.kecamatan ?? '';
       cityController.text = data.companyAddresses?.city ?? '';
-      provinceController.text = data.companyAddresses?.state ?? '';
+
       countryController.text = data.companyAddresses?.country ?? '';
       zipCodeController.text = data.companyAddresses?.zipCode.toString() ?? '';
+
+      final provinceData = data.companyAddresses?.state ?? '';
+      if (provinceData.isNotEmpty && provinces.isNotEmpty) {
+        setProvinceFromText(provinceData, provinceController);
+      } else {
+        provinceController.text = provinceData;
+      }
     }
 
     if (data.taxAddresses != null) {
@@ -319,13 +753,20 @@ class CustomerFormController extends GetxController
           data.deliveryAddresses?.streetName ?? '';
       kelurahanControllerDelivery.text =
           data.deliveryAddresses?.kelurahan ?? '';
-      kecamatanControllerDelivery.text =
+      kecamatanControllerDelivery.value.text =
           data.deliveryAddresses?.kecamatan ?? '';
       cityControllerDelivery.text = data.deliveryAddresses?.city ?? '';
-      provinceControllerDelivery.text = data.deliveryAddresses?.state ?? '';
+
       countryControllerDelivery.text = data.deliveryAddresses?.country ?? '';
       zipCodeControllerDelivery.text =
           data.deliveryAddresses?.zipCode.toString() ?? '';
+
+      final provinceData = data.deliveryAddresses?.state ?? '';
+      if (provinceData.isNotEmpty && provinces.isNotEmpty) {
+        setProvinceFromText(provinceData, provinceControllerDelivery);
+      } else {
+        provinceControllerDelivery.text = provinceData;
+      }
     }
 
     if (data.fotoKTP?.isNotEmpty == true) {
@@ -367,11 +808,6 @@ class CustomerFormController extends GetxController
     longitudeControllerDelivery.text = data.long ?? '';
     latitudeControllerDelivery.text = data.lat ?? '';
 
-    // longitudeControllerDelivery.text = data.lat ?? '';
-    // // latitudeControllerDelivery.text = data.long ?? '';
-
-    //
-
     update();
   }
 
@@ -391,8 +827,10 @@ class CustomerFormController extends GetxController
     deliveryNameController.clear();
     deliveryNameController2.clear();
     streetCompanyControllerDelivery2.clear();
+    kelurahanController.clear();
     kelurahanControllerDelivery2.clear();
-    kecamatanControllerDelivery2.clear();
+    kecamatanControllerDelivery.value.clear();
+    kecamatanControllerDelivery2.value.clear();
     cityControllerDelivery2.clear();
     provinceControllerDelivery2.clear();
     countryControllerDelivery2.clear();
@@ -402,6 +840,7 @@ class CustomerFormController extends GetxController
     signatureCustomerController.clear();
     signatureSalesController.clear();
     selectedSalesOffice = null;
+    selectedCustomerGroup = null;
     selectedBusinessUnit = null;
     selectedCategory = null;
     selectedCategory1 = null;
@@ -421,6 +860,10 @@ class CustomerFormController extends GetxController
     _imageBusinessPhotoFront.value = null;
     _imageBusinessPhotoInside.value = null;
     _imageCompetitorTop.value = null;
+    useCompanyAddressForDelivery.value = false;
+    useCompanyAddressForDelivery2.value = false;
+    useCompanyAddressForTax.value = false;
+    useKtpAddressForTax.value = false;
 
     update();
   }
@@ -429,6 +872,7 @@ class CustomerFormController extends GetxController
     customerNameController.text = draft.custName;
     brandNameController.text = draft.brandName;
     selectedSalesOffice = draft.salesOffice;
+    selectedSalesOffice = draft.customerGroup;
     selectedBusinessUnit = draft.businessUnit;
     selectedCategory = draft.category;
     selectedCategory1 = draft.category1;
@@ -456,35 +900,44 @@ class CustomerFormController extends GetxController
       kelurahanController.text = draft.companyAddresses?['Kelurahan'] ?? '';
       kecamatanController.text = draft.companyAddresses?['Kecamatan'] ?? '';
       cityController.text = draft.companyAddresses?['City'] ?? '';
-      provinceController.text = draft.companyAddresses?['State'] ?? '';
+
       countryController.text = draft.companyAddresses?['Country'] ?? '';
       zipCodeController.text =
           draft.companyAddresses?['ZipCode']?.toString() ?? '';
+      final provinceData = draft.companyAddresses?['State'] ?? '';
+      if (provinceData.isNotEmpty && provinces.isNotEmpty) {
+        setProvinceFromText(provinceData, provinceController);
+      } else {
+        provinceController.text = provinceData;
+      }
     }
 
-    // Load tax address
     if (draft.taxAddresses != null) {
       taxNameController.text = draft.taxAddresses?['Name'] ?? '';
       taxStreetController.text = draft.taxAddresses?['StreetName'] ?? '';
     }
 
-    // Load delivery addresses
     if (draft.deliveryAddresses?.isNotEmpty == true) {
-      // First delivery address
       deliveryNameController.text = draft.deliveryAddresses?[0]['Name'] ?? '';
       streetCompanyControllerDelivery.text =
           draft.deliveryAddresses?[0]['StreetName'] ?? '';
       kelurahanControllerDelivery.text =
           draft.deliveryAddresses?[0]['Kelurahan'] ?? '';
-      kecamatanControllerDelivery.text =
+      kecamatanControllerDelivery.value.text =
           draft.deliveryAddresses?[0]['Kecamatan'] ?? '';
       cityControllerDelivery.text = draft.deliveryAddresses?[0]['City'] ?? '';
-      provinceControllerDelivery.text =
-          draft.deliveryAddresses?[0]['State'] ?? '';
+
       countryControllerDelivery.text =
           draft.deliveryAddresses?[0]['Country'] ?? '';
       zipCodeControllerDelivery.text =
           draft.deliveryAddresses?[0]['ZipCode']?.toString() ?? '';
+
+      final provinceData = draft.deliveryAddresses?[0]['State'] ?? '';
+      if (provinceData.isNotEmpty && provinces.isNotEmpty) {
+        setProvinceFromText(provinceData, provinceControllerDelivery);
+      } else {
+        provinceControllerDelivery.text = provinceData;
+      }
 
       if (draft.deliveryAddresses!.length > 1) {
         deliveryNameController2.text =
@@ -493,7 +946,7 @@ class CustomerFormController extends GetxController
             draft.deliveryAddresses?[1]['StreetName'] ?? '';
         kelurahanControllerDelivery2.text =
             draft.deliveryAddresses?[1]['Kelurahan'] ?? '';
-        kecamatanControllerDelivery2.text =
+        kecamatanControllerDelivery2.value.text =
             draft.deliveryAddresses?[1]['Kecamatan'] ?? '';
         cityControllerDelivery2.text =
             draft.deliveryAddresses?[1]['City'] ?? '';
@@ -525,6 +978,7 @@ class CustomerFormController extends GetxController
 
   bool validateRequiredDocuments() {
     List<String> missingDocuments = [];
+    List<String> missingFields = [];
 
     if (imageKTP == null && ktpFromServer.value.isEmpty) {
       missingDocuments.add('KTP');
@@ -565,30 +1019,202 @@ class CustomerFormController extends GetxController
       missingDocuments.add('Customer Signature');
     }
 
-    if (missingDocuments.isNotEmpty) {
+    if (customerNameController.text.isEmpty) {
+      missingFields.add('Customer Name');
+    }
+
+    if (brandNameController.text.isEmpty) {
+      missingFields.add('Brand Name');
+    }
+
+    if (selectedSalesOffice == null) {
+      missingFields.add('Sales Office');
+    }
+
+    if (selectedCustomerGroup == null) {
+      missingFields.add('Customer Group');
+    }
+
+    if (selectedBusinessUnit == null) {
+      missingFields.add('Business Unit');
+    }
+
+    if (selectedCategory == null) {
+      missingFields.add('Category 1');
+    }
+
+    if (selectedCategory1 == null) {
+      missingFields.add('Category 2');
+    }
+
+    if (selectedAXRegional == null) {
+      missingFields.add('AX Regional');
+    }
+
+    if (selectedSegment == null) {
+      missingFields.add('Distribution Channel');
+    }
+
+    if (selectedSubSegment == null) {
+      missingFields.add('Channel Segmentation');
+    }
+
+    if (selectedClass == null) {
+      missingFields.add('Class');
+    }
+
+    if (selectedCompanyStatus == null) {
+      missingFields.add('Company Status');
+    }
+
+    if (selectedCurrency == null) {
+      missingFields.add('Currency');
+    }
+
+    if (selectedPriceGroup == null) {
+      missingFields.add('Price Group');
+    }
+
+    if (selectedPaymentMode == null) {
+      missingFields.add('Payment Method');
+    }
+
+    if (contactPersonController.text.isEmpty) {
+      missingFields.add('Contact Person');
+    }
+
+    if (ktpController.text.isEmpty) {
+      missingFields.add('KTP');
+    }
+
+    if (ktpAddressController.text.isEmpty) {
+      missingFields.add('KTP Address');
+    }
+
+    if (phoneController.text.isEmpty) {
+      missingFields.add('Phone');
+    }
+
+    if (companyNameController.text.isEmpty) {
+      missingFields.add('Company Name');
+    }
+
+    if (streetCompanyController.text.isEmpty) {
+      missingFields.add('Street Name (Company Address)');
+    }
+
+    if (kelurahanController.text.isEmpty) {
+      missingFields.add('Kelurahan (Company Address)');
+    }
+
+    if (provinceController.text.isEmpty) {
+      missingFields.add('Provinsi (Company Address)');
+    }
+
+    if (cityController.text.isEmpty) {
+      missingFields.add('City (Company Address)');
+    }
+
+    if (kecamatanController.text.isEmpty) {
+      missingFields.add('Kecamatan (Company Address)');
+    }
+
+    if (countryController.text.isEmpty) {
+      missingFields.add('Country (Company Address)');
+    }
+
+    if (zipCodeController.text.isEmpty) {
+      missingFields.add('ZIP Code (Company Address)');
+    }
+
+    if (npwpController.text.isEmpty) {
+      missingFields.add('NPWP');
+    }
+
+    if (taxNameController.text.isEmpty) {
+      missingFields.add('Tax Name');
+    }
+
+    if (taxStreetController.text.isEmpty) {
+      missingFields.add('Tax Address');
+    }
+
+    if (deliveryNameController.text.isEmpty) {
+      missingFields.add('Name (Delivery Address)');
+    }
+
+    if (streetCompanyControllerDelivery.text.isEmpty) {
+      missingFields.add('Street Name (Delivery Address)');
+    }
+
+    if (kelurahanControllerDelivery.text.isEmpty) {
+      missingFields.add('Kelurahan (Delivery Address)');
+    }
+
+    if (provinceControllerDelivery.text.isEmpty) {
+      missingFields.add('Provinsi (Delivery Address)');
+    }
+
+    if (cityControllerDelivery.text.isEmpty) {
+      missingFields.add('City (Delivery Address)');
+    }
+
+    if (kecamatanControllerDelivery.value.text.isEmpty) {
+      missingFields.add('Kecamatan (Delivery Address)');
+    }
+
+    if (countryControllerDelivery.text.isEmpty) {
+      missingFields.add('Country (Delivery Address)');
+    }
+
+    if (zipCodeControllerDelivery.text.isEmpty) {
+      missingFields.add('ZIP Code (Delivery Address)');
+    }
+
+    if (missingDocuments.isNotEmpty || missingFields.isNotEmpty) {
       Get.dialog(
         AlertDialog(
-          title: const Text('Missing Documents'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Please complete all required documents:'),
-              const SizedBox(height: 10),
-              ...missingDocuments.map((doc) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline,
-                            color: Colors.red, size: 18),
-                        const SizedBox(width: 8),
-                        Text(doc,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  )),
-            ],
+          title: const Text('Required Items Missing'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (missingDocuments.isNotEmpty) ...[
+                  const Text('Please complete all required documents:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  ...missingDocuments.map((doc) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.red, size: 18),
+                            const SizedBox(width: 8),
+                            Text(doc),
+                          ],
+                        ),
+                      )),
+                  const SizedBox(height: 16),
+                ],
+                if (missingFields.isNotEmpty) ...[
+                  const Text('Please fill in all required fields:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  ...missingFields.map((field) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.red, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(field)),
+                          ],
+                        ),
+                      )),
+                ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -602,6 +1228,678 @@ class CustomerFormController extends GetxController
     }
 
     return true;
+  }
+
+  Future<void> fetchProvinces() async {
+    if (!isProvincesLoading.value) {
+      isProvincesLoading.value = true;
+
+      try {
+        final cachedData = await CacheService.getData(CacheService.provinces);
+
+        if (cachedData != null) {
+          provinces.value = List<Map<String, dynamic>>.from(cachedData);
+          isProvincesLoading.value = false;
+          return;
+        }
+
+        final url = Uri.parse("$apiNOO/AdvoticsMasterRegenciesAPI?prov=true");
+        final response =
+            await http.get(url, headers: {'authorization': basicAuth});
+
+        if (response.statusCode == 200) {
+          List data = jsonDecode(response.body);
+          provinces.value = List<Map<String, dynamic>>.from(data);
+
+          unawaited(CacheService.saveData(CacheService.provinces, data));
+        } else {
+          throw Exception('Failed to load provinces');
+        }
+      } catch (e) {
+      } finally {
+        isProvincesLoading.value = false;
+      }
+    }
+  }
+
+  void setProvinceFromText(String text, TextEditingController controller,
+      {bool fetchCitiesAfter = false,
+      TextEditingController? cityController,
+      String addressType = 'main'}) {
+    if (text.isEmpty || provinces.isEmpty) return;
+
+    final currentText = text.toUpperCase();
+
+    final exactMatch = provinces.firstWhereOrNull(
+        (province) => province["Text"].toString().toUpperCase() == currentText);
+
+    if (exactMatch != null) {
+      controller.text = exactMatch["Text"];
+      if (fetchCitiesAfter) {
+        final provinceId = exactMatch["Value"]?.toString();
+
+        switch (addressType) {
+          case 'main':
+            selectedProvinceId = provinceId;
+            break;
+          case 'delivery':
+            selectedProvinceIdDelivery = provinceId;
+            break;
+          case 'delivery2':
+            selectedProvinceIdDelivery2 = provinceId;
+            break;
+        }
+
+        fetchCities(provinceId!, addressType: addressType);
+        if (cityController != null) cityController.clear();
+      }
+      return;
+    }
+
+    final partialMatch = provinces.firstWhereOrNull((province) =>
+        province["Text"].toString().toUpperCase().contains(currentText) ||
+        currentText.contains(province["Text"].toString().toUpperCase()));
+
+    if (partialMatch != null) {
+      controller.text = partialMatch["Text"];
+      if (fetchCitiesAfter) {
+        final provinceId = partialMatch["Value"]?.toString();
+
+        switch (addressType) {
+          case 'main':
+            selectedProvinceId = provinceId;
+            break;
+          case 'delivery':
+            selectedProvinceIdDelivery = provinceId;
+            break;
+          case 'delivery2':
+            selectedProvinceIdDelivery2 = provinceId;
+            break;
+        }
+
+        fetchCities(provinceId!, addressType: addressType);
+        if (cityController != null) cityController.clear();
+      }
+    }
+  }
+
+  List<Map<String, String>> getProvincesList() {
+    return provinces
+        .map((province) => {'name': province["Text"].toString()})
+        .toList();
+  }
+
+  Future<void> fetchCities(String provinceId,
+      {String addressType = 'main'}) async {
+    switch (addressType) {
+      case 'main':
+        isCitiesLoading.value = true;
+        cities.clear();
+        break;
+      case 'delivery':
+        isCitiesDeliveryLoading.value = true;
+        citiesDelivery.clear();
+        break;
+      case 'delivery2':
+        isCitiesDelivery2Loading.value = true;
+        citiesDelivery2.clear();
+        break;
+    }
+
+    String? currentCityText;
+    switch (addressType) {
+      case 'main':
+        currentCityText = cityController.text;
+        break;
+      case 'delivery':
+        currentCityText = cityControllerDelivery.text;
+        break;
+      case 'delivery2':
+        currentCityText = cityControllerDelivery2.text;
+        break;
+    }
+
+    try {
+      final url = Uri.parse(
+          "$apiNOO/AdvoticsMasterRegenciesAPI?city=true&id=$provinceId");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+
+        switch (addressType) {
+          case 'main':
+            cities.value = List<Map<String, dynamic>>.from(data);
+            break;
+          case 'delivery':
+            citiesDelivery.value = List<Map<String, dynamic>>.from(data);
+            break;
+          case 'delivery2':
+            citiesDelivery2.value = List<Map<String, dynamic>>.from(data);
+            break;
+        }
+
+        if (currentCityText != null && currentCityText.isNotEmpty) {
+          TextEditingController cityController;
+          switch (addressType) {
+            case 'main':
+              cityController = this.cityController;
+              break;
+            case 'delivery':
+              cityController = cityControllerDelivery;
+              break;
+            case 'delivery2':
+              cityController = cityControllerDelivery2;
+              break;
+            default:
+              cityController = this.cityController;
+          }
+
+          setCityFromText(currentCityText, cityController,
+              addressType: addressType);
+        }
+      } else {
+        throw Exception('Failed to load cities');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to fetch cities: ${e.toString()}',
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      switch (addressType) {
+        case 'main':
+          isCitiesLoading.value = false;
+          break;
+        case 'delivery':
+          isCitiesDeliveryLoading.value = false;
+          break;
+        case 'delivery2':
+          isCitiesDelivery2Loading.value = false;
+          break;
+      }
+    }
+  }
+
+  void setCityValue(String addressType,
+      {required String apiValue,
+      String? displayValue,
+      bool updateController = false,
+      bool fetchDistrictsAfter = true}) {
+    final String actualDisplayValue = displayValue ?? apiValue;
+    TextEditingController? controller;
+
+    final cityObj = _getCityObjectFromApiValue(apiValue, addressType);
+    final cityId = cityObj?["Value"]?.toString();
+
+    switch (addressType) {
+      case 'main':
+        cityApiValueMain = apiValue;
+        cityDisplayValueMain = actualDisplayValue;
+        controller = cityController;
+        if (cityId != null) selectedCityId = cityId;
+        break;
+      case 'delivery':
+        cityApiValueDelivery = apiValue;
+        cityDisplayValueDelivery = actualDisplayValue;
+        controller = cityControllerDelivery;
+        if (cityId != null) selectedCityIdDelivery = cityId;
+        break;
+      case 'delivery2':
+        cityApiValueDelivery2 = apiValue;
+        cityDisplayValueDelivery2 = actualDisplayValue;
+        controller = cityControllerDelivery2;
+        if (cityId != null) selectedCityIdDelivery2 = cityId;
+        break;
+    }
+
+    if (updateController && controller != null) {
+      controller.text = actualDisplayValue;
+    }
+
+    if (fetchDistrictsAfter && cityId != null) {
+      fetchDistricts(cityId, addressType: addressType);
+    }
+
+    update();
+  }
+
+  String? getCityApiValue(String addressType) {
+    switch (addressType) {
+      case 'main':
+        return cityApiValueMain;
+      case 'delivery':
+        return cityApiValueDelivery;
+      case 'delivery2':
+        return cityApiValueDelivery2;
+      default:
+        return null;
+    }
+  }
+
+  String? getCityDisplayValue(String addressType) {
+    switch (addressType) {
+      case 'main':
+        return cityDisplayValueMain;
+      case 'delivery':
+        return cityDisplayValueDelivery;
+      case 'delivery2':
+        return cityDisplayValueDelivery2;
+      default:
+        return null;
+    }
+  }
+
+  void setCityFromText(String text, TextEditingController controller,
+      {String addressType = 'main'}) {
+    RxList<Map<String, dynamic>> citiesList;
+
+    switch (addressType) {
+      case 'main':
+        citiesList = cities;
+        break;
+      case 'delivery':
+        citiesList = citiesDelivery;
+        break;
+      case 'delivery2':
+        citiesList = citiesDelivery2;
+        break;
+      default:
+        citiesList = cities;
+    }
+
+    if (text.isEmpty || citiesList.isEmpty) return;
+
+    final normalizedInput = (text);
+
+    for (var city in citiesList) {
+      final apiValue = city["Text"].toString();
+      final displayValue = (apiValue);
+
+      if (displayValue.toUpperCase() == text.toUpperCase()) {
+        controller.text = displayValue;
+        setCityValue(addressType,
+            apiValue: apiValue, displayValue: displayValue);
+        return;
+      }
+
+      final normalizedCity = (apiValue);
+      if (normalizedCity == normalizedInput) {
+        controller.text = displayValue;
+        setCityValue(addressType,
+            apiValue: apiValue, displayValue: displayValue);
+        return;
+      }
+    }
+
+    for (var city in citiesList) {
+      final apiValue = city["Text"].toString();
+      final displayValue = (apiValue);
+      final normalizedCity = (apiValue);
+      final normalizedDisplay = (displayValue);
+
+      if (normalizedCity.contains(normalizedInput) ||
+          normalizedInput.contains(normalizedCity) ||
+          normalizedDisplay.contains(normalizedInput) ||
+          normalizedInput.contains(normalizedDisplay)) {
+        controller.text = displayValue;
+        setCityValue(addressType,
+            apiValue: apiValue, displayValue: displayValue);
+        return;
+      }
+    }
+
+    controller.text = text;
+  }
+
+  Future<void> fetchDistricts(String cityId,
+      {String addressType = 'main'}) async {
+    final cacheKey = '${CacheService.districts}_${cityId}_$addressType';
+    final isCacheValid = await CacheService.isCacheValid(cacheKey);
+
+    if (isCacheValid) {
+      final cachedData = await CacheService.getData(cacheKey);
+      if (cachedData != null) {
+        switch (addressType) {
+          case 'main':
+            districts.value = List<Map<String, dynamic>>.from(cachedData);
+            break;
+          case 'delivery':
+            districtsDelivery.value =
+                List<Map<String, dynamic>>.from(cachedData);
+            break;
+          case 'delivery2':
+            districtsDelivery2.value =
+                List<Map<String, dynamic>>.from(cachedData);
+            break;
+        }
+        return;
+      }
+    }
+
+    switch (addressType) {
+      case 'main':
+        isDistrictsLoading.value = true;
+        districts.clear();
+        break;
+      case 'delivery':
+        isDistrictsDeliveryLoading.value = true;
+        districtsDelivery.clear();
+        break;
+      case 'delivery2':
+        isDistrictsDelivery2Loading.value = true;
+        districtsDelivery2.clear();
+        break;
+    }
+
+    String? currentDistrictText;
+    switch (addressType) {
+      case 'main':
+        currentDistrictText = kecamatanController.text;
+        break;
+      case 'delivery':
+        currentDistrictText = kecamatanControllerDelivery.value.text;
+        break;
+      case 'delivery2':
+        currentDistrictText = kecamatanControllerDelivery2.value.text;
+        break;
+    }
+
+    try {
+      final url = Uri.parse(
+          "$apiNOO/AdvoticsMasterRegenciesAPI?distric=true&id=$cityId");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+
+        await CacheService.saveData(cacheKey, data);
+
+        switch (addressType) {
+          case 'main':
+            districts.value = List<Map<String, dynamic>>.from(data);
+            break;
+          case 'delivery':
+            districtsDelivery.value = List<Map<String, dynamic>>.from(data);
+            break;
+          case 'delivery2':
+            districtsDelivery2.value = List<Map<String, dynamic>>.from(data);
+            break;
+        }
+
+        if (currentDistrictText != null && currentDistrictText.isNotEmpty) {
+          TextEditingController districtController;
+          switch (addressType) {
+            case 'main':
+              districtController = kecamatanController;
+              break;
+            case 'delivery':
+              districtController = kecamatanControllerDelivery.value;
+              break;
+            case 'delivery2':
+              districtController = kecamatanControllerDelivery2.value;
+              break;
+            default:
+              districtController = kecamatanController;
+          }
+
+          setDistrictFromText(currentDistrictText, districtController,
+              addressType: addressType);
+        }
+      } else {
+        throw Exception('Failed to load districts');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to fetch districts: ${e.toString()}',
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      switch (addressType) {
+        case 'main':
+          isDistrictsLoading.value = false;
+          break;
+        case 'delivery':
+          isDistrictsDeliveryLoading.value = false;
+          break;
+        case 'delivery2':
+          isDistrictsDelivery2Loading.value = false;
+          break;
+      }
+    }
+  }
+
+  void setDistrictValue(String addressType, String value) {
+    switch (addressType) {
+      case 'main':
+        districtValueMain = value;
+        break;
+      case 'delivery':
+        districtValueDelivery = value;
+        break;
+      case 'delivery2':
+        districtValueDelivery2 = value;
+        break;
+    }
+  }
+
+  String? getDistrictValue(String addressType) {
+    switch (addressType) {
+      case 'main':
+        return districtValueMain;
+      case 'delivery':
+        return districtValueDelivery;
+      case 'delivery2':
+        return districtValueDelivery2;
+      default:
+        return null;
+    }
+  }
+
+  void setDistrictFromText(String text, TextEditingController controller,
+      {String addressType = 'main'}) {
+    RxList<Map<String, dynamic>> districtsList;
+
+    switch (addressType) {
+      case 'main':
+        districtsList = districts;
+        break;
+      case 'delivery':
+        districtsList = districtsDelivery;
+        break;
+      case 'delivery2':
+        districtsList = districtsDelivery2;
+        break;
+      default:
+        districtsList = districts;
+    }
+
+    if (text.isEmpty || districtsList.isEmpty) return;
+
+    final exactMatch = districtsList
+        .firstWhereOrNull((district) => district["Text"].toString() == text);
+
+    if (exactMatch != null) {
+      controller.text = exactMatch["Text"].toString();
+      setDistrictValue(addressType, exactMatch["Text"].toString());
+      return;
+    }
+
+    final upperText = text.toUpperCase();
+    final caseInsensitiveMatch = districtsList.firstWhereOrNull(
+        (district) => district["Text"].toString().toUpperCase() == upperText);
+
+    if (caseInsensitiveMatch != null) {
+      controller.text = caseInsensitiveMatch["Text"].toString();
+      setDistrictValue(addressType, caseInsensitiveMatch["Text"].toString());
+      return;
+    }
+
+    for (var district in districtsList) {
+      final districtName = district["Text"].toString().toUpperCase();
+      if (districtName.contains(upperText) ||
+          upperText.contains(districtName)) {
+        controller.text = district["Text"].toString();
+        setDistrictValue(addressType, district["Text"].toString());
+        return;
+      }
+    }
+
+    controller.text = text;
+  }
+
+  Map<String, dynamic>? _getCityObjectFromApiValue(
+      String apiValue, String addressType) {
+    RxList<Map<String, dynamic>> citiesList;
+
+    switch (addressType) {
+      case 'main':
+        citiesList = cities;
+        break;
+      case 'delivery':
+        citiesList = citiesDelivery;
+        break;
+      case 'delivery2':
+        citiesList = citiesDelivery2;
+        break;
+      default:
+        citiesList = cities;
+    }
+
+    return citiesList
+        .firstWhereOrNull((city) => city["Text"].toString() == apiValue);
+  }
+
+  void copyCompanyAddressToDelivery() {
+    deliveryNameController.text = companyNameController.text;
+    streetCompanyControllerDelivery.text = streetCompanyController.text;
+    countryControllerDelivery.text = countryController.text;
+    zipCodeControllerDelivery.text = zipCodeController.text;
+    kelurahanControllerDelivery.text = kelurahanController.text;
+
+    provinceControllerDelivery.text = provinceController.text;
+
+    if (provinceController.text.isNotEmpty) {
+      setProvinceFromText(provinceController.text, provinceControllerDelivery,
+          fetchCitiesAfter: true,
+          cityController: cityControllerDelivery,
+          addressType: 'delivery');
+    }
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (cityController.text.isNotEmpty) {
+        cityControllerDelivery.text = cityController.text;
+        setCityFromText(cityController.text, cityControllerDelivery,
+            addressType: 'delivery');
+
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (kecamatanController.text.isNotEmpty) {
+            kecamatanControllerDelivery.value.text = kecamatanController.text;
+            setDistrictFromText(
+                kecamatanController.text, kecamatanControllerDelivery.value,
+                addressType: 'delivery');
+          }
+        });
+      }
+    });
+
+    update(['deliveryAddress']);
+  }
+
+  void copyCompanyAddressToDelivery2() {
+    deliveryNameController2.text = companyNameController.text;
+    streetCompanyControllerDelivery2.text = streetCompanyController.text;
+    countryControllerDelivery2.text = countryController.text;
+    zipCodeControllerDelivery2.text = zipCodeController.text;
+    kelurahanControllerDelivery2.text = kelurahanController.text;
+
+    provinceControllerDelivery2.text = provinceController.text;
+
+    if (provinceController.text.isNotEmpty) {
+      setProvinceFromText(provinceController.text, provinceControllerDelivery2,
+          fetchCitiesAfter: true,
+          cityController: cityControllerDelivery2,
+          addressType: 'delivery2');
+    }
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (cityController.text.isNotEmpty) {
+        cityControllerDelivery2.text = cityController.text;
+        setCityFromText(cityController.text, cityControllerDelivery2,
+            addressType: 'delivery2');
+
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (kecamatanController.text.isNotEmpty) {
+            kecamatanControllerDelivery2.value.text = kecamatanController.text;
+            setDistrictFromText(
+                kecamatanController.text, kecamatanControllerDelivery2.value,
+                addressType: 'delivery2');
+          }
+        });
+      }
+    });
+
+    update(['deliveryAddress2']);
+  }
+
+  void copyCompanyAddressToTax() {
+    taxNameController.text = companyNameController.text;
+    taxStreetController.text = streetCompanyController.text;
+    update(['taxAddress']);
+  }
+
+  void setupAddressListeners() {
+    companyNameController.addListener(_updateDeliveryAddressIfChecked);
+    streetCompanyController.addListener(_updateDeliveryAddressIfChecked);
+    provinceController.addListener(_updateDeliveryAddressIfChecked);
+    cityController.addListener(_updateDeliveryAddressIfChecked);
+    kecamatanController.addListener(_updateDeliveryAddressIfChecked);
+    kelurahanController.addListener(_updateDeliveryAddressIfChecked);
+    zipCodeController.addListener(_updateDeliveryAddressIfChecked);
+    countryController.addListener(_updateDeliveryAddressIfChecked);
+
+    companyNameController.addListener(_updateTaxNameFromCompany);
+    streetCompanyController.addListener(_updateTaxAddressFromCompany);
+  }
+
+  void _updateDeliveryAddressIfChecked() {
+    if (useCompanyAddressForDelivery.value) {
+      copyCompanyAddressToDelivery();
+    }
+
+    if (useCompanyAddressForDelivery2.value) {
+      copyCompanyAddressToDelivery2();
+    }
+  }
+
+  void _updateTaxNameFromCompany() {
+    if (useCompanyAddressForTax.value) {
+      taxNameController.text = companyNameController.text;
+    }
+  }
+
+  void _updateTaxAddressFromCompany() {
+    if (useCompanyAddressForTax.value) {
+      taxStreetController.text = streetCompanyController.text;
+    }
+  }
+
+  void disposeAddressListeners() {
+    companyNameController.removeListener(_updateDeliveryAddressIfChecked);
+    streetCompanyController.removeListener(_updateDeliveryAddressIfChecked);
+    provinceController.removeListener(_updateDeliveryAddressIfChecked);
+    cityController.removeListener(_updateDeliveryAddressIfChecked);
+    kecamatanController.removeListener(_updateDeliveryAddressIfChecked);
+    kelurahanController.removeListener(_updateDeliveryAddressIfChecked);
+    zipCodeController.removeListener(_updateDeliveryAddressIfChecked);
+    countryController.removeListener(_updateDeliveryAddressIfChecked);
+
+    companyNameController.removeListener(_updateTaxNameFromCompany);
+    streetCompanyController.removeListener(_updateTaxAddressFromCompany);
   }
 
   Future<Map<String, dynamic>> prepareSubmitData() async {
@@ -638,6 +1936,7 @@ class CustomerFormController extends GetxController
       "SalesSignature": signatureSalesFromServer.value,
       "Long": longitudeControllerDelivery.text,
       "Lat": latitudeControllerDelivery.text,
+      "CustSubGroup": selectedCustomerGroup,
       "FotoGedung1": businessPhotoFrontFromServer.value,
       "FotoGedung2": businessPhotoInsideFromServer.value,
       "FotoGedung3": sppkpFromServer.value,
@@ -649,8 +1948,8 @@ class CustomerFormController extends GetxController
           "Name": companyNameController.text,
           "StreetName": streetCompanyController.text,
           "Kelurahan": kelurahanController.text,
-          "Kecamatan": kecamatanController.text,
-          "City": cityController.text,
+          "Kecamatan": districtValueMain ?? kecamatanController.text,
+          "City": cityApiValueMain ?? cityController.text,
           "Country": countryController.text,
           "State": provinceController.text,
           "ZipCode": zipCodeController.text.isEmpty
@@ -669,8 +1968,9 @@ class CustomerFormController extends GetxController
           "Name": deliveryNameController.text,
           "StreetName": streetCompanyControllerDelivery.text,
           "Kelurahan": kelurahanControllerDelivery.text,
-          "Kecamatan": kecamatanControllerDelivery.text,
-          "City": cityControllerDelivery.text,
+          "Kecamatan":
+              districtValueDelivery ?? kecamatanControllerDelivery.value.text,
+          "City": cityApiValueDelivery ?? cityControllerDelivery.text,
           "Country": countryControllerDelivery.text,
           "State": provinceControllerDelivery.text,
           "ZipCode": zipCodeControllerDelivery.text.isEmpty
@@ -681,7 +1981,7 @@ class CustomerFormController extends GetxController
           "Name": deliveryNameController2.text,
           "StreetName": streetCompanyControllerDelivery2.text,
           "Kelurahan": kelurahanControllerDelivery2.text,
-          "Kecamatan": kecamatanControllerDelivery2.text,
+          "Kecamatan": kecamatanControllerDelivery2.value.text,
           "City": cityControllerDelivery2.text,
           "Country": countryControllerDelivery2.text,
           "State": provinceControllerDelivery2.text,
@@ -698,25 +1998,221 @@ class CustomerFormController extends GetxController
       if (!validateRequiredDocuments()) {
         return;
       }
-      if (!await _uploadSignatures()) return;
+
+      Get.dialog(
+        const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Submitting form...'),
+              ],
+            ),
+          ),
+        ),
+        barrierDismissible: false,
+      );
+
+      if (!await _uploadSignatures()) {
+        Get.back();
+        return;
+      }
+
       final requestBody = await prepareSubmitData();
       final response = await _sendRequest(requestBody);
+
+      Get.back();
+
       if (response.statusCode == 200) {
-        Get.snackbar('Success', 'Customer updated successfully');
-        clearForm();
+        Get.snackbar(
+          'Success',
+          'Customer data submitted successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+
+        _disposeAllResources();
 
         Get.offAllNamed('/noo', arguments: {'initialIndex': 1});
       } else {
-        throw Exception('Failed to update customer: ${response.body}');
+        throw Exception('Failed to submit customer: ${response.body}');
       }
     } catch (e) {
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
       Get.snackbar(
         'Error',
         'Submit failed: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
         duration: const Duration(seconds: 5),
         snackPosition: SnackPosition.TOP,
       );
     }
+  }
+
+  Future<void> refreshAllData() async {
+    try {
+      isInitializing.value = true;
+      initializationStatus.value = 'Refreshing all data...';
+
+      await CacheService.clearAllCache();
+
+      salesOffices.clear();
+      businessUnits.clear();
+      axRegionals.clear();
+      paymentMode.clear();
+      category.clear();
+      category1.clear();
+      segment.clear();
+      subSegment.clear();
+      classList.clear();
+      companyStatus.clear();
+      currency.clear();
+      customerGroups.clear();
+      provinces.clear();
+
+      await initializeData();
+
+      Get.snackbar(
+        'Success',
+        'All data refreshed successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to refresh data: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isInitializing.value = false;
+    }
+  }
+
+  void _disposeAllResources() {
+    customerNameController.clear();
+    brandNameController.clear();
+    contactPersonController.clear();
+    ktpController.clear();
+    ktpAddressController.clear();
+    npwpController.clear();
+    phoneController.clear();
+    faxController.clear();
+    emailAddressController.clear();
+    websiteController.clear();
+    companyNameController.clear();
+    streetCompanyController.clear();
+    kelurahanController.clear();
+    kecamatanController.clear();
+    cityController.clear();
+    provinceController.clear();
+    countryController.clear();
+    zipCodeController.clear();
+    taxNameController.clear();
+    taxStreetController.clear();
+    deliveryNameController.clear();
+    streetCompanyControllerDelivery.clear();
+    kelurahanControllerDelivery.clear();
+    kecamatanControllerDelivery.value.clear();
+    cityControllerDelivery.clear();
+    provinceControllerDelivery.clear();
+    countryControllerDelivery.clear();
+    zipCodeControllerDelivery.clear();
+    deliveryNameController2.clear();
+    streetCompanyControllerDelivery2.clear();
+    kelurahanControllerDelivery2.clear();
+    kecamatanControllerDelivery2.value.clear();
+    cityControllerDelivery2.clear();
+    provinceControllerDelivery2.clear();
+    countryControllerDelivery2.clear();
+    zipCodeControllerDelivery2.clear();
+    longitudeControllerDelivery.clear();
+    latitudeControllerDelivery.clear();
+
+    selectedSalesOffice = null;
+    selectedSalesOfficeCode = null;
+    selectedBusinessUnit = null;
+    selectedCategory = null;
+    selectedCategory1 = null;
+    selectedAXRegional = null;
+    selectedPaymentMode = null;
+    selectedSegment = null;
+    selectedSubSegment = null;
+    selectedClass = null;
+    selectedCompanyStatus = null;
+    selectedCurrency = null;
+    selectedPriceGroup = null;
+
+    selectedProvinceId = null;
+    selectedProvinceIdDelivery = null;
+    selectedProvinceIdDelivery2 = null;
+    selectedCityId = null;
+    selectedCityIdDelivery = null;
+    selectedCityIdDelivery2 = null;
+
+    cityApiValueMain = null;
+    cityApiValueDelivery = null;
+    cityApiValueDelivery2 = null;
+    cityDisplayValueMain = null;
+    cityDisplayValueDelivery = null;
+    cityDisplayValueDelivery2 = null;
+    districtValueMain = null;
+    districtValueDelivery = null;
+    districtValueDelivery2 = null;
+
+    _imageKTP.value = null;
+    _imageKTPWeb.value = null;
+    _imageNPWP.value = null;
+    _imageSIUP.value = null;
+    _imageSPPKP.value = null;
+    _imageBusinessPhotoFront.value = null;
+    _imageBusinessPhotoInside.value = null;
+    _imageCompetitorTop.value = null;
+
+    ktpFromServer.value = '';
+    npwpFromServer.value = '';
+    siupFromServer.value = '';
+    sppkpFromServer.value = '';
+    businessPhotoFrontFromServer.value = '';
+    businessPhotoInsideFromServer.value = '';
+    competitorTopFromServer.value = '';
+    signatureSalesFromServer.value = '';
+    signatureCustomersFromServer.value = '';
+
+    ktpImageUrl = null;
+    npwpImageUrl = null;
+    siupImageUrl = null;
+    sppkpImageUrl = null;
+    frontImageUrl = null;
+    insideImageUrl = null;
+    competitorImageUrl = null;
+
+    signatureSalesController.clear();
+    signatureCustomerController.clear();
+
+    useKtpAddressForTax.value = false;
+
+    cities.clear();
+    citiesDelivery.clear();
+    citiesDelivery2.clear();
+    districts.clear();
+    districtsDelivery.clear();
+    districtsDelivery2.clear();
+
+    isEditMode.value = false;
+
+    update();
   }
 
   Future<bool> _uploadSignatures() async {
@@ -771,165 +2267,421 @@ class CustomerFormController extends GetxController
   Future<void> loadLongLatFromSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     salesmanId = (prefs.getString("Username") ?? "");
+
     streetName = (prefs.getString("getStreetName") ?? "");
+    village = (prefs.getString("getKelurahan") ?? "");
+    subDistrict = (prefs.getString("getKecamatan") ?? "");
     city = (prefs.getString("getCity") ?? "");
+    state = (prefs.getString("getProvince") ?? "");
     countrys = (prefs.getString("getCountry") ?? "");
-    state = (prefs.getString("getState") ?? "");
     zipCode = (prefs.getString("getZipCode") ?? "");
     longitudeData = (prefs.getString("getLongitude") ?? "");
     latitudeData = (prefs.getString("getLatitude") ?? "");
     addressDetail = (prefs.getString("getAddressDetail") ?? "");
-    village = (prefs.getString("getSubLocality") ?? "");
-    district = (prefs.getString("getLocality") ?? "");
   }
 
   void autofill() {
     streetCompanyController.text = streetName;
     kelurahanController.text = village;
-    kecamatanController.text = district;
-    cityController.text = city;
-    provinceController.text = state;
     countryController.text = countrys;
     zipCodeController.text = zipCode;
     taxStreetController.text = addressDetail;
+
     streetCompanyControllerDelivery.text = streetName;
     kelurahanControllerDelivery.text = village;
-    kecamatanControllerDelivery.text = district;
-    cityControllerDelivery.text = city;
-    provinceControllerDelivery.text = state;
     countryControllerDelivery.text = countrys;
     zipCodeControllerDelivery.text = zipCode;
-    cityControllerDelivery.text = city;
+
+    if (state.isNotEmpty) {
+      setProvinceFromText(state, provinceController,
+          fetchCitiesAfter: true,
+          cityController: cityController,
+          addressType: 'main');
+
+      if (city.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          setCityFromText(city, cityController, addressType: 'main');
+
+          if (subDistrict.isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 300), () {
+              setDistrictFromText(subDistrict, kecamatanController,
+                  addressType: 'main');
+            });
+          }
+        });
+      }
+    } else {
+      if (provinces.isNotEmpty) {
+        final defaultProvince = provinces.firstWhereOrNull(
+            (province) => province["Text"].toString() == "DKI JAKARTA");
+
+        if (defaultProvince != null) {
+          selectedProvinceId = defaultProvince["Value"]?.toString();
+          fetchCities(selectedProvinceId!, addressType: 'main');
+        }
+      }
+    }
+
+    if (state.isNotEmpty) {
+      setProvinceFromText(state, provinceControllerDelivery,
+          fetchCitiesAfter: true,
+          cityController: cityControllerDelivery,
+          addressType: 'delivery');
+
+      if (city.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          setCityFromText(city, cityControllerDelivery,
+              addressType: 'delivery');
+
+          if (subDistrict.isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 300), () {
+              setDistrictFromText(
+                  subDistrict, kecamatanControllerDelivery.value,
+                  addressType: 'delivery');
+            });
+          }
+        });
+      }
+    } else {
+      if (provinces.isNotEmpty) {
+        final defaultProvince = provinces.firstWhereOrNull(
+            (province) => province["Text"].toString() == "DKI JAKARTA");
+
+        if (defaultProvince != null) {
+          selectedProvinceIdDelivery = defaultProvince["Value"]?.toString();
+          fetchCities(selectedProvinceIdDelivery!, addressType: 'delivery');
+        }
+      }
+    }
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (cityApiValueMain == null && cityController.text.isNotEmpty) {
+        String cityText = cityController.text;
+        final cityObj = cities
+            .firstWhereOrNull((city) => (city["Text"].toString()) == cityText);
+        if (cityObj != null) {
+          cityApiValueMain = cityObj["Text"].toString();
+          selectedCityId = cityObj["Value"]?.toString();
+        } else {
+          cityApiValueMain = cityText;
+        }
+      }
+
+      if (cityApiValueDelivery == null &&
+          cityControllerDelivery.text.isNotEmpty) {
+        String cityText = cityControllerDelivery.text;
+        final cityObj = citiesDelivery
+            .firstWhereOrNull((city) => (city["Text"].toString()) == cityText);
+        if (cityObj != null) {
+          cityApiValueDelivery = cityObj["Text"].toString();
+          selectedCityIdDelivery = cityObj["Value"]?.toString();
+        } else {
+          cityApiValueDelivery = cityText;
+        }
+      }
+
+      if (districtValueMain == null && kecamatanController.text.isNotEmpty) {
+        districtValueMain = kecamatanController.text;
+      }
+
+      if (districtValueDelivery == null &&
+          kecamatanControllerDelivery.value.text.isNotEmpty) {
+        districtValueDelivery = kecamatanControllerDelivery.value.text;
+      }
+
+      update();
+    });
+  }
+
+  Future<void> fetchCustomerGroups() async {
+    try {
+      if (customerGroups.isNotEmpty) {
+        return;
+      }
+
+      final cachedData =
+          await CacheService.getData(CacheService.customerGroups);
+
+      if (cachedData != null) {
+        customerGroups.value = (cachedData as List)
+            .map((json) => CustomerGroup.fromJson(json))
+            .toList();
+
+        if (customerGroups.isNotEmpty && selectedCustomerGroup == null) {
+          selectedCustomerGroup = customerGroups.first.value;
+          update();
+        }
+        return;
+      }
+
+      final url = Uri.parse("${apiNOO}AX_CustSubGroup");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        customerGroups.value =
+            data.map((json) => CustomerGroup.fromJson(json)).toList();
+
+        await CacheService.saveData(CacheService.customerGroups, data);
+
+        if (customerGroups.isNotEmpty && selectedCustomerGroup == null) {
+          selectedCustomerGroup = customerGroups.first.value;
+        }
+        update();
+      }
+    } catch (e) {
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+    }
   }
 
   Future<void> fetchSalesOffices() async {
-    final url = Uri.parse("${apiNOO}ViewSO?SO=$so");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
+    try {
+      final url = Uri.parse("${apiNOO}ViewSO?SO=$so");
 
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      salesOffices.value =
-          data.map((json) => SalesOffice.fromJson(json)).toList();
+      final response = await http
+          .get(url, headers: {'authorization': basicAuth}).timeout(
+              Duration(seconds: 15), onTimeout: () {
+        throw TimeoutException('Sales offices request timed out');
+      });
+
+      if (response.statusCode == 200) {
+        final String responseBody = response.body;
+        if (responseBody.isEmpty) {
+          throw Exception('Empty response from server');
+        }
+
+        List data = jsonDecode(responseBody);
+        if (data.isEmpty) {}
+
+        salesOffices.value =
+            data.map((json) => SalesOffice.fromJson(json)).toList();
+
+        if (salesOffices.isNotEmpty) {
+          await CacheService.saveData(CacheService.salesOffices, data);
+        }
+
+        update();
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        throw Exception('Authentication error: ${response.statusCode}');
+      } else {
+        throw Exception(
+            'Server error ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      if (e is SocketException) {
+      } else if (e is TimeoutException) {
+      } else if (e is FormatException) {
+        debugPrint(
+            'Invalid response format fetching sales offices: ${e.message}');
+      } else {}
+
+      rethrow;
     }
   }
 
   Future<void> fetchBusinessUnits() async {
-    final url = Uri.parse("${apiNOO}ViewBU?BU=$bu");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
+    try {
+      final url = Uri.parse("${apiNOO}ViewBU?BU=$bu");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
 
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      businessUnits.value =
-          data.map((json) => BusinessUnit.fromJson(json)).toList();
-    }
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        businessUnits.value =
+            data.map((json) => BusinessUnit.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.businessUnits, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchAXRegionals() async {
-    final url = Uri.parse("${apiNOO}AX_Regional");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      axRegionals.value =
-          data.map((json) => AXRegional.fromJson(json)).toList();
-    }
+    try {
+      final url = Uri.parse("${apiNOO}AX_Regional");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        axRegionals.value =
+            data.map((json) => AXRegional.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.axRegionals, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchPaymentMode() async {
-    final url = Uri.parse("${apiNOO}AX_CustPaymMode");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      paymentMode =
-          data.map((json) => CustomerPaymentMode.fromJson(json)).toList();
-      update();
-    }
+    try {
+      final url = Uri.parse("${apiNOO}AX_CustPaymMode");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        paymentMode =
+            data.map((json) => CustomerPaymentMode.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.paymentMode, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchCategory() async {
-    final url = Uri.parse("${apiNOO}AX_Category1");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
+    try {
+      final url = Uri.parse("${apiNOO}AX_Category1");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
 
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      category = data.map((json) => Category1.fromJson(json)).toList();
-      update();
-    }
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        category = data.map((json) => Category1.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.category, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchCategory1() async {
-    final url = Uri.parse("${apiNOO}CustCategory");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
+    try {
+      final url = Uri.parse("${apiNOO}CustCategory");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
 
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      category1 = data.map((json) => Category2.fromJson(json)).toList();
-      update();
-    }
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        category1 = data.map((json) => Category2.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.category1, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchSegment() async {
-    final url = Uri.parse("${apiNOO}CustSegment?bu=$bu");
+    try {
+      final url = Uri.parse("${apiNOO}CustSegment?bu=$bu");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
 
-    final response = await http.get(url, headers: {'authorization': basicAuth});
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        segment = data.map((json) => Segment.fromJson(json)).toList();
 
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      segment = data.map((json) => Segment.fromJson(json)).toList();
-      update();
-    }
+        unawaited(CacheService.saveData(CacheService.segment, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchSubSegment() async {
     selectedSubSegment = null;
     update();
-    final url = Uri.parse("${apiNOO}CustSubSegment");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
 
-    if (response.statusCode == 200) {
-      List rawData = jsonDecode(response.body);
-      List filteredData = rawData
-          .where((element) => element["SEGMENTID"] == selectedSegment)
-          .toList();
+    try {
+      if (selectedSegment == null) return;
 
-      subSegment =
-          filteredData.map((json) => SubSegment.fromJson(json)).toList();
+      final cacheKey = "${CacheService.subSegment}_$selectedSegment";
 
-      if (selectedSubSegment != null &&
-          !subSegment.any((item) => item.subSegmentId == selectedSubSegment)) {
-        selectedSubSegment = null;
+      final cachedData = await CacheService.getData(cacheKey);
+
+      if (cachedData != null) {
+        subSegment = (cachedData as List)
+            .map((json) => SubSegment.fromJson(json))
+            .toList();
+
+        if (selectedSubSegment != null &&
+            !subSegment
+                .any((item) => item.subSegmentId == selectedSubSegment)) {
+          selectedSubSegment = null;
+        }
+        update();
+        return;
       }
-      update();
-    }
+
+      final url = Uri.parse("${apiNOO}CustSubSegment");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List rawData = jsonDecode(response.body);
+        List filteredData = rawData
+            .where((element) => element["SEGMENTID"] == selectedSegment)
+            .toList();
+
+        subSegment =
+            filteredData.map((json) => SubSegment.fromJson(json)).toList();
+
+        if (selectedSubSegment != null &&
+            !subSegment
+                .any((item) => item.subSegmentId == selectedSubSegment)) {
+          selectedSubSegment = null;
+        }
+
+        unawaited(CacheService.saveData(cacheKey, filteredData));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchClass() async {
-    final url = Uri.parse("${apiNOO}CustClass");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      classList = data.map((json) => ClassModel.fromJson(json)).toList();
-      update();
-    }
+    try {
+      final url = Uri.parse("${apiNOO}CustClass");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        classList = data.map((json) => ClassModel.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.classKey, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchCompanyStatus() async {
-    final url = Uri.parse("${apiNOO}CustCompanyChain");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      companyStatus = data.map((json) => CompanyStatus.fromJson(json)).toList();
-      update();
-    }
+    try {
+      final url = Uri.parse("${apiNOO}CustCompanyChain");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        companyStatus =
+            data.map((json) => CompanyStatus.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.companyStatus, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchCurrency() async {
-    final url = Uri.parse("${apiNOO}Currency");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      currency = data.map((json) => Currency.fromJson(json)).toList();
-      update();
-    }
+    try {
+      final url = Uri.parse("${apiNOO}Currency");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        currency = data.map((json) => Currency.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(CacheService.currency, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> fetchPriceGroup() async {
@@ -937,16 +2689,33 @@ class CustomerFormController extends GetxController
       return;
     }
 
-    final url =
-        Uri.parse("${apiNOO}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
-    final response = await http.get(url, headers: {'authorization': basicAuth});
+    try {
+      final cacheKey =
+          "${CacheService.priceGroup}_${selectedSalesOfficeCode}_$bu";
 
-    if (response.statusCode == 200) {
-      List data = jsonDecode(response.body);
-      priceGroup = data.map((json) => PriceGroup.fromJson(json)).toList();
+      final cachedData = await CacheService.getData(cacheKey);
 
-      update();
-    }
+      if (cachedData != null) {
+        priceGroup = (cachedData as List)
+            .map((json) => PriceGroup.fromJson(json))
+            .toList();
+        update();
+        return;
+      }
+
+      final url = Uri.parse(
+          "${apiNOO}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
+      final response =
+          await http.get(url, headers: {'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        List data = jsonDecode(response.body);
+        priceGroup = data.map((json) => PriceGroup.fromJson(json)).toList();
+
+        unawaited(CacheService.saveData(cacheKey, data));
+        update();
+      }
+    } catch (e) {}
   }
 
   Future<void> onSalesOfficeSelected(String? value) async {
@@ -1025,7 +2794,7 @@ class CustomerFormController extends GetxController
           "Name": deliveryNameController.text,
           "StreetName": streetCompanyControllerDelivery.text,
           "Kelurahan": kelurahanControllerDelivery.text,
-          "Kecamatan": kecamatanControllerDelivery.text,
+          "Kecamatan": kecamatanControllerDelivery.value.text,
           "City": cityControllerDelivery.text,
           "State": provinceControllerDelivery.text,
           "Country": countryControllerDelivery.text,
@@ -1082,7 +2851,6 @@ class CustomerFormController extends GetxController
         'NPWP', ImageSource.gallery, _imageNPWP, npwpFromServer);
   }
 
-// SIUP Image methods
   Future<void> getImageSIUPFromCamera() async {
     await _handleMobileImage(
         'SIUP', ImageSource.camera, _imageSIUP, siupFromServer);
@@ -1093,7 +2861,6 @@ class CustomerFormController extends GetxController
         'SIUP', ImageSource.gallery, _imageSIUP, siupFromServer);
   }
 
-// SPPKP Image methods
   Future<void> getImageSPPKP() async {
     await _handleMobileImage(
         'SPPKP', ImageSource.camera, _imageSPPKP, sppkpFromServer);
@@ -1114,7 +2881,6 @@ class CustomerFormController extends GetxController
         _imageBusinessPhotoFront, businessPhotoFrontFromServer);
   }
 
-// Business Photo Inside methods
   Future<void> getImageBusinessPhotoInsideFromCamera() async {
     await _handleMobileImage('BUSINESSPHOTOINSIDE', ImageSource.camera,
         _imageBusinessPhotoInside, businessPhotoInsideFromServer);
@@ -1162,40 +2928,37 @@ class CustomerFormController extends GetxController
     try {
       final pickedFile =
           await _picker.pickImage(source: source, imageQuality: 20);
+
       if (pickedFile == null) return;
 
       final username = await _getUsername();
       if (username == null) return;
 
       final dateNow = DateFormat("ddMMyyyy_hhmmss").format(DateTime.now());
-      final directory = await _getImageDirectory();
       final fileName = '${type}_${dateNow}_${username}_.jpg';
-      final filePath = '$directory$fileName';
 
-      // Copy file to app directory
+      final directory = await _getImageDirectory();
+      final filePath = Platform.isIOS
+          ? path.join((await getApplicationDocumentsDirectory()).path, fileName)
+          : path.join(directory, fileName);
+
       final newFile = await File(pickedFile.path).copy(filePath);
 
-      // Update local state immediately
       imageState.value = newFile;
       update();
 
-      // Prepare upload
       final uri = Uri.parse("${apiNOO}Upload");
       final request = http.MultipartRequest("POST", uri);
 
-      // Add file to request
       request.files.add(
         await http.MultipartFile.fromPath('file', newFile.path,
             filename: fileName),
       );
 
-      // Send request
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        // Update server state
-
         final serverFileName = response.body.replaceAll("\"", "");
         imageFromServerState.value = serverFileName;
         update();
@@ -1206,9 +2969,9 @@ class CustomerFormController extends GetxController
       Get.snackbar(
         'Error',
         'Failed to process image: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
-      // Reset states on error
+
       imageState.value = null;
       imageFromServerState.value = '';
       update();
@@ -1227,7 +2990,7 @@ class CustomerFormController extends GetxController
       Get.snackbar(
         'Error',
         'Failed to process web image: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }
@@ -1251,14 +3014,26 @@ class CustomerFormController extends GetxController
   }
 
   Future<String> _getImageDirectory() async {
-    final appDirectory = await getExternalStorageDirectory();
-    final directory = '${appDirectory!.path}/id.prb.noo_sms/files/Pictures/';
+    try {
+      Directory directory;
+      if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+        return '${directory.path}/Pictures/';
+      } else if (Platform.isAndroid) {
+        final appDirectory = await getExternalStorageDirectory();
+        directory = Directory('${appDirectory!.path}/Pictures/');
+      } else {
+        directory = await getTemporaryDirectory();
+      }
 
-    final dir = Directory(directory);
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      return directory.path;
+    } catch (e) {
+      final tempDir = await getTemporaryDirectory();
+      return tempDir.path;
     }
-
-    return directory;
   }
 }
