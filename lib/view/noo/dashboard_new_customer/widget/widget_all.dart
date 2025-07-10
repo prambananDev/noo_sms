@@ -351,18 +351,21 @@ class CompanyAndTaxSection extends StatelessWidget {
                   formController: controller,
                   cityController: controller.cityController,
                   addressType: 'main',
+                  search: true,
                 ),
                 CityDropdownField(
                   label: "City",
                   controller: controller.cityController,
                   formController: controller,
                   addressType: 'main',
+                  search: true,
                 ),
                 DistrictDropdownField(
                   label: "Kecamatan",
                   controller: controller.kecamatanController,
                   formController: controller,
                   addressType: 'main',
+                  search: true,
                 ),
                 CustomTextField(
                   label: "Kelurahan",
@@ -525,12 +528,14 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                   formController: widget.controller,
                   cityController: widget.controller.cityControllerDelivery,
                   addressType: 'delivery',
+                  search: true,
                 ),
                 CityDropdownField(
                   label: "Kota",
                   controller: widget.controller.cityControllerDelivery,
                   formController: widget.controller,
                   addressType: 'delivery',
+                  search: true,
                 ),
                 DistrictDropdownField(
                   label: "Kecamatan",
@@ -538,6 +543,7 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                       widget.controller.kecamatanControllerDelivery.value,
                   formController: widget.controller,
                   addressType: 'delivery',
+                  search: true,
                 ),
                 CustomTextField(
                   label: "Kelurahan",
@@ -618,12 +624,14 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                   controller: widget.controller.provinceControllerDelivery2,
                   formController: widget.controller,
                   addressType: 'delivery2',
+                  search: true,
                 ),
                 CityDropdownField(
                   label: "Kota",
                   controller: widget.controller.cityControllerDelivery2,
                   formController: widget.controller,
                   addressType: 'delivery2',
+                  search: true,
                 ),
                 DistrictDropdownField(
                   label: "Kecamatan",
@@ -631,6 +639,7 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                       widget.controller.kecamatanControllerDelivery2.value,
                   formController: widget.controller,
                   addressType: 'delivery2',
+                  search: true,
                 ),
                 CustomTextField(
                   label: "Kelurahan",

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
+import 'package:search_choices/search_choices.dart';
 
 class ProvinceDropdownField extends StatelessWidget {
   final String label;
@@ -11,6 +12,7 @@ class ProvinceDropdownField extends StatelessWidget {
   final String? validationText;
   final TextEditingController? cityController;
   final String addressType;
+  final bool? search;
 
   const ProvinceDropdownField({
     Key? key,
@@ -20,6 +22,7 @@ class ProvinceDropdownField extends StatelessWidget {
     this.validationText,
     this.cityController,
     this.addressType = 'main',
+    this.search,
   }) : super(key: key);
 
   @override
@@ -62,83 +65,155 @@ class ProvinceDropdownField extends StatelessWidget {
                 );
               }
 
-              return DropdownButtonFormField(
-                value: _findCurrentValue(),
-                decoration: InputDecoration(
-                  isDense: true,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.all(
-                    ResponsiveUtil.scaleSize(context, 12),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.transparent),
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Color.fromARGB(27, 158, 158, 158)),
-                  ),
-                ),
-                items: _buildDropdownItems(context),
-                onChanged: (value) {
-                  if (value != null) {
-                    controller.text = value;
-
-                    final province = formController.provinces.firstWhereOrNull(
-                        (province) => province["Text"].toString() == value);
-
-                    if (province != null) {
-                      final provinceId = province["Value"]?.toString();
-
-                      switch (addressType) {
-                        case 'main':
-                          formController.selectedProvinceId = provinceId;
-                          break;
-                        case 'delivery':
-                          formController.selectedProvinceIdDelivery =
-                              provinceId;
-                          break;
-                        case 'delivery2':
-                          formController.selectedProvinceIdDelivery2 =
-                              provinceId;
-                          break;
-                      }
-
-                      if (provinceId != null) {
-                        formController.fetchCities(provinceId,
-                            addressType: addressType);
-                      }
-
-                      if (cityController != null) {
-                        cityController!.clear();
-                      }
-                    }
-
-                    formController.update();
-                  }
-                },
-                validator: (value) {
-                  if (validationText != null &&
-                      (value == null || value.isEmpty)) {
-                    return validationText;
-                  }
-                  return null;
-                },
-                isExpanded: true,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  size: ResponsiveUtil.scaleSize(context, 24),
-                ),
-                menuMaxHeight: ResponsiveUtil.scaleSize(context, 300),
-                dropdownColor: Colors.white,
-                alignment: Alignment.center,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-              );
+              // Use search dropdown or regular dropdown based on search parameter
+              return (search ?? false)
+                  ? _buildSearchDropdown(context)
+                  : _buildRegularDropdown(context);
             }),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSearchDropdown(BuildContext context) {
+    return SearchChoices.single(
+      isExpanded: true,
+      value: _findCurrentValue(),
+      hint: Text(
+        "Select a Province",
+        style: TextStyle(
+          fontSize: ResponsiveUtil.scaleSize(context, 16),
+        ),
+      ),
+      items: formController.provinces.map((province) {
+        return DropdownMenuItem<String>(
+          value: province["Text"],
+          child: Text(
+            province["Text"] ?? "loading..",
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: ResponsiveUtil.scaleSize(context, 16),
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        _handleProvinceSelection(value);
+      },
+      dialogBox: true,
+      displayClearIcon: true,
+      menuBackgroundColor: colorNetral,
+      padding: EdgeInsets.zero,
+      validator: (value) {
+        if (validationText != null && (value == null || value.isEmpty)) {
+          return validationText;
+        }
+        return null;
+      },
+      searchHint: "Search Province",
+      searchFn: (String keyword, items) {
+        return _searchProvinces(keyword, items);
+      },
+    );
+  }
+
+  Widget _buildRegularDropdown(BuildContext context) {
+    return DropdownButtonFormField(
+      value: _findCurrentValue(),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.all(
+          ResponsiveUtil.scaleSize(context, 12),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color.fromARGB(27, 158, 158, 158)),
+        ),
+      ),
+      items: _buildDropdownItems(context),
+      onChanged: (value) {
+        _handleProvinceSelection(value);
+      },
+      validator: (value) {
+        if (validationText != null && (value == null || value.isEmpty)) {
+          return validationText;
+        }
+        return null;
+      },
+      isExpanded: true,
+      icon: Icon(
+        Icons.arrow_drop_down,
+        size: ResponsiveUtil.scaleSize(context, 24),
+      ),
+      menuMaxHeight: ResponsiveUtil.scaleSize(context, 300),
+      dropdownColor: Colors.white,
+      alignment: Alignment.center,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+    );
+  }
+
+  void _handleProvinceSelection(String? value) {
+    if (value != null) {
+      controller.text = value;
+
+      final province = formController.provinces
+          .firstWhereOrNull((province) => province["Text"].toString() == value);
+
+      if (province != null) {
+        final provinceId = province["Value"]?.toString();
+
+        switch (addressType) {
+          case 'main':
+            formController.selectedProvinceId = provinceId;
+            break;
+          case 'delivery':
+            formController.selectedProvinceIdDelivery = provinceId;
+            break;
+          case 'delivery2':
+            formController.selectedProvinceIdDelivery2 = provinceId;
+            break;
+        }
+
+        if (provinceId != null) {
+          formController.fetchCities(provinceId, addressType: addressType);
+        }
+
+        if (cityController != null) {
+          cityController!.clear();
+        }
+      }
+
+      formController.update();
+    }
+  }
+
+  List<int> _searchProvinces(
+      String keyword, List<DropdownMenuItem<String>> items) {
+    List<int> shownIndexes = [];
+
+    if (keyword.isEmpty) {
+      // Return all items if search is empty
+      for (int i = 0; i < items.length; i++) {
+        shownIndexes.add(i);
+      }
+    } else {
+      // Filter based on keyword
+      for (int i = 0; i < items.length; i++) {
+        String? itemValue = items[i].value;
+        if (itemValue != null &&
+            itemValue.toLowerCase().contains(keyword.toLowerCase())) {
+          shownIndexes.add(i);
+        }
+      }
+    }
+
+    return shownIndexes;
   }
 
   String? _findCurrentValue() {

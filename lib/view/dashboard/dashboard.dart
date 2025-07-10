@@ -17,8 +17,7 @@ class DashboardMainState extends State<DashboardMain> {
 
   @override
   Widget build(BuildContext context) {
-    double responsiveSize(double size) =>
-        ResponsiveUtil.scaleSize(context, size);
+    final isIPad = ResponsiveUtil.isIPad(context);
 
     return Scaffold(
       backgroundColor: colorNetral,
@@ -28,16 +27,16 @@ class DashboardMainState extends State<DashboardMain> {
             Container(
               width: double.infinity,
               padding: EdgeInsets.fromLTRB(
-                responsiveSize(24),
-                responsiveSize(50),
-                responsiveSize(24),
-                responsiveSize(70),
+                24.rp(context),
+                50.rp(context),
+                24.rp(context),
+                70.rp(context),
               ),
               decoration: BoxDecoration(
                 color: colorAccent,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(responsiveSize(24)),
-                  bottomRight: Radius.circular(responsiveSize(24)),
+                  bottomLeft: Radius.circular(24.rr(context)),
+                  bottomRight: Radius.circular(24.rr(context)),
                 ),
               ),
               child: Column(
@@ -52,16 +51,16 @@ class DashboardMainState extends State<DashboardMain> {
                       child: Icon(
                         Icons.person_outline,
                         color: Colors.white,
-                        size: responsiveSize(40),
+                        size: 40.ri(context),
                       ),
                     ),
                   ),
-                  SizedBox(height: responsiveSize(40)),
+                  SizedBox(height: 40.rp(context)),
                   Text(
                     'Hello,',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: responsiveSize(28),
+                      fontSize: isIPad ? 36.rt(context) : 32.rt(context),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -70,7 +69,7 @@ class DashboardMainState extends State<DashboardMain> {
                       _controller.fullName.value,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: responsiveSize(28),
+                        fontSize: isIPad ? 36.rt(context) : 32.rt(context),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -79,18 +78,18 @@ class DashboardMainState extends State<DashboardMain> {
               ),
             ),
             Transform.translate(
-              offset: Offset(0, -responsiveSize(50)),
+              offset: Offset(0, -50.rs(context)),
               child: Container(
-                margin: EdgeInsets.symmetric(horizontal: responsiveSize(24)),
-                padding: EdgeInsets.all(responsiveSize(16)),
+                margin: EdgeInsets.symmetric(horizontal: 24.rp(context)),
+                padding: EdgeInsets.all(16.rp(context)),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(responsiveSize(24)),
+                  borderRadius: BorderRadius.circular(24.rr(context)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
-                      blurRadius: responsiveSize(10),
-                      spreadRadius: responsiveSize(1),
+                      blurRadius: 10.rs(context),
+                      spreadRadius: 1.rs(context),
                     ),
                   ],
                 ),
@@ -102,9 +101,9 @@ class DashboardMainState extends State<DashboardMain> {
                         Icon(
                           Icons.location_on,
                           color: const Color(0xFF1A3B80),
-                          size: responsiveSize(24),
+                          size: 24.ri(context),
                         ),
-                        SizedBox(width: responsiveSize(8)),
+                        SizedBox(width: 8.rp(context)),
                         Expanded(
                           child: Obx(
                             () => Text(
@@ -113,14 +112,15 @@ class DashboardMainState extends State<DashboardMain> {
                               style: TextStyle(
                                 color: colorAccent,
                                 fontWeight: FontWeight.w500,
-                                fontSize: responsiveSize(16),
+                                fontSize:
+                                    isIPad ? 20.rt(context) : 18.rt(context),
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: responsiveSize(16)),
+                    SizedBox(height: 16.rp(context)),
                     Obx(() => _buildMenuGrid(context)),
                   ],
                 ),
@@ -133,8 +133,7 @@ class DashboardMainState extends State<DashboardMain> {
   }
 
   void _showLogoutDialog(BuildContext context) {
-    double responsiveSize(double size) =>
-        ResponsiveUtil.scaleSize(context, size);
+    final isIPad = ResponsiveUtil.isIPad(context);
 
     showDialog(
       context: context,
@@ -142,18 +141,24 @@ class DashboardMainState extends State<DashboardMain> {
         return AlertDialog(
           title: Text(
             "Logout",
-            style: TextStyle(fontSize: responsiveSize(18)),
+            style: TextStyle(
+              fontSize: isIPad ? 24.rt(context) : 20.rt(context),
+            ),
           ),
           content: Text(
             "Are you sure you want to logout?",
-            style: TextStyle(fontSize: responsiveSize(16)),
+            style: TextStyle(
+              fontSize: isIPad ? 20.rt(context) : 18.rt(context),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 "Cancel",
-                style: TextStyle(fontSize: responsiveSize(16)),
+                style: TextStyle(
+                  fontSize: isIPad ? 18.rt(context) : 16.rt(context),
+                ),
               ),
             ),
             TextButton(
@@ -163,7 +168,9 @@ class DashboardMainState extends State<DashboardMain> {
               },
               child: Text(
                 "Logout",
-                style: TextStyle(fontSize: responsiveSize(16)),
+                style: TextStyle(
+                  fontSize: isIPad ? 18.rt(context) : 16.rt(context),
+                ),
               ),
             ),
           ],
@@ -174,11 +181,10 @@ class DashboardMainState extends State<DashboardMain> {
 
   Widget _buildMenuGrid(BuildContext context) {
     final items = _controller.menuItems;
-    double responsiveSize(double size) =>
-        ResponsiveUtil.scaleSize(context, size);
+    final isIPad = ResponsiveUtil.isIPad(context);
 
     if (items.isEmpty) {
-      return SizedBox(height: responsiveSize(68));
+      return SizedBox(height: 68.rs(context));
     }
 
     final int itemCount = items.length;
@@ -189,8 +195,9 @@ class DashboardMainState extends State<DashboardMain> {
         children: items
             .map((item) => Expanded(
                   child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: responsiveSize(8)),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.rp(context),
+                    ),
                     child: MenuCard(
                       title: item["title"],
                       svgPath: item["svgPath"],
@@ -208,10 +215,10 @@ class DashboardMainState extends State<DashboardMain> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: responsiveSize(8),
-        mainAxisSpacing: responsiveSize(8),
-        childAspectRatio: 1.2,
+        crossAxisCount: isIPad ? 3 : 2,
+        crossAxisSpacing: isIPad ? 16.rp(context) : 8.rp(context),
+        mainAxisSpacing: isIPad ? 16.rp(context) : 8.rp(context),
+        childAspectRatio: isIPad ? 1.3 : 1.2,
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {

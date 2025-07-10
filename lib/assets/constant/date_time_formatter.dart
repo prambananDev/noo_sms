@@ -7,6 +7,7 @@ class CustomDatePickerField extends StatefulWidget {
   final DateTime initialValue;
   final DateTime firstDate;
   final DateTime lastDate;
+  final ValueChanged<DateTime>? onDateSelected;
 
   const CustomDatePickerField({
     Key? key,
@@ -15,39 +16,51 @@ class CustomDatePickerField extends StatefulWidget {
     required this.initialValue,
     required this.firstDate,
     required this.lastDate,
+    this.onDateSelected,
   }) : super(key: key);
 
   @override
-  CustomDatePickerFieldState createState() => CustomDatePickerFieldState();
+  State<CustomDatePickerField> createState() => _CustomDatePickerFieldState();
 }
 
-class CustomDatePickerFieldState extends State<CustomDatePickerField> {
+class _CustomDatePickerFieldState extends State<CustomDatePickerField> {
+  late DateTime _selectedDate;
+
   @override
   void initState() {
     super.initState();
+    _selectedDate = widget.initialValue;
+    _updateControllerText();
+  }
 
-    widget.controller.text =
-        DateFormat('MM-dd-yyyy').format(widget.initialValue);
+  void _updateControllerText() {
+    widget.controller.text = DateFormat('dd-MM-yyyy').format(_selectedDate);
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: widget.initialValue,
+      initialDate: _selectedDate,
       firstDate: widget.firstDate,
       lastDate: widget.lastDate,
       builder: (BuildContext context, Widget? child) {
         return Theme(
-          data: ThemeData.light(),
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).primaryColor,
+            ),
+          ),
           child: child!,
         );
       },
     );
 
-    if (pickedDate != null) {
+    if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
-        widget.controller.text = DateFormat('dd-MM-yyyy').format(pickedDate);
+        _selectedDate = pickedDate;
+        _updateControllerText();
       });
+      widget.onDateSelected?.call(pickedDate);
     }
   }
 
@@ -59,8 +72,21 @@ class CustomDatePickerFieldState extends State<CustomDatePickerField> {
       decoration: InputDecoration(
         labelText: widget.labelText,
         suffixIcon: const Icon(Icons.arrow_drop_down),
+        labelStyle: const TextStyle(
+          color: Colors.black87,
+          fontSize: 16,
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.purple),
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey, width: 1.0),
+        ),
       ),
-      style: const TextStyle(fontSize: 16),
+      style: const TextStyle(
+        fontSize: 16,
+        color: Colors.black87,
+      ),
       onTap: () => _selectDate(context),
     );
   }

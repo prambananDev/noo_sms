@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
+import 'package:search_choices/search_choices.dart';
 
 class CityDropdownField extends StatelessWidget {
   final String label;
@@ -11,6 +12,9 @@ class CityDropdownField extends StatelessWidget {
   final String? validationText;
   final String addressType;
   final bool autoOpenDropdown;
+  final bool? search;
+  final String?
+      initialValue; // New parameter for initial value - can be from controller.text or manual input
 
   const CityDropdownField({
     Key? key,
@@ -20,6 +24,8 @@ class CityDropdownField extends StatelessWidget {
     this.validationText,
     this.addressType = 'main',
     this.autoOpenDropdown = false,
+    this.search,
+    this.initialValue, // Can be null, from controller.text, or manual string
   }) : super(key: key);
 
   @override
@@ -40,7 +46,6 @@ class CityDropdownField extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: ResponsiveUtil.scaleSize(context, 10)),
           Expanded(
             flex: 2,
             child: Obx(() {
@@ -140,78 +145,192 @@ class CityDropdownField extends StatelessWidget {
                 );
               }
 
-              return DropdownButtonFormField<String>(
-                value: _findBestCityMatch(citiesList),
-                decoration: InputDecoration(
-                  isDense: true,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.all(
-                    ResponsiveUtil.scaleSize(context, 12),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.transparent),
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Color.fromARGB(27, 158, 158, 158)),
-                  ),
-                ),
-                items: _buildDropdownItems(context, citiesList),
-                onChanged: (value) {
-                  if (value != null) {
-                    final displayValue = (value);
-
-                    TextEditingController? districtController;
-                    switch (addressType) {
-                      case 'main':
-                        districtController = formController.kecamatanController;
-                        break;
-                      case 'delivery':
-                        districtController =
-                            formController.kecamatanControllerDelivery.value;
-                        break;
-                      case 'delivery2':
-                        districtController =
-                            formController.kecamatanControllerDelivery2.value;
-                        break;
-                    }
-
-                    formController.setCityValue(addressType,
-                        apiValue: value,
-                        displayValue: displayValue,
-                        updateController: true,
-                        fetchDistrictsAfter: true);
-
-                    if (districtController != null) {
-                      districtController.clear();
-                    }
-
-                    formController.update();
-                  }
-                },
-                validator: (value) {
-                  if (validationText != null &&
-                      (value == null || value.isEmpty)) {
-                    return validationText;
-                  }
-                  return null;
-                },
-                isExpanded: true,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  size: ResponsiveUtil.scaleSize(context, 24),
-                ),
-                menuMaxHeight: ResponsiveUtil.scaleSize(context, 300),
-                dropdownColor: Colors.white,
-                alignment: Alignment.center,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-              );
+              // Return search dropdown or regular dropdown based on search parameter
+              return (search ?? false)
+                  ? _buildSearchDropdown(context, citiesList)
+                  : _buildRegularDropdown(context, citiesList);
             }),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSearchDropdown(
+      BuildContext context, RxList<Map<String, dynamic>> citiesList) {
+    return SearchChoices.single(
+      isExpanded: true,
+      value: _getDropdownValue(citiesList),
+      hint: Text(
+        "Select a City",
+        style: TextStyle(
+          fontSize: ResponsiveUtil.scaleSize(context, 16),
+        ),
+      ),
+      items: citiesList.map((city) {
+        final apiValue = city["Text"].toString();
+        final displayValue = apiValue;
+
+        return DropdownMenuItem<String>(
+          value: apiValue,
+          child: Text(
+            displayValue,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: ResponsiveUtil.scaleSize(context, 16),
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        _handleCitySelection(value);
+      },
+      dialogBox: true,
+      displayClearIcon: true,
+      menuBackgroundColor: colorNetral,
+      padding: EdgeInsets.zero,
+      validator: (value) {
+        if (validationText != null && (value == null || value.isEmpty)) {
+          return validationText;
+        }
+        return null;
+      },
+      searchHint: "Search City",
+      searchFn: (String keyword, items) {
+        return _searchCities(keyword, items);
+      },
+    );
+  }
+
+  Widget _buildRegularDropdown(
+      BuildContext context, RxList<Map<String, dynamic>> citiesList) {
+    return DropdownButtonFormField<String>(
+      value: _getDropdownValue(citiesList),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.all(
+          ResponsiveUtil.scaleSize(context, 12),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color.fromARGB(27, 158, 158, 158)),
+        ),
+      ),
+      items: _buildDropdownItems(context, citiesList),
+      onChanged: (value) {
+        _handleCitySelection(value);
+      },
+      validator: (value) {
+        if (validationText != null && (value == null || value.isEmpty)) {
+          return validationText;
+        }
+        return null;
+      },
+      isExpanded: true,
+      icon: Icon(
+        Icons.arrow_drop_down,
+        size: ResponsiveUtil.scaleSize(context, 24),
+      ),
+      menuMaxHeight: ResponsiveUtil.scaleSize(context, 300),
+      dropdownColor: Colors.white,
+      alignment: Alignment.center,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+    );
+  }
+
+  String? _getDropdownValue(RxList<Map<String, dynamic>> citiesList) {
+    // Priority 1: Use controller.text if it exists in cities list
+    if (controller.text.isNotEmpty) {
+      final controllerMatch = citiesList.firstWhereOrNull(
+        (city) => city["Text"].toString() == controller.text,
+      );
+      if (controllerMatch != null) {
+        return controller.text;
+      }
+    }
+
+    // Priority 2: Use initialValue if provided and valid
+    if (initialValue != null && initialValue!.isNotEmpty) {
+      // Check if initialValue exists in the cities list
+      final initialMatch = citiesList.firstWhereOrNull(
+        (city) => city["Text"].toString() == initialValue,
+      );
+      if (initialMatch != null) {
+        // Also update the controller to match the initial value if it's different
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (controller.text != initialValue) {
+            controller.text = initialValue!;
+          }
+        });
+        return initialValue;
+      }
+    }
+
+    // Priority 3: Use existing findBestCityMatch logic for fuzzy matching
+    return _findBestCityMatch(citiesList);
+  }
+
+  void _handleCitySelection(String? value) {
+    if (value != null) {
+      final displayValue = value;
+
+      // Update the city value
+      formController.setCityValue(addressType,
+          apiValue: value,
+          displayValue: displayValue,
+          updateController: true,
+          fetchDistrictsAfter: true);
+
+      // Only clear the district controller for the same address type
+      TextEditingController? districtController;
+      switch (addressType) {
+        case 'main':
+          districtController = formController.kecamatanController;
+          break;
+        case 'delivery':
+          districtController = formController.kecamatanControllerDelivery.value;
+          break;
+        case 'delivery2':
+          districtController =
+              formController.kecamatanControllerDelivery2.value;
+          break;
+      }
+
+      if (districtController != null) {
+        districtController.clear();
+      }
+
+      // Use a more targeted update instead of updating the entire controller
+      formController.update([addressType]);
+    }
+  }
+
+  List<int> _searchCities(
+      String keyword, List<DropdownMenuItem<String>> items) {
+    List<int> shownIndexes = [];
+
+    if (keyword.isEmpty) {
+      // Return all items if search is empty
+      for (int i = 0; i < items.length; i++) {
+        shownIndexes.add(i);
+      }
+    } else {
+      // Filter based on keyword
+      for (int i = 0; i < items.length; i++) {
+        String? itemValue = items[i].value;
+        if (itemValue != null &&
+            itemValue.toLowerCase().contains(keyword.toLowerCase())) {
+          shownIndexes.add(i);
+        }
+      }
+    }
+
+    return shownIndexes;
   }
 
   String? _findBestCityMatch(RxList<Map<String, dynamic>> citiesList) {
@@ -241,7 +360,7 @@ class CityDropdownField extends StatelessWidget {
       }
     }
 
-    final normalizedText = (currentText);
+    final normalizedText = currentText;
     for (var city in citiesList) {
       if ((city["Text"].toString()) == normalizedText) {
         return city["Text"].toString();
@@ -249,7 +368,7 @@ class CityDropdownField extends StatelessWidget {
     }
 
     for (var city in citiesList) {
-      final normalizedCity = (city["Text"].toString());
+      final normalizedCity = city["Text"].toString();
       if (normalizedCity.contains(normalizedText) ||
           normalizedText.contains(normalizedCity)) {
         return city["Text"].toString();
@@ -258,7 +377,7 @@ class CityDropdownField extends StatelessWidget {
 
     final keywords = normalizedText.split(' ');
     for (var city in citiesList) {
-      final normalizedCity = (city["Text"].toString());
+      final normalizedCity = city["Text"].toString();
       for (var keyword in keywords) {
         if (keyword.length > 2 && normalizedCity.contains(keyword)) {
           return city["Text"].toString();

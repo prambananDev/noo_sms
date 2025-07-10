@@ -4,7 +4,6 @@ import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/controllers/noo/draft_controller.dart';
 import 'package:noo_sms/models/draft_model.dart';
-import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form_coba.dart';
 
 class DraftPage extends GetView<DraftController> {

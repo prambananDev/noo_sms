@@ -5,7 +5,7 @@ import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/view/sms/approval/approval_pending_pp.dart';
 import 'package:noo_sms/view/sms/approval/approved_pp.dart';
 import 'package:noo_sms/view/sms/history_pp.dart';
-import 'package:noo_sms/view/sms/input_pp.dart';
+import 'package:noo_sms/view/sms/create/input_pp.dart';
 
 class DashboardPP extends StatefulWidget {
   final int initialIndex;
@@ -80,7 +80,7 @@ class DashboardPPState extends State<DashboardPP>
         border: Border(
           bottom: BorderSide(
             color: colorAccent,
-            width: ResponsiveUtil.scaleSize(context, 2.0),
+            width: 4,
           ),
         ),
       ),

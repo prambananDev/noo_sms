@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/dashboard/dashboard_ordertaking.dart';
+import 'package:noo_sms/view/sms/create/dimension.dart';
 import 'package:noo_sms/view/sms/order/create_order_taking.dart';
 import 'package:noo_sms/view/sms/order/history_order_taking.dart';
 
@@ -18,6 +19,7 @@ class DashboardOrderTaking extends StatefulWidget {
 class _DashboardOrderTakingState extends State<DashboardOrderTaking>
     with SingleTickerProviderStateMixin {
   late DashboadOrderTakingTabController tabController;
+  late PPDimensions dimensions;
 
   @override
   void initState() {
@@ -26,6 +28,7 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
     tabController = Get.put(
         DashboadOrderTakingTabController(initialIndex: widget.initialIndex));
     tabController.initController(this);
+    dimensions = PPDimensions();
   }
 
   @override
@@ -42,9 +45,9 @@ class _DashboardOrderTakingState extends State<DashboardOrderTaking>
           mainAxisSize: MainAxisSize.min,
           children: [
             TabBar(
-              labelStyle: const TextStyle(
+              labelStyle: TextStyle(
                 fontWeight: FontWeight.w500,
-                fontSize: 16,
+                fontSize: dimensions.getHeadingSize(context),
               ),
               unselectedLabelColor: Colors.black,
               labelColor: colorAccent,

@@ -32,9 +32,14 @@ class CustomDropdownField extends StatelessWidget {
         children: [
           Expanded(
             flex: 1,
-            child: Text(label),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
           Expanded(
             flex: 2,
             child: (search ?? false)

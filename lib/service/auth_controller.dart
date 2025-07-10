@@ -189,10 +189,7 @@ class AuthController extends GetxController {
                 backgroundColor: Colors.red.withOpacity(0.8),
                 colorText: Colors.white,
               );
-            } catch (e) {
-              print('Error showing snackbar: $e');
-              print('Login failed: ${result.message}');
-            }
+            } catch (e) {}
           }
         }
       }
@@ -201,7 +198,7 @@ class AuthController extends GetxController {
       if (context != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('An unexpected error occurred'),
+            content: const Text('An unexpected error occurred'),
             backgroundColor: Colors.red.withOpacity(0.8),
             behavior: SnackBarBehavior.floating,
           ),
@@ -215,10 +212,7 @@ class AuthController extends GetxController {
             backgroundColor: Colors.red.withOpacity(0.8),
             colorText: Colors.white,
           );
-        } catch (e) {
-          print('Error showing snackbar: $e');
-          print('Login error: $e');
-        }
+        } catch (e) {}
       }
     } finally {
       isLoggingIn.value = false;

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
+import 'package:search_choices/search_choices.dart';
 
 class DistrictDropdownField extends StatelessWidget {
   final String label;
@@ -10,6 +11,7 @@ class DistrictDropdownField extends StatelessWidget {
   final CustomerFormController formController;
   final String? validationText;
   final String addressType;
+  final bool? search;
 
   const DistrictDropdownField({
     Key? key,
@@ -18,6 +20,7 @@ class DistrictDropdownField extends StatelessWidget {
     required this.formController,
     this.validationText,
     this.addressType = 'main',
+    this.search,
   }) : super(key: key);
 
   @override
@@ -38,27 +41,10 @@ class DistrictDropdownField extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: ResponsiveUtil.scaleSize(context, 10)),
           Expanded(
             flex: 2,
             child: Obx(() {
-              bool isLoading = formController.isDistrictsDeliveryLoading.value;
-              if (isLoading) {
-                return Container(
-                  height: ResponsiveUtil.scaleSize(context, 48),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(
-                        ResponsiveUtil.scaleSize(context, 4)),
-                  ),
-                  child: Center(
-                    child: LinearProgressIndicator(
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation(colorAccent),
-                    ),
-                  ),
-                );
-              }
+              bool isLoading = false;
               switch (addressType) {
                 case 'main':
                   isLoading = formController.isDistrictsLoading.value;
@@ -89,8 +75,7 @@ class DistrictDropdownField extends StatelessWidget {
                 );
               }
 
-              RxList<Map<String, dynamic>> districtsList =
-                  formController.districtsDelivery;
+              RxList<Map<String, dynamic>> districtsList;
               switch (addressType) {
                 case 'main':
                   districtsList = formController.districts;
@@ -105,7 +90,7 @@ class DistrictDropdownField extends StatelessWidget {
                   districtsList = formController.districts;
               }
 
-              String? currentCityId = formController.selectedCityIdDelivery;
+              String? currentCityId;
               switch (addressType) {
                 case 'main':
                   currentCityId = formController.selectedCityId;
@@ -137,7 +122,7 @@ class DistrictDropdownField extends StatelessWidget {
                     ),
                     hintText: 'Select city first',
                     hintStyle: TextStyle(
-                      fontSize: ResponsiveUtil.scaleSize(context, 14),
+                      fontSize: ResponsiveUtil.scaleSize(context, 16),
                     ),
                     suffixIcon: const Icon(Icons.arrow_drop_down),
                   ),
@@ -154,53 +139,132 @@ class DistrictDropdownField extends StatelessWidget {
                 );
               }
 
-              return DropdownButtonFormField<String>(
-                value: _findBestDistrictMatch(districtsList),
-                decoration: InputDecoration(
-                  isDense: true,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.all(
-                    ResponsiveUtil.scaleSize(context, 12),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.transparent),
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Color.fromARGB(27, 158, 158, 158)),
-                  ),
-                ),
-                items: _buildDropdownItems(context, districtsList),
-                onChanged: (value) {
-                  if (value != null) {
-                    controller.text = value;
-                    formController.setDistrictValue(addressType, value);
-                    formController.update();
-                  }
-                },
-                validator: (value) {
-                  if (validationText != null &&
-                      (value == null || value.isEmpty)) {
-                    return validationText;
-                  }
-                  return null;
-                },
-                isExpanded: true,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  size: ResponsiveUtil.scaleSize(context, 24),
-                ),
-                menuMaxHeight: ResponsiveUtil.scaleSize(context, 300),
-                dropdownColor: Colors.white,
-                alignment: Alignment.center,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-              );
+              // Return search dropdown or regular dropdown based on search parameter
+              return (search ?? false)
+                  ? _buildSearchDropdown(context, districtsList)
+                  : _buildRegularDropdown(context, districtsList);
             }),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSearchDropdown(
+      BuildContext context, RxList<Map<String, dynamic>> districtsList) {
+    return SearchChoices.single(
+      isExpanded: true,
+      value: _findBestDistrictMatch(districtsList),
+      hint: Text(
+        "Select a District",
+        style: TextStyle(
+          fontSize: ResponsiveUtil.scaleSize(context, 16),
+        ),
+      ),
+      items: districtsList.map((district) {
+        final value = district["Text"].toString();
+
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: ResponsiveUtil.scaleSize(context, 16),
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        _handleDistrictSelection(value);
+      },
+      dialogBox: true,
+      displayClearIcon: true,
+      menuBackgroundColor: colorNetral,
+      padding: EdgeInsets.zero,
+      validator: (value) {
+        if (validationText != null && (value == null || value.isEmpty)) {
+          return validationText;
+        }
+        return null;
+      },
+      searchHint: "Search District",
+      searchFn: (String keyword, items) {
+        return _searchDistricts(keyword, items);
+      },
+    );
+  }
+
+  Widget _buildRegularDropdown(
+      BuildContext context, RxList<Map<String, dynamic>> districtsList) {
+    return DropdownButtonFormField<String>(
+      value: _findBestDistrictMatch(districtsList),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.all(
+          ResponsiveUtil.scaleSize(context, 12),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color.fromARGB(27, 158, 158, 158)),
+        ),
+      ),
+      items: _buildDropdownItems(context, districtsList),
+      onChanged: (value) {
+        _handleDistrictSelection(value);
+      },
+      validator: (value) {
+        if (validationText != null && (value == null || value.isEmpty)) {
+          return validationText;
+        }
+        return null;
+      },
+      isExpanded: true,
+      icon: Icon(
+        Icons.arrow_drop_down,
+        size: ResponsiveUtil.scaleSize(context, 24),
+      ),
+      menuMaxHeight: ResponsiveUtil.scaleSize(context, 300),
+      dropdownColor: Colors.white,
+      alignment: Alignment.center,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+    );
+  }
+
+  void _handleDistrictSelection(String? value) {
+    if (value != null) {
+      controller.text = value;
+      formController.setDistrictValue(addressType, value);
+      formController.update();
+    }
+  }
+
+  List<int> _searchDistricts(
+      String keyword, List<DropdownMenuItem<String>> items) {
+    List<int> shownIndexes = [];
+
+    if (keyword.isEmpty) {
+      // Return all items if search is empty
+      for (int i = 0; i < items.length; i++) {
+        shownIndexes.add(i);
+      }
+    } else {
+      // Filter based on keyword
+      for (int i = 0; i < items.length; i++) {
+        String? itemValue = items[i].value;
+        if (itemValue != null &&
+            itemValue.toLowerCase().contains(keyword.toLowerCase())) {
+          shownIndexes.add(i);
+        }
+      }
+    }
+
+    return shownIndexes;
   }
 
   String? _findBestDistrictMatch(RxList<Map<String, dynamic>> districtsList) {

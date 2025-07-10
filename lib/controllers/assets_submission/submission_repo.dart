@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/models/submission_model.dart';
 import 'package:noo_sms/service/api_constant.dart';
@@ -171,8 +170,7 @@ class SubmissionRepository {
         },
         body: json.encode(assetReturn.toJson()),
       );
-      print('Response body: ${response.body}');
-      print('Response status: ${response.statusCode}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         _assetsHistoryCache.clear();
         _cacheTimestamps.clear();

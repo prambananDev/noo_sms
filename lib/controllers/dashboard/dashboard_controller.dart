@@ -1,3 +1,5 @@
+// ignore_for_file: empty_catches
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
@@ -54,6 +56,21 @@ class DashboardController extends GetxController {
         "svgPath": "assets/icons/asset_submission_icon.svg",
         "route": "/asset_dashboard"
       },
+      {
+        "title": "Product\nCatalog",
+        "svgPath": "assets/icons/catalog.svg",
+        "route": "/catalog_dashboard"
+      },
+      {
+        "title": "Edit\nCustomer",
+        "svgPath": "assets/icons/edit_table.svg",
+        "route": "/edit_cust"
+      },
+      {
+        "title": "Order\nTracking",
+        "svgPath": "assets/icons/order_tracking _icon.svg",
+        "route": "/order_dashboard"
+      },
     ];
   }
 
@@ -61,7 +78,6 @@ class DashboardController extends GetxController {
     try {
       final context = Get.context;
       if (context == null) {
-        print('Context is null, cannot proceed with logout');
         return false;
       }
 
@@ -80,7 +96,10 @@ class DashboardController extends GetxController {
       }
 
       await customerFormRepository.clearCache();
+
       customerFormRepository.clearMemoryCache();
+
+      await _clearRememberedCredentials();
 
       await CustomerFormController.resetForNewLogin();
 
@@ -107,8 +126,6 @@ class DashboardController extends GetxController {
 
       return true;
     } catch (e) {
-      print('Error during logout: $e');
-
       final context = Get.context;
       if (context != null && context.mounted) {
         try {
@@ -124,6 +141,20 @@ class DashboardController extends GetxController {
 
       return false;
     }
+  }
+
+  Future<void> _clearRememberedCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Clear username, password, and remember me flag
+    await prefs.remove('username');
+    await prefs.remove('password');
+    await prefs.setBool('rememberMe', false);
+
+    // Also clear any authentication tokens
+    await prefs.remove('token');
+    await prefs.remove('userToken');
+    await prefs.remove('scs_token');
   }
 
   Future<Map<String, String>> _preserveLocationData() async {
@@ -162,34 +193,24 @@ class DashboardController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 200));
 
     if (Platform.isAndroid) {
-      try {
-        await SystemChannels.platform
-            .invokeMethod('SystemNavigator.routeUpdated');
-      } catch (e) {}
+      await SystemChannels.platform
+          .invokeMethod('SystemNavigator.routeUpdated');
     }
   }
 
   Future<void> _clearHiveBoxes() async {
-    try {
-      var dir = await getApplicationDocumentsDirectory();
-      Hive.init(dir.path);
+    var dir = await getApplicationDocumentsDirectory();
+    Hive.init(dir.path);
 
-      final boxesToClear = ['user', 'users', 'scs_users', 'draft_items'];
+    final boxesToClear = ['user', 'users', 'scs_users', 'draft_items'];
 
-      for (var boxName in boxesToClear) {
-        try {
-          if (Hive.isBoxOpen(boxName)) {
-            final box = Hive.box(boxName);
-            await box.clear();
-            await box.close();
-          }
-          await Hive.deleteBoxFromDisk(boxName);
-        } catch (e) {
-          print('Error clearing Hive box $boxName: $e');
-        }
+    for (var boxName in boxesToClear) {
+      if (Hive.isBoxOpen(boxName)) {
+        final box = Hive.box(boxName);
+        await box.clear();
+        await box.close();
       }
-    } catch (e) {
-      print('Error clearing Hive data: $e');
+      await Hive.deleteBoxFromDisk(boxName);
     }
   }
 
@@ -211,9 +232,7 @@ class DashboardController extends GetxController {
       }
 
       await prefs.setBool("has_logged_out", true);
-    } catch (e) {
-      print('Error clearing SharedPreferences: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _clearTempFiles({List<String> exclude = const []}) async {
@@ -231,14 +250,10 @@ class DashboardController extends GetxController {
             } else if (entity is Directory) {
               await entity.delete(recursive: true);
             }
-          } catch (e) {
-            print('Could not delete ${entity.path}: $e');
-          }
+          } catch (e) {}
         }
       }
-    } catch (e) {
-      print('Error clearing temp files: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> deleteBoxUser() async {
@@ -252,9 +267,7 @@ class DashboardController extends GetxController {
         await userBox.close();
       }
       await Hive.deleteBoxFromDisk('users');
-    } catch (e) {
-      print('Error deleting users box: $e');
-    }
+    } catch (e) {}
 
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setInt("flag", 0);

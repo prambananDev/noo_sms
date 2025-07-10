@@ -1,7 +1,7 @@
-// views/main_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/view/dashboard/dashboard_ordertaking.dart';
 import 'package:noo_sms/view/dashboard/dashboard_pp.dart';
 
@@ -60,28 +60,31 @@ class DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorNetral,
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(context),
       body: _buildPageView(),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final isIPad = ResponsiveUtil.isIPad(context);
+
     return AppBar(
       elevation: 0,
       backgroundColor: colorAccent,
+      toolbarHeight: isIPad ? 64.rs(context) : null,
       leading: IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.chevron_left,
           color: Colors.white,
-          size: 35,
+          size: isIPad ? 40.ri(context) : 35.ri(context),
         ),
         onPressed: _handleBackPress,
       ),
       title: Text(
         'Promotion Program',
         style: TextStyle(
-          fontSize: 16,
+          fontSize: isIPad ? 20.rt(context) : 18.rt(context),
           fontWeight: FontWeight.w800,
           color: colorNetral,
           letterSpacing: 0.5,
@@ -100,14 +103,16 @@ class DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(BuildContext context) {
+    final isIPad = ResponsiveUtil.isIPad(context);
+
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            blurRadius: 10.rs(context),
+            offset: Offset(0, -5.rs(context)),
           ),
         ],
       ),
@@ -117,14 +122,14 @@ class DashboardPageState extends State<DashboardPage> {
         onTap: _onItemTapped,
         selectedItemColor: colorAccent,
         unselectedItemColor: Colors.grey[600],
-        selectedLabelStyle: const TextStyle(
+        selectedLabelStyle: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 14,
+          fontSize: isIPad ? 18.rt(context) : 14.rt(context),
           height: 1.5,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: TextStyle(
           fontWeight: FontWeight.w500,
-          fontSize: 14,
+          fontSize: isIPad ? 16.rt(context) : 14.rt(context),
           height: 1.5,
         ),
         type: BottomNavigationBarType.fixed,
@@ -132,17 +137,17 @@ class DashboardPageState extends State<DashboardPage> {
         items: _navigationItems.map((item) {
           return BottomNavigationBarItem(
             icon: Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+              padding: EdgeInsets.only(bottom: 4.rp(context)),
               child: Icon(
                 item.icon,
-                size: 24,
+                size: isIPad ? 28.ri(context) : 24.ri(context),
               ),
             ),
             activeIcon: Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+              padding: EdgeInsets.only(bottom: 4.rp(context)),
               child: Icon(
                 item.icon,
-                size: 28,
+                size: isIPad ? 28.ri(context) : 24.ri(context),
               ),
             ),
             label: item.label,

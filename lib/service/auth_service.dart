@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/models/noo_user.dart';
+import 'package:noo_sms/models/order_tracking_model.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -55,12 +57,14 @@ class AuthService {
 
       User? smsUser;
       SCSUser? scsUser;
+      OrderTrackingUser? orderTrackingUser;
 
       smsUser = await _loginSMS(username, password, deviceId);
 
       scsUser = await _loginSCS(username, password);
+      orderTrackingUser = await _loginOrderTracking(username, password);
 
-      await _storeLoginSession(nooUser, smsUser, scsUser);
+      await _storeLoginSession(nooUser, smsUser, scsUser, orderTrackingUser);
 
       String message = "Login successful";
 
@@ -156,10 +160,40 @@ class AuthService {
     }
   }
 
+  Future<OrderTrackingUser?> _loginOrderTracking(
+      String username, String password) async {
+    try {
+      final url = "$apiOrder/LogInOut?usr=$username&pwd=$password";
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        return OrderTrackingUser(
+          userId: data['userId'] ?? '',
+          name: data['name'] ?? '',
+          email: data['email'] ?? '',
+          salesId: data['salesId'] ?? 0,
+          role: data['role'] ?? 0,
+          password: data['password'] ?? '',
+        );
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> _storeLoginSession(
     User nooUser,
     User? smsUser,
     SCSUser? scsUser,
+    OrderTrackingUser? orderTrackingUser,
   ) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -173,6 +207,10 @@ class AuthService {
       if (scsUser != null) {
         await _storeSCSUserData(scsUser, prefs);
       }
+
+      if (orderTrackingUser != null) {
+        await _storeOrderTrackingUserData(orderTrackingUser, prefs);
+      }
     } catch (e) {
       throw Exception("Failed to store login session: $e");
     }
@@ -183,6 +221,28 @@ class AuthService {
       return await _loginSCS(username, password);
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<void> _storeOrderTrackingUserData(
+      OrderTrackingUser user, SharedPreferences prefs) async {
+    try {
+      await prefs.setString("getUserId", user.userId);
+      await prefs.setString("getName", user.name ?? '');
+      await prefs.setString("getEmail", user.email ?? '');
+      await prefs.setInt("getSalesId", user.salesId ?? 0);
+      await prefs.setInt("getRole", user.role ?? 0);
+      await prefs.setString("getPassword", user.password ?? '');
+
+      var dir = await getApplicationDocumentsDirectory();
+      Hive.init(dir.path);
+
+      Box orderTrackingBox = await Hive.openBox('order_tracking_users');
+      await orderTrackingBox.clear();
+
+      await orderTrackingBox.add(user);
+    } catch (e) {
+      throw Exception("Failed to store Order Tracking user data: $e");
     }
   }
 
@@ -209,16 +269,14 @@ class AuthService {
       prefs.setString("bu", user.bu ?? '');
       prefs.setString("so", user.so?.toString() ?? '');
 
-      try {
-        var dir = await getApplicationDocumentsDirectory();
-        if (!Hive.isBoxOpen('users')) {
-          Hive.init(dir.path);
-        }
+      var dir = await getApplicationDocumentsDirectory();
+      if (!Hive.isBoxOpen('users')) {
+        Hive.init(dir.path);
+      }
 
-        Box userBox = await Hive.openBox('users');
-        await userBox.clear();
-        await userBox.add(user);
-      } catch (e) {}
+      Box userBox = await Hive.openBox('users');
+      await userBox.clear();
+      await userBox.add(user);
     } catch (e) {
       throw Exception("Failed to store SMS user data: $e");
     }
@@ -232,15 +290,13 @@ class AuthService {
       prefs.setString("scs_wh", user.wh ?? '');
       prefs.setString("scs_token", user.token ?? '');
 
-      try {
-        var dir = await getApplicationDocumentsDirectory();
-        Hive.init(dir.path);
+      var dir = await getApplicationDocumentsDirectory();
+      Hive.init(dir.path);
 
-        Box scsBox = await Hive.openBox('scs_users');
-        await scsBox.clear();
+      Box scsBox = await Hive.openBox('scs_users');
+      await scsBox.clear();
 
-        await scsBox.add(user);
-      } catch (e) {}
+      await scsBox.add(user);
     } catch (e) {
       throw Exception("Failed to store SCS user data");
     }
@@ -264,6 +320,34 @@ class AuthService {
       Box scsBox = await Hive.openBox('scs_users');
       if (scsBox.isNotEmpty) {
         return scsBox.getAt(scsBox.length - 1) as SCSUser?;
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<OrderTrackingUser?> getCachedOrderTrackingUser() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? userId = prefs.getString('getUserId');
+
+      if (userId != null && userId.isNotEmpty) {
+        return OrderTrackingUser(
+          userId: userId,
+          name: prefs.getString('getName'),
+          email: prefs.getString('getEmail'),
+          salesId: prefs.getInt('getSalesId'),
+          role: prefs.getInt('getRole'),
+          password: prefs.getString("getPassword"),
+        );
+      }
+
+      Box orderTrackingBox = await Hive.openBox('order_tracking_users');
+      if (orderTrackingBox.isNotEmpty) {
+        return orderTrackingBox.getAt(orderTrackingBox.length - 1)
+            as OrderTrackingUser?;
       }
 
       return null;

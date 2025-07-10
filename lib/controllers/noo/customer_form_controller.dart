@@ -1,3 +1,5 @@
+// ignore_for_file: empty_catches
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -270,13 +272,14 @@ class CustomerFormController extends GetxController
 
   Future<void> initializeData() async {
     isInitializing.value = true;
-    initializationStatus.value = 'Loading data...';
 
     Map<String, String> loadFailures = {};
     bool partialSuccess = false;
 
     await clearCache();
     await _checkCredentialsChanged();
+    await loadSharedPreferences();
+    await loadLongLatFromSharedPrefs();
 
     try {
       final bool needsFullInitialization = salesOffices.isEmpty ||
@@ -389,6 +392,11 @@ class CustomerFormController extends GetxController
   void _setDefaultCriticalSelections() {
     if (salesOffices.isNotEmpty && selectedSalesOffice == null) {
       selectedSalesOffice = salesOffices.first.name;
+      selectedSalesOfficeCode = salesOffices.first.code;
+
+      if (bu != null && bu!.isNotEmpty) {
+        unawaited(fetchPriceGroup());
+      }
     }
 
     if (businessUnits.isNotEmpty && selectedBusinessUnit == null) {
@@ -657,6 +665,11 @@ class CustomerFormController extends GetxController
   void _setDefaultSelections() {
     if (salesOffices.isNotEmpty && selectedSalesOffice == null) {
       selectedSalesOffice = salesOffices.first.name;
+      selectedSalesOfficeCode = salesOffices.first.code;
+
+      if (bu != null && bu!.isNotEmpty) {
+        unawaited(fetchPriceGroup());
+      }
     }
 
     if (businessUnits.isNotEmpty && selectedBusinessUnit == null) {
@@ -675,6 +688,12 @@ class CustomerFormController extends GetxController
       selectedPaymentMode = paymentMode.first.paymentMode;
     }
 
+    if (segment.isNotEmpty && selectedSegment == null) {
+      selectedSegment = segment.first.segmentId;
+
+      unawaited(fetchSubSegment());
+    }
+
     update();
   }
 
@@ -691,6 +710,7 @@ class CustomerFormController extends GetxController
     websiteController.text = data.website;
 
     selectedSalesOffice = data.salesOffice;
+
     selectedCustomerGroup = data.customerGroup;
     selectedBusinessUnit = data.businessUnit;
     selectedAXRegional = data.regional;
@@ -714,8 +734,11 @@ class CustomerFormController extends GetxController
 
     final selectedOffice = salesOffices
         .firstWhereOrNull((office) => office.name == data.salesOffice);
-    selectedSalesOfficeCode = selectedOffice?.code;
-    await fetchPriceGroup();
+    if (selectedOffice != null) {
+      selectedSalesOfficeCode = selectedOffice.code;
+
+      await fetchPriceGroup();
+    }
     selectedPriceGroup = data.priceGroup;
 
     selectedCustomerGroup = customerGroups
@@ -1255,7 +1278,6 @@ class CustomerFormController extends GetxController
         } else {
           throw Exception('Failed to load provinces');
         }
-      } catch (e) {
       } finally {
         isProvincesLoading.value = false;
       }
@@ -1904,7 +1926,7 @@ class CustomerFormController extends GetxController
 
   Future<Map<String, dynamic>> prepareSubmitData() async {
     final prefs = await SharedPreferences.getInstance();
-    final int? userId = prefs.getInt("userid");
+    final int? userId = prefs.getInt("id");
 
     return {
       "CustName": customerNameController.text.trim(),
@@ -1954,7 +1976,7 @@ class CustomerFormController extends GetxController
           "State": provinceController.text,
           "ZipCode": zipCodeController.text.isEmpty
               ? 0
-              : int.parse(zipCodeController.text)
+              : int.tryParse(zipCodeController.text) ?? 0
         }
       ],
       "TaxAddresses": [
@@ -1975,7 +1997,7 @@ class CustomerFormController extends GetxController
           "State": provinceControllerDelivery.text,
           "ZipCode": zipCodeControllerDelivery.text.isEmpty
               ? 0
-              : int.parse(zipCodeControllerDelivery.text)
+              : int.tryParse(zipCodeController.text) ?? 0
         },
         {
           "Name": deliveryNameController2.text,
@@ -1987,7 +2009,7 @@ class CustomerFormController extends GetxController
           "State": provinceControllerDelivery2.text,
           "ZipCode": zipCodeControllerDelivery2.text.isEmpty
               ? 0
-              : int.parse(zipCodeControllerDelivery2.text)
+              : int.tryParse(zipCodeController.text) ?? 0
         }
       ]
     };
@@ -2016,13 +2038,19 @@ class CustomerFormController extends GetxController
         barrierDismissible: false,
       );
 
+      final requestBody = await prepareSubmitData();
+      final response = await _sendRequest(requestBody);
+      const encoder = JsonEncoder.withIndent('  ');
+      final prettyBody = encoder.convert(requestBody);
+
+      final directory = Directory.systemTemp;
+      final file = File('${directory.path}/debug_request_body.json');
+      await file.writeAsString(prettyBody);
+
       if (!await _uploadSignatures()) {
         Get.back();
         return;
       }
-
-      final requestBody = await prepareSubmitData();
-      final response = await _sendRequest(requestBody);
 
       Get.back();
 
@@ -2048,7 +2076,7 @@ class CustomerFormController extends GetxController
 
       Get.snackbar(
         'Error',
-        'Submit failed: ${e.toString()}',
+        'Submit failed. Please Try Again.',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
@@ -2447,7 +2475,7 @@ class CustomerFormController extends GetxController
 
       final response = await http
           .get(url, headers: {'authorization': basicAuth}).timeout(
-              Duration(seconds: 15), onTimeout: () {
+              const Duration(seconds: 15), onTimeout: () {
         throw TimeoutException('Sales offices request timed out');
       });
 
@@ -2685,6 +2713,14 @@ class CustomerFormController extends GetxController
   }
 
   Future<void> fetchPriceGroup() async {
+    if (selectedSalesOfficeCode == null && selectedSalesOffice != null) {
+      final selectedOffice = salesOffices
+          .firstWhereOrNull((office) => office.name == selectedSalesOffice);
+      if (selectedOffice != null) {
+        selectedSalesOfficeCode = selectedOffice.code;
+      }
+    }
+
     if (selectedSalesOfficeCode == null) {
       return;
     }
@@ -2707,7 +2743,7 @@ class CustomerFormController extends GetxController
           "${apiNOO}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
       final response =
           await http.get(url, headers: {'authorization': basicAuth});
-
+      debugPrint(response.statusCode.toString() + "succes");
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         priceGroup = data.map((json) => PriceGroup.fromJson(json)).toList();

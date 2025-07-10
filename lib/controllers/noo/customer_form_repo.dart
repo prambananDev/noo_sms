@@ -1,8 +1,9 @@
+// ignore_for_file: empty_catches
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:noo_sms/controllers/noo/cached_data.dart';
@@ -98,38 +99,32 @@ class CustomerFormRepository {
       return _salesOfficesCache[cacheKey]!;
     }
 
-    try {
-      final cachedData = await CacheService.getData(cacheKey);
-      if (cachedData != null) {
-        final salesOffices = (cachedData as List)
-            .map((json) => SalesOffice.fromJson(json))
-            .toList();
-        _salesOfficesCache[cacheKey] = salesOffices;
-        _cacheTimestamps[cacheKey] = DateTime.now();
-        return salesOffices;
-      }
-    } catch (e) {}
+    final cachedData = await CacheService.getData(cacheKey);
+    if (cachedData != null) {
+      final salesOffices = (cachedData as List)
+          .map((json) => SalesOffice.fromJson(json))
+          .toList();
+      _salesOfficesCache[cacheKey] = salesOffices;
+      _cacheTimestamps[cacheKey] = DateTime.now();
+      return salesOffices;
+    }
 
-    try {
-      final url = Uri.parse("${apiNOO}ViewSO?SO=${so ?? ''}");
-      final response =
-          await _client.get(url, headers: {'authorization': basicAuth});
+    final url = Uri.parse("${apiNOO}ViewSO?SO=${so ?? ''}");
+    final response =
+        await _client.get(url, headers: {'authorization': basicAuth});
 
-      if (response.statusCode == 200) {
-        List data = jsonDecode(response.body);
-        final salesOffices =
-            data.map((json) => SalesOffice.fromJson(json)).toList();
+    if (response.statusCode == 200) {
+      List data = jsonDecode(response.body);
+      final salesOffices =
+          data.map((json) => SalesOffice.fromJson(json)).toList();
 
-        await CacheService.saveData(cacheKey, data);
-        _salesOfficesCache[cacheKey] = salesOffices;
-        _cacheTimestamps[cacheKey] = DateTime.now();
+      await CacheService.saveData(cacheKey, data);
+      _salesOfficesCache[cacheKey] = salesOffices;
+      _cacheTimestamps[cacheKey] = DateTime.now();
 
-        return salesOffices;
-      } else {
-        throw Exception('Failed to load sales offices: ${response.statusCode}');
-      }
-    } catch (e) {
-      rethrow;
+      return salesOffices;
+    } else {
+      throw Exception('Failed to load sales offices: ${response.statusCode}');
     }
   }
 
@@ -143,17 +138,15 @@ class CustomerFormRepository {
       return _businessUnitsCache[cacheKey]!;
     }
 
-    try {
-      final cachedData = await CacheService.getData(cacheKey);
-      if (cachedData != null) {
-        final businessUnits = (cachedData as List)
-            .map((json) => BusinessUnit.fromJson(json))
-            .toList();
-        _businessUnitsCache[cacheKey] = businessUnits;
-        _cacheTimestamps[cacheKey] = DateTime.now();
-        return businessUnits;
-      }
-    } catch (e) {}
+    final cachedData = await CacheService.getData(cacheKey);
+    if (cachedData != null) {
+      final businessUnits = (cachedData as List)
+          .map((json) => BusinessUnit.fromJson(json))
+          .toList();
+      _businessUnitsCache[cacheKey] = businessUnits;
+      _cacheTimestamps[cacheKey] = DateTime.now();
+      return businessUnits;
+    }
 
     try {
       final url = Uri.parse("${apiNOO}ViewBU?BU=${bu ?? ''}");
