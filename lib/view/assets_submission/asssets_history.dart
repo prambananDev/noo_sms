@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/assets_submission/submission_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/models/submission_model.dart';
@@ -20,8 +21,9 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
   @override
   void initState() {
     super.initState();
-
-    _assetController.fetchAssetsHistory(1, 10);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _assetController.fetchAssetsHistory(1, 10);
+    });
   }
 
   @override
@@ -39,18 +41,14 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
   }
 
   Widget _buildBody() {
-    return Obx(() {
-      return RefreshIndicator(
-        onRefresh: () async {
-          await Future.delayed(Duration.zero, () {
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              await _assetController.fetchAssetsHistory(1, 10);
-            });
-          });
-        },
-        child: _buildContent(),
-      );
-    });
+    return RefreshIndicator(
+      onRefresh: _handleRefresh,
+      child: Obx(() => _buildContent()),
+    );
+  }
+
+  Future<void> _handleRefresh() async {
+    await _assetController.fetchAssetsHistory(1, 10);
   }
 
   Widget _buildContent() {
@@ -69,7 +67,7 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
     return ListView.builder(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       itemCount: _assetController.assetsHistory.length,
       itemBuilder: (context, index) {
         final assetHistory = _assetController.assetsHistory[index];
@@ -82,27 +80,31 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        const SizedBox(height: 100),
+        SizedBox(height: 100.rs(context)),
         Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
-                size: 48,
+                size: 48.ri(context),
                 color: Colors.red,
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8.rs(context)),
+              Text(
                 "Error loading data",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 16.rt(context),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.rs(context)),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: EdgeInsets.symmetric(horizontal: 32.rp(context)),
                 child: Text(
                   _assetController.errorMessage.value,
                   textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.rt(context)),
                 ),
               )
             ],
@@ -115,21 +117,21 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
   Widget _buildEmptyState() {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      children: const [
-        SizedBox(height: 100),
+      children: [
+        SizedBox(height: 100.rs(context)),
         Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.history_outlined,
-                size: 48,
+                size: 48.ri(context),
                 color: Colors.grey,
               ),
-              SizedBox(height: 8),
+              SizedBox(height: 8.rs(context)),
               Text(
                 "No loan history available",
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16.rt(context)),
               ),
             ],
           ),
@@ -151,16 +153,19 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.rp(context),
+        vertical: 8.rp(context),
+      ),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
@@ -178,33 +183,36 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
           if (assetHistory.fotoDiterima != null &&
               assetHistory.fotoDiterima!.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Received Photo:",
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 16,
+                      fontSize: 16.rt(context),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.rs(context)),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.rr(context)),
                     child: Image.network(
                       assetHistory.fotoDiterima!,
-                      height: 150,
+                      height: 150.rs(context),
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          height: 150,
+                          height: 150.rs(context),
                           width: double.infinity,
                           color: Colors.grey[300],
-                          child: const Center(
-                            child: Icon(Icons.broken_image, size: 50),
+                          child: Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 50.ri(context),
+                            ),
                           ),
                         );
                       },
@@ -213,38 +221,28 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
                 ],
               ),
             ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.rs(context)),
           assetHistory.status == 3
               ? const SizedBox.shrink()
               : Align(
                   alignment: Alignment.bottomRight,
                   child: GestureDetector(
-                    onTap: () {
-                      controller.fetchAssetDetail(assetHistory.id!);
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return AssetReturnPage(
-                          id: assetHistory.id!,
-                          assetName: assetHistory.asset!,
-                          customerName: assetHistory.customerId!,
-                          loanDate: assetHistory.tanggalPeminjaman!,
-                          tanggalDiterima: assetHistory.tanggalDiterima,
-                          notes: assetHistory.keterangan,
-                        );
-                      }));
-                    },
+                    onTap: () => _navigateToReturnPage(
+                        context, controller, assetHistory),
                     child: Container(
                       decoration: BoxDecoration(
                         color: colorAccent,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.rr(context)),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.rp(context),
+                        vertical: 8.rp(context),
+                      ),
                       child: Text(
                         "Kembalikan",
                         style: TextStyle(
                           color: colorNetral,
-                          fontSize: 16,
+                          fontSize: 16.rt(context),
                         ),
                       ),
                     ),
@@ -255,9 +253,27 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
     );
   }
 
+  void _navigateToReturnPage(
+      BuildContext context, AssetController controller, Item assetHistory) {
+    controller.fetchAssetDetail(assetHistory.id!);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AssetReturnPage(
+          id: assetHistory.id!,
+          assetName: assetHistory.asset!,
+          customerName: assetHistory.customerId!,
+          loanDate: assetHistory.tanggalPeminjaman!,
+          tanggalDiterima: assetHistory.tanggalDiterima,
+          notes: assetHistory.keterangan,
+        ),
+      ),
+    );
+  }
+
   Widget _buildInfoItem(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -265,9 +281,9 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
             flex: 2,
             child: Text(
               "$label : ",
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -276,9 +292,9 @@ class _AssetHistoryPageState extends State<AssetHistoryPage> {
             flex: 3,
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
               ),
             ),
           ),

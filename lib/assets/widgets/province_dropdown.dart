@@ -43,7 +43,7 @@ class ProvinceDropdownField extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: ResponsiveUtil.scaleSize(context, 10)),
+          SizedBox(width: 16.rs(context)),
           Expanded(
             flex: 2,
             child: Obx(() {

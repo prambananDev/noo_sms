@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/catalog_product/product_controller.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -17,7 +18,10 @@ class ProductDetailScreen extends StatelessWidget {
         title: Text(
           'Product Details',
           style: TextStyle(
-              color: colorNetral, fontSize: 16, fontWeight: FontWeight.bold),
+            color: colorNetral,
+            fontSize: 16.rt(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         elevation: 0,
         centerTitle: true,
@@ -25,10 +29,10 @@ class ProductDetailScreen extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
         ),
         backgroundColor: colorAccent,
@@ -37,8 +41,11 @@ class ProductDetailScreen extends StatelessWidget {
         final product = controller.selectedProduct.value;
 
         if (product == null) {
-          return const Center(
-            child: Text('No product selected'),
+          return Center(
+            child: Text(
+              'No product selected',
+              style: TextStyle(fontSize: 16.rt(context)),
+            ),
           );
         }
 
@@ -59,10 +66,10 @@ class ProductDetailScreen extends StatelessWidget {
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: Colors.grey[200],
-                                child: const Center(
+                                child: Center(
                                   child: Icon(
                                     Icons.image_not_supported_outlined,
-                                    size: 64,
+                                    size: 64.ri(context),
                                     color: Colors.grey,
                                   ),
                                 ),
@@ -75,24 +82,24 @@ class ProductDetailScreen extends StatelessWidget {
                           right: 0,
                           bottom: 0,
                           child: Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16.rp(context)),
                             color: Colors.black.withOpacity(0.5),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   '${product.nama}-${product.brand}',
-                                  style: const TextStyle(
-                                    fontSize: 22,
+                                  style: TextStyle(
+                                    fontSize: 22.rt(context),
                                     fontWeight: FontWeight.bold,
                                     color: Colors.yellow,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.rs(context)),
                                 Text(
                                   product.kode,
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: 16.rt(context),
                                     color: Colors.yellow,
                                   ),
                                 ),
@@ -103,47 +110,49 @@ class ProductDetailScreen extends StatelessWidget {
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: EdgeInsets.all(16.rp(context)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Product Detail:',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          _buildDetailRow('Brand', product.brand),
-                          _buildDetailRow('Name', product.nama),
-                          _buildDetailRow('Function', product.fungsi),
+                          SizedBox(height: 12.rs(context)),
+                          _buildDetailRow(context, 'Brand', product.brand),
+                          _buildDetailRow(context, 'Name', product.nama),
+                          _buildDetailRow(context, 'Function', product.fungsi),
                           _buildDetailRow(
-                              'Usage Instructions', product.caraPakai),
+                              context, 'Usage Instructions', product.caraPakai),
+                          _buildDetailRow(context, 'Usage \nExamples',
+                              product.contohPenggunaan),
                           _buildDetailRow(
-                              'Usage \nExamples', product.contohPenggunaan),
+                              context, 'Country Name', product.negaraPemasok),
                           _buildDetailRow(
-                              'Country Name', product.negaraPemasok),
-                          _buildDetailRow('Producer', product.produsen),
+                              context, 'Producer', product.produsen),
                           if (product.produkCategory.isNotEmpty)
-                            _buildDetailRow(
-                                'Product Category', product.produkCategory),
+                            _buildDetailRow(context, 'Product Category',
+                                product.produkCategory),
                           if (product.produkSubCategory.isNotEmpty)
-                            _buildDetailRow('Product SubCategory',
+                            _buildDetailRow(context, 'Product SubCategory',
                                 product.produkSubCategory),
                           _buildDetailRow(
-                              'Product Status', product.produkStatus),
-                          _buildDetailRow(
-                              'Net Weight', '${product.beratBersih} kg'),
-                          _buildDetailRow('Dimensions',
+                              context, 'Product Status', product.produkStatus),
+                          _buildDetailRow(context, 'Net Weight',
+                              '${product.beratBersih} kg'),
+                          _buildDetailRow(context, 'Dimensions',
                               '${product.panjang} x ${product.lebar} x ${product.tinggi} cm'),
                           _buildDetailRow(
-                              'Storage Type', product.tipePenyimpanan),
-                          _buildDetailRow('Product BU', product.produkBU),
+                              context, 'Storage Type', product.tipePenyimpanan),
                           _buildDetailRow(
-                              'Lead Time', '${product.waktuTenggang} days'),
-                          _buildDetailRow(
-                              'Shelf Life', '${product.umurSimpan} days'),
+                              context, 'Product BU', product.produkBU),
+                          _buildDetailRow(context, 'Lead Time',
+                              '${product.waktuTenggang} days'),
+                          _buildDetailRow(context, 'Shelf Life',
+                              '${product.umurSimpan} days'),
                           //          _buildDetailRow('Packaging', product.kemasan!),
                           // if (product.komposisi != null &&
                           //     product.komposisi!.isNotEmpty)
@@ -162,28 +171,28 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Container(
       decoration: const BoxDecoration(
         border: Border(
           bottom: BorderSide(color: Colors.grey, width: 0.5),
         ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: EdgeInsets.symmetric(vertical: 14.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 120.rs(context),
             child: Text(
               label,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14.rt(context)),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14.rt(context)),
             ),
           ),
         ],

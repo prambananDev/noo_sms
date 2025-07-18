@@ -46,6 +46,7 @@ class CityDropdownField extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(width: 16.rs(context)),
           Expanded(
             flex: 2,
             child: Obx(() {

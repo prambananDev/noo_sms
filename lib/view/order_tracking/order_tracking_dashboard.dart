@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/order_tracking/order_tracking_controller.dart';
 import 'package:noo_sms/models/order_tracking_model.dart';
 
@@ -49,20 +50,21 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
           'Order Tracking',
           style: TextStyle(
             color: colorNetral,
-            fontSize: 16,
+            fontSize: 16.rt(context),
             fontWeight: FontWeight.bold,
           ),
         ),
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: 56.rs(context),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
         ),
         backgroundColor: colorAccent,
@@ -71,7 +73,11 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
             onPressed: () {
               controller.refreshData();
             },
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(
+              Icons.refresh,
+              color: Colors.white,
+              size: 24.ri(context),
+            ),
           ),
         ],
       ),
@@ -79,16 +85,17 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
         children: [
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.rp(context)),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.rr(context)),
                 border: Border.all(color: Colors.grey[300]!),
               ),
               child: TextField(
                 controller: searchController,
                 cursorColor: colorAccent,
+                style: TextStyle(fontSize: 16.rt(context)),
                 onChanged: (value) {
                   _onSearchChanged(value);
                 },
@@ -96,7 +103,7 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
                   prefixIcon: Icon(
                     Icons.search,
                     color: colorAccent,
-                    size: 20,
+                    size: 20.ri(context),
                   ),
                   suffixIcon: searchController.text.isNotEmpty
                       ? IconButton(
@@ -106,19 +113,19 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
                           icon: Icon(
                             Icons.clear,
                             color: Colors.grey[500],
-                            size: 20,
+                            size: 20.ri(context),
                           ),
                         )
                       : null,
                   hintText: 'Search customer name, ID, or alias...',
                   hintStyle: TextStyle(
                     color: Colors.grey[500],
-                    fontSize: 14,
+                    fontSize: 14.rt(context),
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.rp(context),
+                    vertical: 12.rp(context),
                   ),
                 ),
               ),
@@ -142,12 +149,12 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
               CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.rs(context)),
               Text(
                 'Loading customers...',
                 style: TextStyle(
                   color: Colors.grey[600],
-                  fontSize: 14,
+                  fontSize: 14.rt(context),
                 ),
               ),
             ],
@@ -158,12 +165,12 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
       if (controller.filteredData.isEmpty) {
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.rp(context)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24.rp(context)),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     shape: BoxShape.circle,
@@ -172,47 +179,55 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
                     controller.isSearching.value
                         ? Icons.search_off
                         : Icons.people_outline,
-                    size: 48,
+                    size: 48.ri(context),
                     color: Colors.grey[400],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.rs(context)),
                 Text(
                   controller.isSearching.value
                       ? 'No results found'
                       : 'No customers available',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.rt(context),
                     fontWeight: FontWeight.w500,
                     color: Colors.grey[700],
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Text(
                   controller.isSearching.value
                       ? 'Try searching with different keywords'
                       : 'Customer data will appear here when available',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.rt(context),
                     color: Colors.grey[500],
                   ),
                   textAlign: TextAlign.center,
                 ),
                 if (controller.isSearching.value) ...[
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.rs(context)),
                   ElevatedButton.icon(
                     onPressed: () => _clearSearch(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorAccent,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.rp(context),
+                        vertical: 12.rp(context),
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.rr(context)),
                       ),
                     ),
-                    icon: const Icon(Icons.clear, size: 18),
-                    label: const Text('Clear Search'),
+                    icon: Icon(
+                      Icons.clear,
+                      size: 18.ri(context),
+                    ),
+                    label: Text(
+                      'Clear Search',
+                      style: TextStyle(fontSize: 16.rt(context)),
+                    ),
                   ),
                 ],
               ],
@@ -224,7 +239,7 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
       return ListView.builder(
         controller: controller.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.rp(context)),
         itemCount: controller.filteredData.length,
         itemBuilder: (context, index) {
           return _buildListItem(context, controller.filteredData[index]);
@@ -238,11 +253,14 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
     OrderTrackingModel item,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      padding: const EdgeInsets.all(8),
+      margin: EdgeInsets.symmetric(
+        horizontal: 0,
+        vertical: 8.rp(context),
+      ),
+      padding: EdgeInsets.all(8.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
@@ -256,14 +274,14 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCustomerID(item),
-              _buildCustomerName(item),
-              const SizedBox(height: 60),
+              _buildCustomerID(context, item),
+              _buildCustomerName(context, item),
+              SizedBox(height: 60.rs(context)),
             ],
           ),
           Positioned(
-            bottom: 10,
-            right: 10,
+            bottom: 10.rp(context),
+            right: 10.rp(context),
             child: GestureDetector(
               onTap: () {
                 controller.navigateToDetail(item);
@@ -271,15 +289,17 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
               child: Container(
                 decoration: BoxDecoration(
                   color: colorAccent,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.rr(context)),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.rp(context),
+                  vertical: 4.rp(context),
+                ),
                 child: Text(
                   "Detail",
                   style: TextStyle(
                     color: colorNetral,
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                   ),
                 ),
               ),
@@ -290,26 +310,26 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
     );
   }
 
-  Widget _buildCustomerID(OrderTrackingModel item) {
+  Widget _buildCustomerID(BuildContext context, OrderTrackingModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "ID : ",
             style: TextStyle(
               color: Colors.black,
-              fontSize: 16,
+              fontSize: 16.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
           Expanded(
             child: Text(
               item.custId,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -320,26 +340,26 @@ class _DashboardOrderTrackState extends State<DashboardOrderTrack> {
     );
   }
 
-  Widget _buildCustomerName(OrderTrackingModel item) {
+  Widget _buildCustomerName(BuildContext context, OrderTrackingModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Name : ",
             style: TextStyle(
               color: Colors.black,
-              fontSize: 16,
+              fontSize: 16.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
           Expanded(
             child: Text(
               item.custName,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

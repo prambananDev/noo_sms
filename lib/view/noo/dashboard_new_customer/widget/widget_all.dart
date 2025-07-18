@@ -20,7 +20,7 @@ class BasicInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -45,7 +45,7 @@ class BasicInfoSection extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.rs(context)),
           GetBuilder<CustomerFormController>(
             id: 'salesOffice',
             builder: (_) => CustomDropdownField(
@@ -69,7 +69,7 @@ class BasicInfoSection extends StatelessWidget {
               value: controller.selectedCustomerGroup,
               validationText: "Please select a Customer Group",
               items: controller.customerGroups
-                  .map((group) => {'name': group.name})
+                  .map((group) => {'name': group.name, 'value': group.value})
                   .toList(),
               onChanged: (value) {
                 controller.selectedCustomerGroup = value;
@@ -310,17 +310,17 @@ class CompanyAndTaxSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.rp(context)),
             child: Center(
               child: Text(
                 "Company Address",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.rt(context),
                     color: Colors.black,
                     fontWeight: FontWeight.bold),
               ),
@@ -380,22 +380,22 @@ class CompanyAndTaxSection extends StatelessWidget {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
+            child: const Divider(
                 color: Colors.black,
                 height: 0,
                 thickness: 1,
                 indent: 1,
                 endIndent: 1),
           ),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.rp(context)),
             child: Center(
               child: Text(
                 "TAX Address",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.rt(context),
                     color: Colors.black,
                     fontWeight: FontWeight.bold),
               ),
@@ -442,7 +442,12 @@ class CompanyAndTaxSection extends StatelessWidget {
                             controller.ktpAddressController.text;
                           },
                         )),
-                    const Text("Use KTP Data for Tax Data"),
+                    Expanded(
+                      child: Text(
+                        "Use KTP Data for Tax Data",
+                        style: TextStyle(fontSize: 14.rt(context)),
+                      ),
+                    ),
                   ],
                 ),
                 Row(
@@ -460,7 +465,12 @@ class CompanyAndTaxSection extends StatelessWidget {
                             controller.update(['taxAddress']);
                           },
                         )),
-                    const Text("Use Company Address for Tax Data"),
+                    Expanded(
+                      child: Text(
+                        "Use Company Address for Tax Data",
+                        style: TextStyle(fontSize: 14.rt(context)),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -487,17 +497,17 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.rp(context)),
             child: Center(
               child: Text(
                 "Delivery Address",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.rt(context),
                     color: Colors.black,
                     fontWeight: FontWeight.bold),
               ),
@@ -572,28 +582,33 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                             });
                           },
                         )),
-                    const Text("Use Company Address Data"),
+                    Expanded(
+                      child: Text(
+                        "Use Company Address Data",
+                        style: TextStyle(fontSize: 14.rt(context)),
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
+            child: const Divider(
                 color: Colors.black,
                 height: 0,
                 thickness: 1,
                 indent: 1,
                 endIndent: 1),
           ),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.rp(context)),
             child: Center(
               child: Text(
                 "Delivery Address 2",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.rt(context),
                     color: Colors.black,
                     fontWeight: FontWeight.bold),
               ),
@@ -665,7 +680,12 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                             }
                           },
                         )),
-                    const Text("Use Company Address Data"),
+                    Expanded(
+                      child: Text(
+                        "Use Company Address Data",
+                        style: TextStyle(fontSize: 14.rt(context)),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -686,26 +706,26 @@ class DocumentsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.rp(context)),
             child: Center(
               child: Text(
                 "Documents",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.rt(context),
                     color: Colors.black,
                     fontWeight: FontWeight.bold),
               ),
             ),
           ),
           DocumentsGallery(controller: controller),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
+            child: const Divider(
                 color: Colors.black,
                 height: 0,
                 thickness: 1,
@@ -738,23 +758,32 @@ class _LocationInfoCardState extends State<LocationInfoCard> {
       children: [
         Row(
           children: <Widget>[
-            const Text(
-              "Your Current\nLocation               :   ",
+            Expanded(
+              flex: 2,
+              child: Text(
+                "Your Current\nLocation               :   ",
+                style: TextStyle(fontSize: 14.rt(context)),
+              ),
             ),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isFront = !_isFront;
-                });
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
+            Expanded(
+              flex: 3,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isFront = !_isFront;
+                  });
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12.rr(context)),
+                  ),
+                  width: ResponsiveUtil.isIPad(context)
+                      ? MediaQuery.of(context).size.width * 0.4
+                      : MediaQuery.of(context).size.width * 0.5,
+                  height: MediaQuery.of(context).size.height * 0.15,
+                  child: _isFront ? _buildFront() : _buildBack(),
                 ),
-                width: MediaQuery.of(context).size.width * 0.5,
-                height: MediaQuery.of(context).size.height * 0.15,
-                child: _isFront ? _buildFront() : _buildBack(),
               ),
             ),
           ],
@@ -768,17 +797,19 @@ class _LocationInfoCardState extends State<LocationInfoCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(6.0),
+          padding: EdgeInsets.all(6.rp(context)),
           child: Text(
             "Longitude: ${widget.controller.longitudeData}",
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                fontSize: 14.rt(context), fontWeight: FontWeight.w600),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(6.0),
+          padding: EdgeInsets.all(6.rp(context)),
           child: Text(
             "Latitude: ${widget.controller.latitudeData}",
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                fontSize: 14.rt(context), fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -787,11 +818,11 @@ class _LocationInfoCardState extends State<LocationInfoCard> {
 
   Widget _buildBack() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(8.rp(context)),
       child: Text(
         widget.controller.addressDetail,
         maxLines: 3,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        style: TextStyle(fontSize: 14.rt(context), fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -806,22 +837,26 @@ class DocumentsGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.4,
+      height: ResponsiveUtil.isIPad(context)
+          ? MediaQuery.of(context).size.height * 0.5
+          : MediaQuery.of(context).size.height * 0.4,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 2),
+        padding: EdgeInsets.symmetric(horizontal: 2.rp(context)),
         children: [
-          Obx(() => ImageUploadCard(
-                title: 'KTP',
-                image: controller.imageKTP,
-                webImage: controller.imageKTPWeb,
-                imageUrl: controller.ktpImageUrl,
-                onCameraPress: controller.getImageKTPFromCamera,
-                onGalleryPress: controller.getImageKTPFromGallery,
-                heroTagCamera: 'ktpCamera',
-                heroTagGallery: 'ktpGallery',
-              )),
-          const SizedBox(width: 8),
+          Obx(
+            () => ImageUploadCard(
+              title: 'KTP',
+              image: controller.imageKTP,
+              webImage: controller.imageKTPWeb,
+              imageUrl: controller.ktpImageUrl,
+              onCameraPress: controller.getImageKTPFromCamera,
+              onGalleryPress: controller.getImageKTPFromGallery,
+              heroTagCamera: 'ktpCamera',
+              heroTagGallery: 'ktpGallery',
+            ),
+          ),
+          SizedBox(width: 8.rs(context)),
           Obx(() => ImageUploadCard(
                 title: 'NPWP',
                 image: controller.imageNPWP,
@@ -831,7 +866,7 @@ class DocumentsGallery extends StatelessWidget {
                 heroTagCamera: 'npwpCamera',
                 heroTagGallery: 'npwpGallery',
               )),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.rs(context)),
           Obx(() => ImageUploadCard(
                 title: 'NIB',
                 image: controller.imageSIUP,
@@ -841,17 +876,17 @@ class DocumentsGallery extends StatelessWidget {
                 heroTagCamera: 'siupCamera',
                 heroTagGallery: 'siupGallery',
               )),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.rs(context)),
           Obx(() => ImageUploadCard(
                 title: 'SPPKP',
                 image: controller.imageSPPKP,
                 imageUrl: controller.sppkpImageUrl,
-                onCameraPress: controller.getImageSPPKP,
+                onCameraPress: controller.getImageSPPKPFromCamera,
                 onGalleryPress: controller.getImageSPPKPFromGallery,
                 heroTagCamera: 'sppkpCamera',
                 heroTagGallery: 'sppkpGallery',
               )),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.rs(context)),
           Obx(() => ImageUploadCard(
                 title: 'Front View',
                 image: controller.imageBusinessPhotoFront,
@@ -862,7 +897,7 @@ class DocumentsGallery extends StatelessWidget {
                 heroTagCamera: 'frontCamera',
                 heroTagGallery: 'frontGallery',
               )),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.rs(context)),
           Obx(() => ImageUploadCard(
                 title: 'Inside View',
                 image: controller.imageBusinessPhotoInside,
@@ -873,7 +908,7 @@ class DocumentsGallery extends StatelessWidget {
                 heroTagCamera: 'insideCamera',
                 heroTagGallery: 'insideGallery',
               )),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.rs(context)),
           Obx(() => ImageUploadCard(
                 title: 'Competitor TOP (Optional)',
                 image: controller.imageCompetitorTop,
@@ -899,74 +934,114 @@ class SignatureSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
           child: Center(
             child: Text(
               "Signature Form",
               style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 20.rt(context),
                   color: Colors.black,
                   fontWeight: FontWeight.bold),
             ),
           ),
         ),
-        const Center(
+        Center(
           child: Text(
             'Sales',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        Signature(
-          controller: controller.signatureSalesController,
-          height: MediaQuery.of(context).size.height * 0.3,
-          width: double.infinity,
-          backgroundColor: Colors.grey[200]!,
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 8.rp(context)),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(8.rr(context)),
+          ),
+          child: Signature(
+            controller: controller.signatureSalesController,
+            height: ResponsiveUtil.isIPad(context)
+                ? MediaQuery.of(context).size.height * 0.35
+                : MediaQuery.of(context).size.height * 0.3,
+            width: double.infinity,
+            backgroundColor: Colors.grey[200]!,
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(8.rp(context)),
           child: Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorAccent,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24.rp(context),
+                  vertical: 12.rp(context),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.rr(context)),
+                ),
               ),
               onPressed: controller.signatureSalesController.clear,
               child: Text(
                 'Clear',
-                style: TextStyle(color: colorNetral),
+                style: TextStyle(
+                  color: colorNetral,
+                  fontSize: 14.rt(context),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
         ),
-        const Center(
+        Center(
           child: Text(
             'Customer',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        Signature(
-          controller: controller.signatureCustomerController,
-          height: MediaQuery.of(context).size.height * 0.3,
-          width: double.infinity,
-          backgroundColor: Colors.grey[200]!,
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 8.rp(context)),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(8.rr(context)),
+          ),
+          child: Signature(
+            controller: controller.signatureCustomerController,
+            height: ResponsiveUtil.isIPad(context)
+                ? MediaQuery.of(context).size.height * 0.35
+                : MediaQuery.of(context).size.height * 0.3,
+            width: double.infinity,
+            backgroundColor: Colors.grey[200]!,
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(8.rp(context)),
           child: Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorAccent,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24.rp(context),
+                  vertical: 12.rp(context),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.rr(context)),
+                ),
               ),
               onPressed: controller.signatureCustomerController.clear,
               child: Text(
                 'Clear',
-                style: TextStyle(color: colorNetral),
+                style: TextStyle(
+                  color: colorNetral,
+                  fontSize: 14.rt(context),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -992,22 +1067,24 @@ class FormActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        right: ResponsiveUtil.scaleSize(context, 16),
-        left: ResponsiveUtil.scaleSize(context, 16),
-        bottom: ResponsiveUtil.scaleSize(context, 16),
+        right: 16.rp(context),
+        left: 16.rp(context),
+        bottom: 16.rp(context),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(right: 8.0),
+              padding: EdgeInsets.only(right: 8.rp(context)),
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  side: BorderSide(color: colorAccent),
+                  padding: EdgeInsets.symmetric(vertical: 12.rp(context)),
+                  side: BorderSide(
+                    color: colorAccent,
+                  ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(8.rr(context)),
                   ),
                 ),
                 onPressed: _handlePreviewOrUpdate,
@@ -1015,7 +1092,7 @@ class FormActionButtons extends StatelessWidget {
                       controller.isEditMode.value ? 'Update' : 'Preview',
                       style: TextStyle(
                         color: colorAccent,
-                        fontSize: 16,
+                        fontSize: 16.rt(context),
                         fontWeight: FontWeight.w600,
                       ),
                     )),
@@ -1024,22 +1101,22 @@ class FormActionButtons extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
+              padding: EdgeInsets.only(left: 8.rp(context)),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorAccent,
                   foregroundColor: colorNetral,
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  elevation: 2,
+                  padding: EdgeInsets.symmetric(vertical: 12.rp(context)),
+                  elevation: 2.rs(context),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(8.rr(context)),
                   ),
                 ),
                 onPressed: _handleSubmit,
-                child: const Text(
+                child: Text(
                   'Submit',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1054,19 +1131,25 @@ class FormActionButtons extends StatelessWidget {
   void _handlePreviewOrUpdate() async {
     if (controller.isEditMode.value) {
       Get.dialog(
-        const Dialog(
+        Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: Center(
             child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.rr(Get.context!)),
+              ),
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.rp(Get.context!)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Updating customer...'),
+                    CircularProgressIndicator(color: colorAccent),
+                    SizedBox(height: 16.rs(Get.context!)),
+                    Text(
+                      'Updating customer...',
+                      style: TextStyle(fontSize: 14.rt(Get.context!)),
+                    ),
                   ],
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/constant/preview_cust_form/preview_controller.dart';
 import 'package:noo_sms/assets/constant/preview_cust_form/preview_dialog.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/controllers/noo/draft_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
@@ -206,10 +207,10 @@ class CustomerFormState extends State<CustomerForm>
         children: [
           if (widget.isFromDraft || widget.editData != null)
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.chevron_left,
                 color: Colors.black,
-                size: 35,
+                size: 35.rt(context),
               ),
               onPressed: handleBack,
             ),
@@ -219,8 +220,8 @@ class CustomerFormState extends State<CustomerForm>
                 : controller.isEditMode.value
                     ? 'Edit Customer'
                     : 'New Customer',
-            style: const TextStyle(
-              fontSize: 24,
+            style: TextStyle(
+              fontSize: 24.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),

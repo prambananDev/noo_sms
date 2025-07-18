@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/approved_controller.dart';
 import 'package:noo_sms/models/noo_approval.dart';
 import 'package:noo_sms/view/noo/approved/approved_detail.dart';
@@ -48,6 +49,10 @@ class ApprovedViewState extends State<ApprovedView> {
           await controller.refreshData();
         },
         child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            vertical: 16.rp(context),
+          ),
           itemCount: controller.approvals.length,
           itemBuilder: (context, index) {
             return _buildApprovalCard(controller.approvals[index], index);
@@ -86,16 +91,18 @@ class ApprovedViewState extends State<ApprovedView> {
 
   Widget _buildApprovalCard(ApprovalModel approval, int index) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(8),
+      margin: EdgeInsets.symmetric(
+          horizontal: 16.rp(context), vertical: 8.rp(context)),
+      padding: EdgeInsets.all(
+          ResponsiveUtil.isIPad(context) ? 16.rp(context) : 12.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
@@ -114,8 +121,8 @@ class ApprovedViewState extends State<ApprovedView> {
             ],
           ),
           Positioned(
-            bottom: 10,
-            right: 10,
+            bottom: 10.rp(context),
+            right: 10.rp(context),
             child: GestureDetector(
               onTap: () {
                 Get.to(
@@ -127,15 +134,18 @@ class ApprovedViewState extends State<ApprovedView> {
               child: Container(
                 decoration: BoxDecoration(
                   color: colorAccent,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.rr(context)),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16.rp(context),
+                    vertical: ResponsiveUtil.isIPad(context)
+                        ? 8.rp(context)
+                        : 4.rp(context)),
                 child: Text(
                   "Detail",
                   style: TextStyle(
                     color: colorNetral,
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                   ),
                 ),
               ),
@@ -146,17 +156,20 @@ class ApprovedViewState extends State<ApprovedView> {
     );
   }
 
-  Widget _buildInfoRow(String label, String? value) {
+  Widget _buildInfoRow(
+    String label,
+    String? value,
+  ) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         children: [
           Expanded(
-            flex: 2,
+            flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
             child: Text(
               "$label : ",
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -166,8 +179,8 @@ class ApprovedViewState extends State<ApprovedView> {
             flex: 3,
             child: Text(
               value ?? '-',
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.rt(context),
                 color: Colors.black,
               ),
               overflow: TextOverflow.ellipsis,
@@ -180,15 +193,17 @@ class ApprovedViewState extends State<ApprovedView> {
 
   Widget _buildStatusRow(String label, String? value) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         children: [
           Expanded(
-            flex: 2, // Adjust flex values as needed
+            flex: ResponsiveUtil.isIPad(context)
+                ? 2
+                : 1, // Adjust flex values as needed
             child: Text(
               "$label : ",
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -199,7 +214,7 @@ class ApprovedViewState extends State<ApprovedView> {
             child: Text(
               value ?? '-',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: _getStatusColor(value),
               ),
               overflow: TextOverflow.ellipsis, // Handle overflow

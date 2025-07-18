@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:intl/intl.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -32,7 +33,7 @@ class CustomTextField extends StatelessWidget {
     const int ktpNPWPLength = 16;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -40,13 +41,13 @@ class CustomTextField extends StatelessWidget {
             flex: 1,
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.rt(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.rs(context)),
           Expanded(
             flex: 2,
             child: TextFormField(
@@ -61,29 +62,29 @@ class CustomTextField extends StatelessWidget {
               textAlign: TextAlign.left,
               maxLength: (isKTP || isNPWP) ? ktpNPWPLength : maxLength,
               inputFormatters: _getInputFormatters(isKTP, isNPWP),
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.rt(context),
                 color: Colors.black,
               ),
               decoration: InputDecoration(
                 prefixText: isCurrency ? prefix : null,
-                prefixStyle: const TextStyle(
-                  fontSize: 16,
+                prefixStyle: TextStyle(
+                  fontSize: 16.rt(context),
                   color: Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
                 hintText: _getHintText(isKTP, isNPWP),
                 hintStyle: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.rt(context),
                   color: Colors.grey.shade600,
                 ),
                 isDense: true,
-                contentPadding: const EdgeInsets.only(bottom: 8),
+                contentPadding: EdgeInsets.only(bottom: 8.rp(context)),
                 counterText: '',
                 border: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.grey.shade300,
-                    width: 1.0,
+                    width: 1.rs(context),
                   ),
                 ),
                 enabledBorder: UnderlineInputBorder(
@@ -95,20 +96,24 @@ class CustomTextField extends StatelessWidget {
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: colorAccent,
-                    width: 2.0,
+                    width: 1.0,
                   ),
                 ),
                 errorBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
-                    width: 1.0,
+                    width: 1.rs(context),
                   ),
                 ),
                 focusedErrorBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
-                    width: 2.0,
+                    width: 2.rs(context),
                   ),
+                ),
+                errorStyle: TextStyle(
+                  fontSize: 12.rt(context),
+                  color: Colors.red.shade400,
                 ),
               ),
               validator: (value) => _validateInput(

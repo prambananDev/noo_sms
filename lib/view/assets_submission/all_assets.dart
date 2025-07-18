@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/assets_submission/submission_controller.dart';
 
 class AllAssetsPage extends StatefulWidget {
@@ -56,19 +57,19 @@ class _AllAssetsPage extends State<AllAssetsPage> {
         }
 
         if (_assetController.assets.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.error_outline,
-                  size: 48,
+                  size: 48.ri(context),
                   color: Colors.red,
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Text(
                   "Data not available",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16.rt(context)),
                 ),
               ],
             ),
@@ -78,7 +79,7 @@ class _AllAssetsPage extends State<AllAssetsPage> {
         return ListView.builder(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.rp(context)),
           itemCount: _assetController.assets.length,
           itemBuilder: (context, index) {
             final asset = _assetController.assets[index];
@@ -91,16 +92,19 @@ class _AllAssetsPage extends State<AllAssetsPage> {
 
   Widget _buildListItem(BuildContext context, dynamic asset) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.rp(context),
+        vertical: 8.rp(context),
+      ),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
@@ -108,29 +112,34 @@ class _AllAssetsPage extends State<AllAssetsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(6.0),
+            padding: EdgeInsets.all(6.rp(context)),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     "Status : ",
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 16,
+                      fontSize: 16.rt(context),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 4.rp(context),
+                    horizontal: 12.rp(context),
+                  ),
                   decoration: BoxDecoration(
                     color: asset.status ? Colors.green : Colors.orange,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.rr(context)),
                   ),
                   child: Text(
                     asset.statusName ?? '',
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.rt(context),
+                    ),
                   ),
                 ),
               ],
@@ -144,7 +153,7 @@ class _AllAssetsPage extends State<AllAssetsPage> {
           _buildInfoItem("Daya Listrik", asset.dayaListrik ?? '-'),
           _buildInfoItem("Lokasi Gudang", asset.lokasiGudang ?? '-'),
           _buildInfoItem("Customer", asset.customer ?? '-'),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.rs(context)),
         ],
       ),
     );
@@ -152,24 +161,24 @@ class _AllAssetsPage extends State<AllAssetsPage> {
 
   Widget _buildInfoItem(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         children: [
           Expanded(
             child: Text(
               "$label : ",
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 16,
+              fontSize: 16.rt(context),
             ),
           ),
         ],

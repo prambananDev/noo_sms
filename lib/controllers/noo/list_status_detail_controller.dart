@@ -6,7 +6,6 @@ import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
 import 'package:noo_sms/models/noo_approval.dart';
-import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form_coba.dart';
 
 class StatusDetailController extends GetxController {

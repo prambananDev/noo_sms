@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/assets_submission/submission_controller.dart';
 import 'package:search_choices/search_choices.dart';
 import 'package:intl/intl.dart';
@@ -36,6 +37,7 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
       backgroundColor: colorNetral,
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.rp(context)),
         controller: _scrollController,
         child: _buildBody(),
       ),
@@ -44,32 +46,43 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
 
   Widget _buildBody() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.rp(context),
+        vertical: 8.rp(context),
+      ),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Center(
+          Center(
             child: Text(
               "Form Peminjaman Asset",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16.rt(context),
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text("Customer:",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          SizedBox(height: 16.rs(context)),
+          Text(
+            "Customer:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14.rt(context),
+            ),
+          ),
+          SizedBox(height: 8.rs(context)),
           Obx(
             () {
               return SearchChoices.single(
@@ -78,13 +91,19 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
                     : _assetController.customers
                         .map((customer) => DropdownMenuItem<String>(
                               value: customer.accountNum,
-                              child: Text(customer.custNameAlias),
+                              child: Text(
+                                customer.custNameAlias,
+                                style: TextStyle(fontSize: 14.rt(context)),
+                              ),
                             ))
                         .toList(),
                 value: _assetController.selectedCustomerId.isEmpty
                     ? null
                     : _assetController.selectedCustomerId.value,
-                hint: "Pilih Customer",
+                hint: Text(
+                  "Pilih Customer",
+                  style: TextStyle(fontSize: 14.rt(context)),
+                ),
                 onChanged: (value) {
                   if (value != null) {
                     _assetController.selectedCustomerId.value = value as String;
@@ -97,9 +116,15 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
               );
             },
           ),
-          const SizedBox(height: 16),
-          const Text("Asset:", style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          SizedBox(height: 16.rs(context)),
+          Text(
+            "Asset:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14.rt(context),
+            ),
+          ),
+          SizedBox(height: 8.rs(context)),
           Obx(
             () {
               return SearchChoices.single(
@@ -108,13 +133,19 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
                     : _assetController.assetAvail
                         .map((asset) => DropdownMenuItem<int>(
                               value: asset.id,
-                              child: Text(asset.asset),
+                              child: Text(
+                                asset.asset,
+                                style: TextStyle(fontSize: 14.rt(context)),
+                              ),
                             ))
                         .toList(),
                 value: _assetController.selectedAssetId.value == 0
                     ? null
                     : _assetController.selectedAssetId.value,
-                hint: "Pilih Data Asset",
+                hint: Text(
+                  "Pilih Data Asset",
+                  style: TextStyle(fontSize: 14.rt(context)),
+                ),
                 onChanged: (value) {
                   if (value != null) {
                     _assetController.selectedAssetId.value = value as int;
@@ -127,19 +158,26 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
               );
             },
           ),
-          const SizedBox(height: 16),
-          const Text("Tanggal Peminjaman:",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          SizedBox(height: 16.rs(context)),
+          Text(
+            "Tanggal Peminjaman:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14.rt(context),
+            ),
+          ),
+          SizedBox(height: 8.rs(context)),
           Obx(() => InkWell(
                 onTap: () => _selectDate(context),
                 child: Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.rp(context),
+                    vertical: 15.rp(context),
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.rr(context)),
                   ),
                   child: Text(
                     _assetController.selectedDate.value != null
@@ -147,6 +185,7 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
                             .format(_assetController.selectedDate.value!)
                         : "Pilih Tanggal",
                     style: TextStyle(
+                      fontSize: 14.rt(context),
                       color: _assetController.selectedDate.value != null
                           ? Colors.black
                           : Colors.grey,
@@ -154,38 +193,53 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
                   ),
                 ),
               )),
-          const SizedBox(height: 16),
-          const Text("Keterangan:",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          SizedBox(height: 16.rs(context)),
+          Text(
+            "Keterangan:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14.rt(context),
+            ),
+          ),
+          SizedBox(height: 8.rs(context)),
           TextField(
             controller: _assetController.keteranganController,
+            style: TextStyle(fontSize: 14.rt(context)),
             decoration: InputDecoration(
               hintText: "Masukkan keterangan",
+              hintStyle: TextStyle(fontSize: 14.rt(context)),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.rr(context)),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.rp(context),
+                vertical: 12.rp(context),
+              ),
             ),
             maxLines: 3,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.rs(context)),
           Obx(() => _assetController.errorMessage.isNotEmpty
               ? Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.only(bottom: 16.rs(context)),
                   child: Text(
                     _assetController.errorMessage.value,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 14.rt(context),
+                    ),
                   ),
                 )
               : const SizedBox.shrink()),
           Obx(() => _assetController.isSuccess.value
-              ? const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
+              ? Padding(
+                  padding: EdgeInsets.only(bottom: 16.rs(context)),
                   child: Text(
                     "Peminjaman asset berhasil disubmit!",
-                    style: TextStyle(color: Colors.green),
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 14.rt(context),
+                    ),
                   ),
                 )
               : const SizedBox.shrink()),
@@ -193,24 +247,28 @@ class _NewAssetLoanPage extends State<NewAssetLoanPage> {
             child: Container(
               decoration: BoxDecoration(
                 color: colorAccent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.rr(context)),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: 16.rp(context),
+                vertical: 8.rp(context),
+              ),
               child: Obx(() => GestureDetector(
                     onTap: _assetController.isSubmitting.value
                         ? null
                         : () => _assetController.submitAssetLoan(),
                     child: _assetController.isSubmitting.value
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        ? SizedBox(
+                            height: 20.rs(context),
+                            width: 20.rs(context),
+                            child:
+                                const CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(
                             "Submit ",
                             style: TextStyle(
                               color: colorNetral,
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                             ),
                           ),
                   )),

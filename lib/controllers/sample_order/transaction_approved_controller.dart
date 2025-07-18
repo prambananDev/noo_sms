@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/models/approved.dart';
@@ -85,24 +86,48 @@ class TransactionApprovedController extends GetxController {
           builder: (BuildContext context) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.rr(context)),
               ),
+              contentPadding: EdgeInsets.all(16.rp(context)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ...details.map((detail) {
-                      return ListTile(
-                        title: Text('Product: ${detail.product}'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Unit: ${detail.unit}'),
-                            Text('Qty: ${detail.qty}'),
-                          ],
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 8.rp(context)),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 8.rp(context),
+                            vertical: 4.rp(context),
+                          ),
+                          title: Text(
+                            'Product: ${detail.product}',
+                            style: TextStyle(
+                              fontSize: 16.rt(context),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: EdgeInsets.only(top: 4.rp(context)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Unit: ${detail.unit}',
+                                  style: TextStyle(fontSize: 14.rt(context)),
+                                ),
+                                Text(
+                                  'Qty: ${detail.qty}',
+                                  style: TextStyle(fontSize: 14.rt(context)),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       );
                     }).toList(),
+                    SizedBox(height: 16.rs(context)),
                     Align(
                       alignment: Alignment.bottomRight,
                       child: ElevatedButton(
@@ -111,13 +136,20 @@ class TransactionApprovedController extends GetxController {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorAccent,
-                          minimumSize: const Size(0, 45),
+                          minimumSize: Size(0, 45.rs(context)),
                           foregroundColor: const Color(0xFFFFFFFF),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.rp(context),
+                            vertical: 12.rp(context),
+                          ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.rr(context)),
                           ),
                         ),
-                        child: const Text('Close'),
+                        child: Text(
+                          'Close',
+                          style: TextStyle(fontSize: 16.rt(context)),
+                        ),
                       ),
                     ),
                   ],

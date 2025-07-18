@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/button_widget.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_history_controller.dart';
 import 'package:noo_sms/models/transaction_history_sample.dart';
 import 'package:noo_sms/view/sample_order/transaction_feedback.dart';
@@ -87,7 +88,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                   builder: (context) {
                     return AlertDialog(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.rr(context)),
                       ),
                       content: SingleChildScrollView(
                         child: Column(
@@ -96,13 +97,24 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                               children:
                                   inputPagePresenter.listDetail.map((detail) {
                                 return ListTile(
-                                  title: Text('Product: ${detail["Product"]}'),
+                                  title: Text(
+                                    'Product: ${detail["Product"]}',
+                                    style: TextStyle(fontSize: 16.rt(context)),
+                                  ),
                                   subtitle: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text('Unit: ${detail["Unit"]}'),
-                                      Text('Qty: ${detail["Qty"]}'),
+                                      Text(
+                                        'Unit: ${detail["Unit"]}',
+                                        style:
+                                            TextStyle(fontSize: 14.rt(context)),
+                                      ),
+                                      Text(
+                                        'Qty: ${detail["Qty"]}',
+                                        style:
+                                            TextStyle(fontSize: 14.rt(context)),
+                                      ),
                                     ],
                                   ),
                                 );
@@ -116,13 +128,17 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colorAccent,
-                                  minimumSize: const Size(0, 45),
+                                  minimumSize: Size(0, 45.rs(context)),
                                   foregroundColor: const Color(0xFFFFFFFF),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius:
+                                        BorderRadius.circular(10.rr(context)),
                                   ),
                                 ),
-                                child: const Text('Close'),
+                                child: Text(
+                                  'Close',
+                                  style: TextStyle(fontSize: 16.rt(context)),
+                                ),
                               ),
                             ),
                           ],
@@ -133,16 +149,17 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                 );
               },
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                padding: const EdgeInsets.all(16),
+                margin: EdgeInsets.symmetric(
+                    horizontal: 16.rp(context), vertical: 8.rp(context)),
+                padding: EdgeInsets.all(16.rp(context)),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.rr(context)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.3),
-                      blurRadius: 8,
-                      spreadRadius: 1,
+                      blurRadius: 8.rs(context),
+                      spreadRadius: 1.rs(context),
                     ),
                   ],
                 ),
@@ -151,17 +168,17 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                   children: [
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           "Order Number : ",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
                         Text(
                           transaction.salesId ?? "N/A",
                           style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.bold,
                               color: colorBlack),
                         ),
@@ -169,82 +186,83 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                     ),
                     Text(
                       'Order Date : ${DateFormat("dd-MM-yyyy hh:mm").format(DateTime.parse(transaction.date!))}',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w300),
+                      style: TextStyle(
+                          fontSize: 16.rt(context),
+                          fontWeight: FontWeight.w300),
                     ),
                     Text(
                       'Customer Name : ${transaction.customer ?? "N/A"}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Segment : ${transaction.segment}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Address : ${transaction.address}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'PIC : ${transaction.pic}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Phone Number: ${transaction.phone}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Purpose Type : ${transaction.purposeType}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Purpose : ${transaction.purpose}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Purpose Description : ${transaction.desc}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Sales Office : ${transaction.salesoffice}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Business Unit : ${transaction.businessUnit}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Departement : ${transaction.dept}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Claim : ${transaction.isClaimed}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Principal : ${transaction.principal}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Feedback : ${transaction.feedback}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Feedback Note : ${transaction.notes ?? "N/A"}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           "Status : ",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
                         Text(
                           statusText,
                           style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.w300,
                               color: statusColor),
                         ),
@@ -252,10 +270,10 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                     ),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           "Attachment : ",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
@@ -267,7 +285,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                           child: Text(
                             "Download File",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.w300,
                               color: colorAccent,
                               decoration: TextDecoration.underline,
@@ -277,7 +295,7 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -289,14 +307,22 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                   context: context,
                                   barrierDismissible: false,
                                   builder: (BuildContext context) {
-                                    return const AlertDialog(
+                                    return AlertDialog(
                                       content: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          CircularProgressIndicator(),
-                                          SizedBox(height: 16),
+                                          SizedBox(
+                                            width: 24.rs(context),
+                                            height: 24.rs(context),
+                                            child:
+                                                const CircularProgressIndicator(),
+                                          ),
+                                          SizedBox(height: 16.rs(context)),
                                           Text(
-                                              'Loading approval information...'),
+                                            'Loading approval information...',
+                                            style: TextStyle(
+                                                fontSize: 16.rt(context)),
+                                          ),
                                         ],
                                       ),
                                     );
@@ -313,10 +339,12 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                   context: context,
                                   builder: (context) {
                                     return AlertDialog(
-                                      title: const Text(
+                                      title: Text(
                                         "Approval Information",
                                         style: TextStyle(
-                                            fontWeight: FontWeight.bold),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18.rt(context),
+                                        ),
                                       ),
                                       content: SingleChildScrollView(
                                         child: Column(
@@ -332,32 +360,33 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                                         : Colors.red;
 
                                             return Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8),
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 8.rp(context)),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     'Level ${info.level} - ${info.name}',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      fontSize: 16,
+                                                      fontSize: 16.rt(context),
                                                     ),
                                                   ),
                                                   Row(
                                                     children: [
-                                                      const Text(
+                                                      Text(
                                                         'Status: ',
                                                         style: TextStyle(
-                                                            fontSize: 14),
+                                                            fontSize:
+                                                                14.rt(context)),
                                                       ),
                                                       Text(
                                                         info.status,
                                                         style: TextStyle(
-                                                          fontSize: 14,
+                                                          fontSize:
+                                                              14.rt(context),
                                                           color: statusColor,
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -368,15 +397,17 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                                   if (info.message != null) ...[
                                                     Text(
                                                       'Message: ${info.message}',
-                                                      style: const TextStyle(
-                                                          fontSize: 14),
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              14.rt(context)),
                                                     ),
                                                   ],
                                                   if (info.time != null) ...[
                                                     Text(
                                                       'Time: ${DateFormat("dd-MM-yyyy HH:mm").format(info.time!)}',
-                                                      style: const TextStyle(
-                                                          fontSize: 14),
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              14.rt(context)),
                                                     ),
                                                   ],
                                                   const Divider(),
@@ -390,7 +421,11 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context),
-                                          child: const Text('Close'),
+                                          child: Text(
+                                            'Close',
+                                            style: TextStyle(
+                                                fontSize: 16.rt(context)),
+                                          ),
                                         ),
                                       ],
                                     );
@@ -434,11 +469,12 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                         context: context,
                                         builder: (context) {
                                           return AlertDialog(
-                                            title: const Text(
+                                            title: Text(
                                               "Feedback",
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
+                                                fontSize: 18.rt(context),
                                               ),
                                             ),
                                             content: SizedBox(
@@ -453,33 +489,42 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                                 children: [
                                                   Text(
                                                     " ${inputPagePresenter.feedbackDetail.value.feedbackName}",
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            16.rt(context),
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   ),
                                                   Container(
                                                     alignment: Alignment.center,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(vertical: 8),
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical:
+                                                                8.rp(context)),
                                                     child: Text(
                                                       "Notes : ${inputPagePresenter.feedbackDetail.value.notes!}",
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              16.rt(context)),
                                                     ),
                                                   ),
                                                   fetchedData != null
                                                       ? Image.memory(
                                                           fetchedData,
                                                           fit: BoxFit.fitWidth)
-                                                      : const SizedBox(
-                                                          height: 200,
+                                                      : SizedBox(
+                                                          height:
+                                                              200.rs(context),
                                                           child: Center(
                                                             child: Text(
                                                               "No Image Loaded",
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,
+                                                              style: TextStyle(
+                                                                fontSize: 16.rt(
+                                                                    context),
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
@@ -490,7 +535,11 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                               TextButton(
                                                 onPressed: () =>
                                                     Navigator.pop(context),
-                                                child: const Text('Close'),
+                                                child: Text(
+                                                  'Close',
+                                                  style: TextStyle(
+                                                      fontSize: 16.rt(context)),
+                                                ),
                                               ),
                                             ],
                                           );
@@ -520,7 +569,11 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                         context: context,
                                         builder: (context) {
                                           return AlertDialog(
-                                            title: const Text("Upload POD"),
+                                            title: Text(
+                                              "Upload POD",
+                                              style: TextStyle(
+                                                  fontSize: 18.rt(context)),
+                                            ),
                                             content: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
@@ -530,15 +583,38 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                                     handleUploadsPOD(salesId,
                                                         ImageSource.camera);
                                                   },
-                                                  child: const Text("Camera"),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    minimumSize: Size(
+                                                        double.infinity,
+                                                        45.rs(context)),
+                                                  ),
+                                                  child: Text(
+                                                    "Camera",
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            16.rt(context)),
+                                                  ),
                                                 ),
+                                                SizedBox(height: 8.rs(context)),
                                                 ElevatedButton(
                                                   onPressed: () {
                                                     Navigator.pop(context);
                                                     handleUploadsPOD(salesId,
                                                         ImageSource.gallery);
                                                   },
-                                                  child: const Text("Gallery"),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    minimumSize: Size(
+                                                        double.infinity,
+                                                        45.rs(context)),
+                                                  ),
+                                                  child: Text(
+                                                    "Gallery",
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            16.rt(context)),
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -551,11 +627,12 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                         context: context,
                                         builder: (BuildContext context) =>
                                             AlertDialog(
-                                          title: const Text(
+                                          title: Text(
                                             "POD Image",
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
+                                              fontSize: 18.rt(context),
                                             ),
                                           ),
                                           content: SizedBox(
@@ -566,18 +643,27 @@ class _TransactionHistoryState extends State<TransactionHistorySampleView> {
                                             child: fetchedData != null
                                                 ? Image.memory(fetchedData,
                                                     fit: BoxFit.fitWidth)
-                                                : const Center(
+                                                : Center(
                                                     child: Text(
-                                                        "No Image Loaded",
-                                                        textAlign:
-                                                            TextAlign.center),
+                                                      "No Image Loaded",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            16.rt(context),
+                                                      ),
+                                                    ),
                                                   ),
                                           ),
                                           actions: <Widget>[
                                             TextButton(
                                               onPressed: () =>
                                                   Navigator.pop(context),
-                                              child: const Text('Close'),
+                                              child: Text(
+                                                'Close',
+                                                style: TextStyle(
+                                                    fontSize: 16.rt(context)),
+                                              ),
                                             ),
                                           ],
                                         ),

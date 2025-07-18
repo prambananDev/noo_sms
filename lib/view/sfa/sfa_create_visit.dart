@@ -117,21 +117,23 @@ class _SfaCreateState extends State<SfaCreate> {
       appBar: isEditMode
           ? AppBar(
               centerTitle: true,
+              elevation: 0,
+              toolbarHeight: 56.rs(context),
               leading: IconButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: const Icon(
+                icon: Icon(
                   Icons.chevron_left,
                   color: Colors.white,
-                  size: 35,
+                  size: 35.ri(context),
                 ),
               ),
               title: Text(
                 'Customer Visit Update',
                 style: TextStyle(
                     color: colorNetral,
-                    fontSize: 16,
+                    fontSize: 18.rt(context),
                     fontWeight: FontWeight.bold),
               ),
               backgroundColor: colorAccent,

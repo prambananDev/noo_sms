@@ -1,5 +1,3 @@
-// ignore_for_file: empty_catches
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -203,8 +201,9 @@ class MainAppState extends State<MainApp> with WidgetsBindingObserver {
       home: const SplashScreen(),
       builder: (context, widget) {
         return MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: const TextScaler.linear(1.0)),
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.0),
+          ),
           child: widget!,
         );
       },

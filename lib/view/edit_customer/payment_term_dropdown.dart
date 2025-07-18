@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:noo_sms/models/edit_cust_noo_model.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/edit_customer/customer_detail_controller.dart';
 
 class PaymentTermDropdownField extends StatelessWidget {
@@ -20,7 +20,7 @@ class PaymentTermDropdownField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -28,58 +28,64 @@ class PaymentTermDropdownField extends StatelessWidget {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.rt(context),
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
               children: [
                 if (isRequired)
-                  const TextSpan(
+                  TextSpan(
                     text: ' *',
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16.rt(context),
                     ),
                   ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.rs(context)),
 
           // Text Field with Dropdown functionality
           TextFormField(
             controller: controller.paymentTermController,
             readOnly: true, // Make it read-only so user must use dropdown
+            style: TextStyle(fontSize: 16.rt(context)),
             decoration: InputDecoration(
               hintText: 'Select $label',
+              hintStyle: TextStyle(fontSize: 16.rt(context)),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.rr(context)),
                 borderSide: BorderSide(color: Colors.grey.shade400),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.rr(context)),
                 borderSide: BorderSide(color: Colors.grey.shade400),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                borderRadius: BorderRadius.circular(8.rr(context)),
+                borderSide:
+                    BorderSide(color: Colors.blue, width: 2.rs(context)),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 16,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.rp(context),
+                vertical: 16.rp(context),
               ),
               suffixIcon: Obx(() => controller.isLoadingPaymentTerms.value
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? SizedBox(
+                      width: 20.rs(context),
+                      height: 20.rs(context),
                       child: Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        padding: EdgeInsets.all(12.rp(context)),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2.rs(context)),
                       ),
                     )
                   : Icon(
                       Icons.arrow_drop_down,
+                      size: 24.ri(context),
                       color: controller.paymentTerms.isNotEmpty
                           ? Colors.grey.shade600
                           : Colors.orange,
@@ -101,21 +107,21 @@ class PaymentTermDropdownField extends StatelessWidget {
             final selectedTerm = controller.selectedPaymentTerm.value;
             if (selectedTerm != null && selectedTerm.desc.isNotEmpty) {
               return Padding(
-                padding: const EdgeInsets.only(top: 4.0),
+                padding: EdgeInsets.only(top: 4.rs(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '${selectedTerm.desc} (${selectedTerm.numOfDays} days)',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.rt(context),
                         color: Colors.grey.shade600,
                       ),
                     ),
                     Text(
                       'Segment: ${selectedTerm.segment}',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 11.rt(context),
                         color: Colors.grey.shade500,
                         fontStyle: FontStyle.italic,
                       ),
@@ -132,26 +138,30 @@ class PaymentTermDropdownField extends StatelessWidget {
             if (!controller.isLoadingPaymentTerms.value &&
                 controller.paymentTerms.isEmpty) {
               return Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: EdgeInsets.only(top: 8.rs(context)),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning, color: Colors.orange, size: 16),
-                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.warning,
+                      color: Colors.orange,
+                      size: 16.ri(context),
+                    ),
+                    SizedBox(width: 4.rp(context)),
                     Text(
                       'No payment terms available',
                       style: TextStyle(
                         color: Colors.orange.shade700,
-                        fontSize: 12,
+                        fontSize: 12.rt(context),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.rp(context)),
                     GestureDetector(
                       onTap: () => controller.fetchPaymentTerms(),
                       child: Text(
                         'Retry',
                         style: TextStyle(
                           color: Colors.blue.shade700,
-                          fontSize: 12,
+                          fontSize: 12.rt(context),
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -184,7 +194,14 @@ class PaymentTermDropdownField extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Select $label'),
+          title: Text(
+            'Select $label',
+            style: TextStyle(fontSize: 18.rt(context)),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.rp(context),
+            vertical: 12.rp(context),
+          ),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -196,11 +213,16 @@ class PaymentTermDropdownField extends StatelessWidget {
                     controller.paymentTermController.text == term.paymTermId;
 
                 return ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 8.rp(context),
+                    vertical: 4.rp(context),
+                  ),
                   title: Text(
                     term.paymTermId,
                     style: TextStyle(
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 16.rt(context),
                     ),
                   ),
                   subtitle: Column(
@@ -209,12 +231,12 @@ class PaymentTermDropdownField extends StatelessWidget {
                     children: [
                       Text(
                         '${term.desc} (${term.numOfDays} days)',
-                        style: const TextStyle(fontSize: 12),
+                        style: TextStyle(fontSize: 12.rt(context)),
                       ),
                       Text(
                         'Segment: ${term.segment}',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.rt(context),
                           color: Colors.grey.shade600,
                           fontStyle: FontStyle.italic,
                         ),
@@ -232,7 +254,10 @@ class PaymentTermDropdownField extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(fontSize: 16.rt(context)),
+              ),
             ),
             if (controller.paymentTermController.text.isNotEmpty)
               TextButton(
@@ -240,7 +265,10 @@ class PaymentTermDropdownField extends StatelessWidget {
                   controller.updateSelectedPaymentTerm(null);
                   Navigator.of(context).pop();
                 },
-                child: const Text('Clear'),
+                child: Text(
+                  'Clear',
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
               ),
           ],
         );

@@ -41,22 +41,32 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
       backgroundColor: colorNetral,
       appBar: AppBar(
         backgroundColor: colorAccent,
+        centerTitle: true,
+        elevation: 0,
+        toolbarHeight: 56.rs(context),
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Icons.chevron_left, color: Colors.white, size: 35),
+          icon: Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 35.ri(context),
+          ),
         ),
-        title: const Text(
+        title: Text(
           'Customer Details',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16.rt(context),
+          ),
         ),
         actions: [
           Obx(() => controller.isSaving.value
-              ? const Padding(
-                  padding: EdgeInsets.all(16.0),
+              ? Padding(
+                  padding: EdgeInsets.all(16.rp(context)),
                   child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
+                    width: 20.rs(context),
+                    height: 20.rs(context),
+                    child: const CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
@@ -64,7 +74,11 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
                 )
               : IconButton(
                   onPressed: _handleSave,
-                  icon: const Icon(Icons.save, color: Colors.white),
+                  icon: Icon(
+                    Icons.save,
+                    color: Colors.white,
+                    size: 24.ri(context),
+                  ),
                   tooltip: 'Save Changes',
                 )),
         ],
@@ -73,13 +87,16 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
         children: [
           Obx(() {
             if (controller.isLoading.value) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Loading customer details...'),
+                    const CircularProgressIndicator(),
+                    SizedBox(height: 16.rs(context)),
+                    Text(
+                      'Loading customer details...',
+                      style: TextStyle(fontSize: 16.rt(context)),
+                    ),
                   ],
                 ),
               );
@@ -91,25 +108,25 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
-                      size: 64,
+                      size: 64.ri(context),
                       color: Colors.red,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.rs(context)),
                     Text(
                       controller.errorMessage.value,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.rs(context)),
                   ],
                 ),
               );
             }
 
             return Padding(
-              padding: const EdgeInsets.only(bottom: 140),
+              padding: EdgeInsets.only(bottom: 140.rs(context)),
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (index) {
@@ -128,14 +145,17 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
             );
           }),
           Positioned(
-            bottom: 32,
-            left: 16,
-            right: 16,
+            bottom: 32.rs(context),
+            left: 16.rp(context),
+            right: 16.rp(context),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
+                  padding: EdgeInsets.only(
+                    bottom: 16.rs(context),
+                    top: 8.rs(context),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(3, (index) {
@@ -150,12 +170,15 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeInOut,
-                          width: _currentIndex == index ? 24.0 : 8.0,
-                          height: 8.0,
-                          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                          width: _currentIndex == index
+                              ? 24.rs(context)
+                              : 8.rs(context),
+                          height: 8.rs(context),
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 4.rp(context)),
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(4.0),
+                            borderRadius: BorderRadius.circular(4.rr(context)),
                             color: _currentIndex == index
                                 ? colorAccent
                                 : Colors.grey.withOpacity(0.5),
@@ -168,25 +191,27 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.rr(context)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
+                        blurRadius: 10.rs(context),
                         offset: const Offset(0, -2),
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.rp(context)),
                   child: Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            padding:
+                                EdgeInsets.symmetric(vertical: 16.rp(context)),
                             side: BorderSide(color: colorAccent),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius:
+                                  BorderRadius.circular(8.rr(context)),
                             ),
                           ),
                           onPressed: () {
@@ -203,13 +228,13 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
                             'Preview',
                             style: TextStyle(
                               color: colorAccent,
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.rp(context)),
                       Expanded(
                         child: Obx(() => ElevatedButton(
                               onPressed: controller.isSaving.value
@@ -218,35 +243,41 @@ class CustomerDetailFormScreenState extends State<CustomerDetailFormScreen>
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorAccent,
                                 foregroundColor: colorNetral,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 16.rp(context)),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius:
+                                      BorderRadius.circular(8.rr(context)),
                                 ),
                               ),
                               child: controller.isSaving.value
-                                  ? const Row(
+                                  ? Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
                                         SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
+                                          width: 20.rs(context),
+                                          height: 20.rs(context),
+                                          child:
+                                              const CircularProgressIndicator(
                                             strokeWidth: 2,
                                             valueColor:
                                                 AlwaysStoppedAnimation<Color>(
                                                     Colors.white),
                                           ),
                                         ),
-                                        SizedBox(width: 12),
-                                        Text('Saving...'),
+                                        SizedBox(width: 12.rp(context)),
+                                        Text(
+                                          'Saving...',
+                                          style: TextStyle(
+                                              fontSize: 16.rt(context)),
+                                        ),
                                       ],
                                     )
-                                  : const Text(
+                                  : Text(
                                       'Save Changes',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 16.rt(context),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -286,16 +317,16 @@ class BasicInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.rs(context)),
             child: Text(
               "Basic Information",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -358,15 +389,18 @@ class BasicInfoSection extends StatelessWidget {
             inputType: TextInputType.url,
           ),
           _buildInfoRow(
-              "Sales Office", controller.selectedSalesOffice ?? 'N/A'),
+              context, "Sales Office", controller.selectedSalesOffice ?? 'N/A'),
+          _buildInfoRow(context, "Business Unit",
+              controller.selectedBusinessUnit ?? 'N/A'),
           _buildInfoRow(
-              "Business Unit", controller.selectedBusinessUnit ?? 'N/A'),
-          _buildInfoRow("Category", controller.selectedCategory ?? 'N/A'),
-          _buildInfoRow("Segment", controller.selectedSegment ?? 'N/A'),
-          _buildInfoRow("Sub Segment", controller.selectedSubSegment ?? 'N/A'),
-          _buildInfoRow("Class", controller.selectedClass ?? 'N/A'),
+              context, "Category", controller.selectedCategory ?? 'N/A'),
           _buildInfoRow(
-              "Company Status", controller.selectedCompanyStatus ?? 'N/A'),
+              context, "Segment", controller.selectedSegment ?? 'N/A'),
+          _buildInfoRow(
+              context, "Sub Segment", controller.selectedSubSegment ?? 'N/A'),
+          _buildInfoRow(context, "Class", controller.selectedClass ?? 'N/A'),
+          _buildInfoRow(context, "Company Status",
+              controller.selectedCompanyStatus ?? 'N/A'),
           PaymentTermDropdownField(
             label: "Payment Term",
             controller: controller,
@@ -386,26 +420,26 @@ class BasicInfoSection extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
       child: Row(
         children: [
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
               "$label:",
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.rt(context),
               ),
             ),
           ),
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Text(
               value,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16.rt(context)),
             ),
           ),
         ],
@@ -425,16 +459,16 @@ class CompanyAndTaxSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.rs(context)),
             child: Text(
               "Company Address",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -493,11 +527,11 @@ class CompanyAndTaxSection extends StatelessWidget {
             inputType: TextInputType.number,
           ),
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 16),
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.symmetric(vertical: 16.rs(context)),
+            padding: EdgeInsets.all(16.rp(context)),
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.rr(context)),
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: Column(
@@ -506,10 +540,10 @@ class CompanyAndTaxSection extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Location Information",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.rt(context),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -517,30 +551,30 @@ class CompanyAndTaxSection extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () => controller.getLocationFromPrefs(),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.rr(context)),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.rp(context),
+                            vertical: 6.rp(context),
                           ),
                           decoration: BoxDecoration(
                             color: colorAccent,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.rr(context)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.location_on,
                                 color: Colors.white,
-                                size: 16,
+                                size: 16.ri(context),
                               ),
-                              SizedBox(width: 4),
+                              SizedBox(width: 4.rp(context)),
                               Text(
                                 "Update Location",
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: 12.rt(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -551,7 +585,7 @@ class CompanyAndTaxSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.rs(context)),
                 GetBuilder<CustomerDetailFormController>(
                   builder: (_) => controller.longitudeData.isNotEmpty &&
                           controller.latitudeData.isNotEmpty
@@ -562,35 +596,35 @@ class CompanyAndTaxSection extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.gps_fixed,
-                                  size: 16,
+                                  size: 16.ri(context),
                                   color: Colors.grey.shade600,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.rp(context)),
                                 Expanded(
                                   child: Text(
                                     "Longitude: ${controller.longitudeData}",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 14.rt(context),
                                       color: Colors.grey.shade700,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6.rs(context)),
                             Row(
                               children: [
                                 Icon(
                                   Icons.gps_fixed,
-                                  size: 16,
+                                  size: 16.ri(context),
                                   color: Colors.grey.shade600,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.rp(context)),
                                 Expanded(
                                   child: Text(
                                     "Latitude: ${controller.latitudeData}",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 14.rt(context),
                                       color: Colors.grey.shade700,
                                     ),
                                   ),
@@ -603,23 +637,23 @@ class CompanyAndTaxSection extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.location_off,
-                              size: 48,
+                              size: 48.ri(context),
                               color: Colors.grey.shade400,
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.rs(context)),
                             Text(
                               "No location data available",
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 14.rt(context),
                                 color: Colors.grey.shade600,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.rs(context)),
                             Text(
                               "Click 'Update Location' to get current location",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.rt(context),
                                 color: Colors.grey.shade500,
                               ),
                             ),
@@ -629,20 +663,20 @@ class CompanyAndTaxSection extends StatelessWidget {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.rs(context)),
+            child: const Divider(
               color: Colors.black,
               height: 0,
               thickness: 1,
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.rs(context)),
             child: Text(
               "Tax Address",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -719,16 +753,16 @@ class DeliveryAddressSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.rs(context)),
             child: Text(
               "Delivery Address",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -791,26 +825,26 @@ class DeliveryAddressSection extends StatelessWidget {
     );
   }
 
-  Widget detailRow(String title, String? value) {
+  Widget detailRow(BuildContext context, String title, String? value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8.rs(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: 14.rt(context),
               color: Colors.grey,
             ),
           ),
           Text(
             value ?? '',
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.rt(context),
             ),
           ),
-          const Divider(height: 8),
+          Divider(height: 8.rs(context)),
         ],
       ),
     );

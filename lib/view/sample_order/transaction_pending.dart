@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_pending_controller.dart';
 import 'package:noo_sms/models/approval.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -35,15 +36,15 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (presenter.isLoading.value) {
-        return const Center(
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(),
+              SizedBox(height: 16.rs(context)),
               Text(
                 'Loading data...',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16.rt(context)),
               ),
             ],
           ),
@@ -57,27 +58,33 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
             children: [
               Icon(
                 Icons.error_outline,
-                size: 64,
+                size: 64.ri(context),
                 color: Colors.red[300],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.rs(context)),
               Text(
                 presenter.errorMessage.value,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.rt(context),
                   color: Colors.red[700],
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.rs(context)),
               ElevatedButton.icon(
                 onPressed: () => presenter.refreshData(),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                icon: Icon(
+                  Icons.refresh,
+                  size: 20.ri(context),
+                ),
+                label: Text(
+                  'Retry',
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.rp(context),
+                    vertical: 12.rp(context),
                   ),
                 ),
               ),
@@ -93,34 +100,40 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
             children: [
               Icon(
                 Icons.assignment_outlined,
-                size: 64,
+                size: 64.ri(context),
                 color: Colors.grey[400],
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16.rs(context)),
+              Text(
                 'No Data Found',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.rt(context),
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.rs(context)),
               Text(
                 'Pull down to refresh',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.rt(context),
                   color: Colors.grey[600],
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.rs(context)),
               ElevatedButton.icon(
                 onPressed: () => presenter.refreshData(),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Refresh'),
+                icon: Icon(
+                  Icons.refresh,
+                  size: 20.ri(context),
+                ),
+                label: Text(
+                  'Refresh',
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.rp(context),
+                    vertical: 12.rp(context),
                   ),
                 ),
               ),
@@ -137,16 +150,17 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
           itemBuilder: (context, index) {
             final approval = presenter.approvalList[index];
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(10),
+              margin: EdgeInsets.symmetric(
+                  horizontal: 16.rp(context), vertical: 8.rp(context)),
+              padding: EdgeInsets.all(10.rp(context)),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.rr(context)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withOpacity(0.3),
-                    blurRadius: 8,
-                    spreadRadius: 1,
+                    blurRadius: 8.rs(context),
+                    spreadRadius: 1.rs(context),
                   ),
                 ],
               ),
@@ -154,23 +168,24 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                 leading: Icon(
                   Icons.description,
                   color: colorAccent,
+                  size: 24.ri(context),
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           "Order Number : ",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
                         Text(
                           approval.salesOrder ?? "N/A",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.bold,
                             color: colorBlack,
                           ),
@@ -179,38 +194,38 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                     ),
                     Text(
                       'Order Date : ${approval.getFormattedDate()}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Customer Name : ${approval.customer ?? "N/A"}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     if (approval.desc != null)
                       Text(
                         'Purpose Description : ${approval.desc}',
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16.rt(context)),
                       ),
                     Text(
                       'Purpose : ${approval.purpose}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Purpose Type : ${approval.purposeType}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           "Status : ",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
                         Text(
                           approval.status,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.bold,
                             color: colorBlack,
                           ),
@@ -219,15 +234,15 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                     ),
                     Text(
                       'Is Claim ? : ${approval.isClaimed == 1 ? 'Yes' : 'No'}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'Principal : ${approval.principal ?? ' '} ',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                     Text(
                       'New Principal : ${approval.newPrincipal ?? ' '}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.rt(context)),
                     ),
                   ],
                 ),
@@ -273,9 +288,9 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              insetPadding: EdgeInsets.symmetric(horizontal: 16.rp(context)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.rr(context)),
               ),
               child: GetBuilder<TransactionPendingController>(
                 init: presenter,
@@ -283,10 +298,10 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                   return SizedBox(
                     height: MediaQuery.of(context).size.height * 0.8,
                     child: AlertDialog(
-                      insetPadding: const EdgeInsets.all(8),
-                      contentPadding: const EdgeInsets.all(4),
+                      insetPadding: EdgeInsets.all(8.rp(context)),
+                      contentPadding: EdgeInsets.all(4.rp(context)),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.rr(context)),
                         side: BorderSide.none,
                       ),
                       title: Center(
@@ -295,12 +310,13 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                           style: TextStyle(
                             color: colorAccent,
                             fontWeight: FontWeight.bold,
+                            fontSize: 18.rt(context),
                           ),
                         ),
                       ),
                       content: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.rp(context)),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -311,21 +327,30 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                 return Column(
                                   children: [
                                     ListTile(
-                                      title: Text(detail.product),
+                                      title: Text(
+                                        detail.product,
+                                        style:
+                                            TextStyle(fontSize: 16.rt(context)),
+                                      ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
-                                              const Text('QTY : '),
+                                              Text(
+                                                'QTY : ',
+                                                style: TextStyle(
+                                                    fontSize: 14.rt(context)),
+                                              ),
                                               Container(
-                                                width: 150,
+                                                width: 150.rs(context),
                                                 decoration: BoxDecoration(
                                                   border: Border.all(
                                                       color: Colors.grey),
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(
+                                                          8.rr(context)),
                                                 ),
                                                 child: Row(
                                                   mainAxisAlignment:
@@ -333,8 +358,10 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                                           .spaceBetween,
                                                   children: [
                                                     IconButton(
-                                                      icon: const Icon(
-                                                          Icons.remove),
+                                                      icon: Icon(
+                                                        Icons.remove,
+                                                        size: 20.ri(context),
+                                                      ),
                                                       onPressed: () {
                                                         setState(() {
                                                           int currentQty = int.tryParse(
@@ -352,11 +379,18 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                                         });
                                                       },
                                                     ),
-                                                    Text(qtyControllers[index]
-                                                        .text),
+                                                    Text(
+                                                      qtyControllers[index]
+                                                          .text,
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              14.rt(context)),
+                                                    ),
                                                     IconButton(
-                                                      icon:
-                                                          const Icon(Icons.add),
+                                                      icon: Icon(
+                                                        Icons.add,
+                                                        size: 20.ri(context),
+                                                      ),
                                                       onPressed: () {
                                                         setState(() {
                                                           int currentQty = int.tryParse(
@@ -376,7 +410,11 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                               ),
                                             ],
                                           ),
-                                          Text('Unit: ${detail.unit}'),
+                                          Text(
+                                            'Unit: ${detail.unit}',
+                                            style: TextStyle(
+                                                fontSize: 14.rt(context)),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -385,7 +423,11 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                 );
                               }).toList(),
                               Obx(() => CheckboxListTile(
-                                    title: const Text('Claim to Principal'),
+                                    title: Text(
+                                      'Claim to Principal',
+                                      style:
+                                          TextStyle(fontSize: 16.rt(context)),
+                                    ),
                                     value: presenter.isClaim.value,
                                     onChanged: (bool? value) {
                                       presenter.isClaim.value = value ?? false;
@@ -397,14 +439,22 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                   final principalList =
                                       presenter.principalList.value.choiceList;
                                   return SearchChoices.single(
-                                    hint: const Text("Select Principal"),
+                                    hint: Text(
+                                      "Select Principal",
+                                      style:
+                                          TextStyle(fontSize: 16.rt(context)),
+                                    ),
                                     isExpanded: true,
                                     value: presenter
                                         .principalList.value.selectedChoice,
                                     items: principalList?.map((item) {
                                       return DropdownMenuItem(
                                         value: item,
-                                        child: Text(item.value),
+                                        child: Text(
+                                          item.value,
+                                          style: TextStyle(
+                                              fontSize: 16.rt(context)),
+                                        ),
                                       );
                                     }).toList(),
                                     onChanged: (IdAndValue<String>? newValue) {
@@ -419,29 +469,37 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                           ?.id ==
                                       '0')
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
+                                  padding: EdgeInsets.only(top: 8.rp(context)),
                                   child: TextField(
                                     controller: presenter
                                         .principalNameTextEditingControllerRx
                                         .value,
+                                    style: TextStyle(fontSize: 16.rt(context)),
                                     decoration: InputDecoration(
                                       labelText: 'New Principal Name',
+                                      labelStyle:
+                                          TextStyle(fontSize: 14.rt(context)),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(
+                                            10.rr(context)),
                                       ),
                                     ),
                                   ),
                                 ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 8.rp(context)),
                                 child: TextField(
                                   controller: messageController,
                                   maxLines: 3,
+                                  style: TextStyle(fontSize: 16.rt(context)),
                                   decoration: InputDecoration(
                                     labelText: 'Message (Optional)',
+                                    labelStyle:
+                                        TextStyle(fontSize: 14.rt(context)),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius:
+                                          BorderRadius.circular(10.rr(context)),
                                     ),
                                   ),
                                 ),
@@ -453,6 +511,12 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.red,
                                         foregroundColor: Colors.white,
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 12.rp(context)),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              8.rr(context)),
+                                        ),
                                       ),
                                       onPressed: () {
                                         for (int i = 0;
@@ -472,15 +536,25 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                             messageController.text, details);
                                         Navigator.pop(context);
                                       },
-                                      child: const Text('REJECT'),
+                                      child: Text(
+                                        'REJECT',
+                                        style:
+                                            TextStyle(fontSize: 16.rt(context)),
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.rs(context)),
                                   Expanded(
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.green,
                                         foregroundColor: Colors.white,
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 12.rp(context)),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              8.rr(context)),
+                                        ),
                                       ),
                                       onPressed: () {
                                         for (int i = 0;
@@ -500,7 +574,11 @@ class TransactionPendingPageState extends State<TransactionPendingPage> {
                                             messageController.text, details);
                                         Navigator.pop(context);
                                       },
-                                      child: const Text('APPROVE'),
+                                      child: Text(
+                                        'APPROVE',
+                                        style:
+                                            TextStyle(fontSize: 16.rt(context)),
+                                      ),
                                     ),
                                   ),
                                 ],

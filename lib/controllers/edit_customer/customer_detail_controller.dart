@@ -327,10 +327,8 @@ class CustomerDetailFormController extends GetxController {
           colorText: Colors.white,
         );
 
-        // Force refresh the customer detail from server to get latest data
         await fetchCustomerDetail(forceRefresh: true);
 
-        // Optional: Also refresh the list in the parent controller if it exists
         if (Get.isRegistered<EditCustController>()) {
           final editCustController = Get.find<EditCustController>();
           await editCustController.fetchCust();

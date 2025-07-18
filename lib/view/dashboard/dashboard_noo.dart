@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/view/noo/approval/approval_page.dart';
 import 'package:noo_sms/view/noo/approved/approved_page.dart';
-import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/customer_form_coba.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/list_status_noo.dart';
 import 'package:noo_sms/view/noo/dashboard_new_customer/view_all_list.dart';
@@ -113,23 +113,88 @@ class DashboardNooState extends State<DashboardNoo>
         body: Center(
           child: CircularProgressIndicator(
             color: colorAccent,
+            strokeWidth: 3.0.rs(context),
           ),
         ),
       );
     }
 
     final List<Widget> tabsBasedOnRole = role == "2"
-        ? const [
-            Tab(text: "New"),
-            Tab(text: "All List"),
-            Tab(text: "Pending"),
-            Tab(text: "Approved"),
+        ? [
+            Tab(
+              child: Text(
+                "New",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
+            Tab(
+              child: Text(
+                "All List",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
+            Tab(
+              child: Text(
+                "Pending",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
+            Tab(
+              child: Text(
+                "Approved",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
           ]
-        : const [
-            Tab(text: "New"),
-            Tab(text: "List NOO"),
-            Tab(text: "Pending"),
-            Tab(text: "Approved"),
+        : [
+            Tab(
+              child: Text(
+                "New",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
+            Tab(
+              child: Text(
+                "List NOO",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
+            Tab(
+              child: Text(
+                "Pending",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
+            Tab(
+              child: Text(
+                "Approved",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.rt(context),
+                ),
+              ),
+            ),
           ];
 
     final List<Widget> tabViewsBasedOnRole = role == "2"
@@ -165,55 +230,69 @@ class DashboardNooState extends State<DashboardNoo>
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: colorAccent,
+        elevation: 0,
+        toolbarHeight: 70.rs(context),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
           onPressed: () async {
             await _onWillPop();
           },
-          tooltip: '',
         ),
         title: Text(
           'NOO Dashboard',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18.rt(context),
             fontWeight: FontWeight.bold,
             color: colorNetral,
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Material(
+          preferredSize: Size.fromHeight(40.rs(context)),
+          child: Container(
             color: colorNetral,
             child: TabBar(
-              labelStyle: const TextStyle(
+              labelStyle: TextStyle(
                 fontWeight: FontWeight.w500,
-                fontSize: 16,
+                fontSize: 16.rt(context),
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 16.rt(context),
               ),
               indicatorColor: colorAccent,
               labelColor: colorAccent,
-              unselectedLabelColor: colorAccent,
+              unselectedLabelColor: colorAccent.withOpacity(0.7),
               controller: tabController,
               indicator: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
                     color: colorAccent,
-                    width: 2,
+                    width: 2.5,
                   ),
                 ),
+              ),
+              labelPadding: EdgeInsets.symmetric(
+                horizontal: 8.rp(context),
+                vertical: 12.rp(context) / 3,
               ),
               tabs: tabsBasedOnRole,
             ),
           ),
         ),
       ),
-      body: TabBarView(
-        controller: tabController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: tabViewsBasedOnRole,
+      body: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtil.isIPad(context) ? 16.rp(context) : 0,
+        ),
+        child: TabBarView(
+          controller: tabController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: tabViewsBasedOnRole,
+        ),
       ),
     );
   }

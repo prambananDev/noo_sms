@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/view_all_controller.dart';
 import 'package:noo_sms/models/list_status_noo.dart';
 import 'package:intl/intl.dart';
@@ -21,15 +22,16 @@ class ViewAllListPage extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           backgroundColor: colorNetral,
-          body: _buildBody(controller),
+          body: _buildBody(context, controller),
         );
       },
     );
   }
 
-  Widget _buildBody(ViewAllController controller) {
+  Widget _buildBody(BuildContext context, ViewAllController controller) {
     return RefreshIndicator(
       onRefresh: controller.refreshData,
+      strokeWidth: 2.5.rs(context),
       child: Obx(() {
         if (controller.isLoading.value && controller.data.isEmpty) {
           return FutureBuilder(
@@ -38,26 +40,30 @@ class ViewAllListPage extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.done &&
                   controller.isLoading.value &&
                   controller.data.isEmpty) {
-                return const Center(
+                return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.error_outline,
-                        size: 48,
+                        size: 48.ri(context),
                         color: Colors.red,
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 8.rs(context)),
                       Text(
                         "Data not available",
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16.rt(context)),
                       ),
                     ],
                   ),
                 );
               }
 
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 3.rs(context),
+                ),
+              );
             },
           );
         }
@@ -65,16 +71,22 @@ class ViewAllListPage extends StatelessWidget {
         return ListView.builder(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveUtil.isIPad(context) ? 24.rp(context) : 0,
+            vertical: 8.rp(context),
+          ),
           itemCount:
               controller.data.length + (controller.hasMoreData.value ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == controller.data.length &&
                 controller.hasMoreData.value) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
                 child: Center(
                   child: controller.isLoading.value
-                      ? const CircularProgressIndicator()
+                      ? CircularProgressIndicator(
+                          strokeWidth: 3.rs(context),
+                        )
                       : GestureDetector(
                           onTap: () {
                             controller.loadMoreData();
@@ -90,12 +102,27 @@ class ViewAllListPage extends StatelessWidget {
                               }
                             });
                           },
-                          child: const Text(
-                            "Load More",
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.rp(context),
+                              vertical: 8.rp(context),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius:
+                                  BorderRadius.circular(8.rr(context)),
+                              border: Border.all(
+                                color: Colors.blue,
+                                width: 1.rs(context),
+                              ),
+                            ),
+                            child: Text(
+                              "Load More",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.rt(context),
+                              ),
                             ),
                           ),
                         ),
@@ -111,16 +138,19 @@ class ViewAllListPage extends StatelessWidget {
 
   Widget _buildListItem(BuildContext context, NOOModel item) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(8),
+      margin: EdgeInsets.symmetric(
+          horizontal: 16.rp(context), vertical: 8.rp(context)),
+      padding: EdgeInsets.all(
+          ResponsiveUtil.isIPad(context) ? 16.rp(context) : 12.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
+            offset: Offset(0, 2.rs(context)),
           ),
         ],
       ),
@@ -129,18 +159,20 @@ class ViewAllListPage extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCustomerInfoRow(item),
-              _buildDateStatusRow(item),
-              _buildStatusInfo(item),
-              _buildStatusItem(item),
+              _buildCustomerInfoRow(context, item),
+              _buildDateStatusRow(context, item),
+              _buildStatusInfo(context, item),
+              _buildStatusItem(context, item),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.075,
+                height: ResponsiveUtil.isIPad(context)
+                    ? MediaQuery.of(context).size.height * 0.08
+                    : MediaQuery.of(context).size.height * 0.075,
               ),
             ],
           ),
           Positioned(
-            bottom: 10,
-            right: 10,
+            bottom: 10.rp(context),
+            right: 10.rp(context),
             child: GestureDetector(
               onTap: () {
                 Get.to(() => ViewAllListDetail(
@@ -154,16 +186,26 @@ class ViewAllListPage extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: colorAccent,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.rr(context)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorAccent.withOpacity(0.3),
+                      blurRadius: 4.rs(context),
+                      offset: Offset(0, 2.rs(context)),
+                    ),
+                  ],
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16.rp(context),
+                    vertical: ResponsiveUtil.isIPad(context)
+                        ? 8.rp(context)
+                        : 6.rp(context)),
                 child: Text(
                   "Detail",
                   style: TextStyle(
                     color: colorNetral,
-                    fontSize: 16,
-                    // letterSpacing: 1,
+                    fontSize: 16.rt(context),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -174,26 +216,33 @@ class ViewAllListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCustomerInfoRow(NOOModel item) {
+  Widget _buildCustomerInfoRow(BuildContext context, NOOModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
             child: Text(
               "Name : ",
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Text(
-            item.custName,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 16,
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 3 : 2,
+            child: Text(
+              item.custName,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16.rt(context),
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ),
         ],
@@ -201,26 +250,31 @@ class ViewAllListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDateStatusRow(NOOModel item) {
+  Widget _buildDateStatusRow(BuildContext context, NOOModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
             child: Text(
               "Date : ",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Text(
-            _formatDate(item.createdDate),
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black,
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 3 : 2,
+            child: Text(
+              _formatDate(item.createdDate),
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -238,26 +292,33 @@ class ViewAllListPage extends StatelessWidget {
     }
   }
 
-  Widget _buildStatusInfo(NOOModel item) {
+  Widget _buildStatusInfo(BuildContext context, NOOModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
             child: Text(
               "CustStatus : ",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Text(
-            item.custStatus,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black,
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 3 : 2,
+            child: Text(
+              item.custStatus,
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                color: Colors.black,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ),
         ],
@@ -265,25 +326,61 @@ class ViewAllListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusItem(NOOModel item) {
+  Widget _buildStatusItem(BuildContext context, NOOModel item) {
+    Color statusColor;
+    switch (item.status.toLowerCase()) {
+      case 'approved':
+        statusColor = Colors.green;
+        break;
+      case 'pending':
+        statusColor = Colors.orange;
+        break;
+      case 'rejected':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
             child: Text(
               "Status : ",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Text(
-            item.status,
-            style: const TextStyle(
-              color: Colors.black,
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 3 : 2,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 8.rp(context),
+                vertical: 4.rp(context),
+              ),
+              decoration: BoxDecoration(
+                color: statusColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6.rr(context)),
+                border: Border.all(
+                  color: statusColor.withOpacity(0.5),
+                  width: 1.rs(context),
+                ),
+              ),
+              child: Text(
+                item.status,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 14.rt(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],

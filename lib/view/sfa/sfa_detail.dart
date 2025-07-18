@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/textfield_sfa.dart';
@@ -105,20 +106,25 @@ class _SfaDetailState extends State<SfaDetail> {
       backgroundColor: colorNetral,
       appBar: AppBar(
         centerTitle: true,
+        elevation: 0,
+        toolbarHeight: 56.rs(context),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
         ),
         title: Text(
           'SFA Detail',
           style: TextStyle(
-              color: colorNetral, fontSize: 16, fontWeight: FontWeight.bold),
+            color: colorNetral,
+            fontSize: 18.rt(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: colorAccent,
       ),
@@ -128,13 +134,19 @@ class _SfaDetailState extends State<SfaDetail> {
         }
 
         if (controller.sfaDetailRecord.value == null) {
-          return const Center(
-            child: Text('No detail found for this record'),
+          return Center(
+            child: Text(
+              'No detail found for this record',
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                color: colorBlack,
+              ),
+            ),
           );
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.rp(context)),
           child: _buildDetailCard(controller.sfaDetailRecord.value!),
         );
       }),
@@ -143,29 +155,29 @@ class _SfaDetailState extends State<SfaDetail> {
 
   Widget _buildCheckoutButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16.rp(context)),
       child: SizedBox(
         width: double.infinity,
-        height: 50,
+        height: 50.rs(context),
         child: ElevatedButton.icon(
           onPressed:
               controller.isSubmitting.value ? null : () => _handleCheckOut(),
-          icon: const Icon(
+          icon: Icon(
             Icons.logout,
             color: Colors.white,
-            size: 24,
+            size: 24.ri(context),
           ),
           label: Text(
             controller.isSubmitting.value ? 'PROCESSING...' : 'CHECK OUT',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: 18.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange,
-            elevation: 2,
+            elevation: 2.rs(context),
           ),
         ),
       ),
@@ -207,15 +219,15 @@ class _SfaDetailState extends State<SfaDetail> {
 
   Widget _buildDetailCard(SfaRecordDetail detail) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
@@ -228,7 +240,7 @@ class _SfaDetailState extends State<SfaDetail> {
           _buildTextFieldItem('Address', addressController,
               readOnly: !isCheckoutAllowed),
           _buildDetailItem('Purpose', detail.typeName ?? 'N/A'),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.rs(context)),
           _buildSectionTitle('Customer Information'),
           _buildTextFieldItem('Contact Person', contactPersonController,
               readOnly: !isCheckoutAllowed),
@@ -236,7 +248,7 @@ class _SfaDetailState extends State<SfaDetail> {
               readOnly: !isCheckoutAllowed),
           _buildTextFieldItem('Contact Title', contactTitleController,
               readOnly: !isCheckoutAllowed),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.rs(context)),
           _buildSectionTitle('Visit Details'),
           _buildTextFieldItem(
               'Purpose Description', controller.purposeController,
@@ -247,11 +259,11 @@ class _SfaDetailState extends State<SfaDetail> {
           _buildTextFieldItem('Follow-up', controller.followupController,
               maxLines: 3, readOnly: !isCheckoutAllowed),
           if (detail.checkInFoto != null && detail.checkInFoto!.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.rs(context)),
             _buildSectionTitle('Check-in Photo'),
             _buildPhotoPreview(detail.checkInFoto!),
           ],
-          const SizedBox(height: 24),
+          SizedBox(height: 24.rs(context)),
           isCheckoutAllowed ? _buildCheckoutButton() : const SizedBox.shrink(),
         ],
       ),
@@ -277,12 +289,12 @@ class _SfaDetailState extends State<SfaDetail> {
         Text(
           title,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 18.rt(context),
             fontWeight: FontWeight.bold,
             color: colorAccent,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.rs(context)),
       ],
     );
   }
@@ -290,17 +302,17 @@ class _SfaDetailState extends State<SfaDetail> {
   Widget _buildTextFieldItem(String label, TextEditingController controller,
       {bool readOnly = false, int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 120.rs(context),
             child: Text(
               "$label :",
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.rt(context),
               ),
             ),
           ),
@@ -308,7 +320,7 @@ class _SfaDetailState extends State<SfaDetail> {
             child: readOnly
                 ? Text(
                     controller.text.isEmpty ? 'N/A' : controller.text,
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14.rt(context)),
                     maxLines: maxLines,
                     overflow: TextOverflow.ellipsis,
                   )
@@ -326,24 +338,24 @@ class _SfaDetailState extends State<SfaDetail> {
 
   Widget _buildDetailItem(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: EdgeInsets.only(bottom: 8.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 120.rs(context),
             child: Text(
               '$label:',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 14.rt(context),
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14.rt(context)),
             ),
           ),
         ],
@@ -353,17 +365,17 @@ class _SfaDetailState extends State<SfaDetail> {
 
   Widget _buildDatePickerField([bool isReadOnly = false]) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(
-            width: 120,
+          SizedBox(
+            width: 120.rs(context),
             child: Text(
               "Follow-up Date:",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 14.rt(context),
               ),
             ),
           ),
@@ -373,13 +385,13 @@ class _SfaDetailState extends State<SfaDetail> {
                     controller.followupDateController.text.isEmpty
                         ? 'N/A'
                         : controller.followupDateController.text,
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14.rt(context)),
                   )
                 : StableTextField(
                     controller: controller.followupDateController,
                     readOnly: true,
                     hintText: "Select date",
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14.rt(context)),
                     isCalendar: true,
                     onTap: () async {
                       final currentContext = context;
@@ -410,17 +422,17 @@ class _SfaDetailState extends State<SfaDetail> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 200,
+          height: 200.rs(context),
           width: double.infinity,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.rr(context)),
           ),
           child: Stack(
             fit: StackFit.expand,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.rr(context)),
                 child: Image.network(
                   photoUrl,
                   fit: BoxFit.cover,
@@ -442,14 +454,15 @@ class _SfaDetailState extends State<SfaDetail> {
                         children: [
                           Icon(
                             Icons.error_outline,
-                            size: 48,
+                            size: 48.ri(context),
                             color: Colors.red[400],
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
+                          SizedBox(height: 8.rs(context)),
+                          Text(
                             'Error loading image',
                             style: TextStyle(
                               color: Colors.red,
+                              fontSize: 14.rt(context),
                             ),
                           ),
                         ],
@@ -459,14 +472,14 @@ class _SfaDetailState extends State<SfaDetail> {
                 ),
               ),
               Positioned(
-                top: 8,
-                right: 8,
+                top: 8.rp(context),
+                right: 8.rp(context),
                 child: GestureDetector(
                   onTap: () {
                     showDialog(
                       context: context,
                       builder: (context) => Dialog(
-                        insetPadding: const EdgeInsets.all(8),
+                        insetPadding: EdgeInsets.all(8.rp(context)),
                         child: Stack(
                           alignment: Alignment.topRight,
                           children: [
@@ -475,10 +488,10 @@ class _SfaDetailState extends State<SfaDetail> {
                               fit: BoxFit.contain,
                             ),
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close,
                                 color: Colors.white,
-                                size: 30,
+                                size: 30.ri(context),
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
@@ -488,15 +501,15 @@ class _SfaDetailState extends State<SfaDetail> {
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(4.rp(context)),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.5),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.zoom_in,
                       color: Colors.white,
-                      size: 20,
+                      size: 20.ri(context),
                     ),
                   ),
                 ),
@@ -504,11 +517,11 @@ class _SfaDetailState extends State<SfaDetail> {
             ],
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.rs(context)),
         Text(
           'Photo: $photoName',
-          style: const TextStyle(
-            fontSize: 12,
+          style: TextStyle(
+            fontSize: 12.rt(context),
             color: Colors.grey,
           ),
         ),

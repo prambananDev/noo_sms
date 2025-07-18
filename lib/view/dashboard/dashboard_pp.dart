@@ -84,6 +84,10 @@ class DashboardPPState extends State<DashboardPP>
           ),
         ),
       ),
+      labelPadding: EdgeInsets.symmetric(
+        horizontal: 8.rp(context),
+        vertical: 12.rp(context) / 3,
+      ),
       tabs: tabItems.map((item) => Tab(text: item.text)).toList(),
     );
   }
@@ -92,7 +96,9 @@ class DashboardPPState extends State<DashboardPP>
     final double scaledPadding = ResponsiveUtil.scaleSize(context, basePadding);
 
     return Container(
-      padding: EdgeInsets.all(scaledPadding),
+      margin: EdgeInsets.symmetric(
+        horizontal: ResponsiveUtil.isIPad(context) ? 16.rp(context) : 0,
+      ),
       width: Get.width,
       height: Get.height,
       child: TabBarView(

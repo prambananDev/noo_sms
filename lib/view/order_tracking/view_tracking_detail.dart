@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/map_widget_order_track.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/order_tracking/order_tracking_controller.dart';
 import 'package:noo_sms/models/order_tracking_model.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,7 +27,6 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
     super.initState();
     debugPrint('OrderTrackingDetailPage initState');
 
-    // Only initialize once
     if (!_hasInitialized) {
       _hasInitialized = true;
       _initializeTrackingDetail();
@@ -34,7 +34,6 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
   }
 
   void _initializeTrackingDetail() {
-    // Use a short delay to ensure the page is fully built
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted && !controller.isLoadingTrackingDetail.value) {
         debugPrint('Initializing tracking detail from page');
@@ -59,7 +58,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
           "Order Tracking Detail",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 16.rt(context),
             color: colorNetral,
           ),
         ),
@@ -67,15 +66,16 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
           icon: Icon(
             Icons.chevron_left,
             color: colorNetral,
-            size: 35,
+            size: 35.ri(context),
           ),
           onPressed: () {
             Get.back();
           },
         ),
-        elevation: 0,
         centerTitle: true,
         backgroundColor: colorAccent,
+        elevation: 0,
+        toolbarHeight: 56.rs(context),
         actions: [
           Obx(() => IconButton(
                 onPressed: controller.isLoadingTrackingDetail.value
@@ -83,15 +83,19 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                     : () => controller.refreshTrackingDetail(),
                 icon: controller.isLoadingTrackingDetail.value
                     ? SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 20.rs(context),
+                        height: 20.rs(context),
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: 2.rs(context),
                           valueColor:
                               AlwaysStoppedAnimation<Color>(colorNetral),
                         ),
                       )
-                    : Icon(Icons.refresh, color: colorNetral),
+                    : Icon(
+                        Icons.refresh,
+                        color: colorNetral,
+                        size: 24.ri(context),
+                      ),
               )),
         ],
       ),
@@ -103,23 +107,19 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
   }
 
   Widget _buildBody() {
-    // Initial loading state
     if (controller.isLoadingTrackingDetail.value &&
         controller.trackingDetailData.isEmpty) {
       return _buildLoadingState();
     }
 
-    // No data state
     if (controller.trackingDetailData.isEmpty) {
       return _buildNoDataState();
     }
 
-    // Error state
     if (controller.hasTrackingError) {
       return _buildErrorState();
     }
 
-    // Success state with data
     return _buildContentState();
   }
 
@@ -131,12 +131,12 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.rs(context)),
           Text(
             'Loading tracking details...',
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 14,
+              fontSize: 14.rt(context),
             ),
           ),
         ],
@@ -151,44 +151,49 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
         height: MediaQuery.of(context).size.height - 200,
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.rp(context)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.inbox_outlined,
-                  size: 64,
+                  size: 64.ri(context),
                   color: Colors.grey[400],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.rs(context)),
                 Text(
                   'No tracking data available',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.rt(context),
                     fontWeight: FontWeight.w500,
                     color: Colors.grey[700],
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Text(
                   'Pull down to refresh or tap the refresh button',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.rt(context),
                     color: Colors.grey[500],
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.rs(context)),
                 ElevatedButton.icon(
                   onPressed: () => controller.loadTrackingDetail(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorAccent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.rp(context),
+                      vertical: 12.rp(context),
+                    ),
                   ),
-                  icon: const Icon(Icons.refresh, size: 20),
-                  label: const Text('Try Again'),
+                  icon: Icon(Icons.refresh, size: 20.ri(context)),
+                  label: Text(
+                    'Try Again',
+                    style: TextStyle(fontSize: 16.rt(context)),
+                  ),
                 ),
               ],
             ),
@@ -205,54 +210,59 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
         height: MediaQuery.of(context).size.height - 200,
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.rp(context)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.error_outline,
-                  size: 64,
+                  size: 64.ri(context),
                   color: Colors.red[400],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.rs(context)),
                 Text(
                   'Failed to load tracking data',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.rt(context),
                     fontWeight: FontWeight.w500,
                     color: Colors.grey[700],
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.all(16),
+                  margin: EdgeInsets.symmetric(horizontal: 16.rp(context)),
+                  padding: EdgeInsets.all(16.rp(context)),
                   decoration: BoxDecoration(
                     color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.rr(context)),
                     border: Border.all(color: Colors.red[200]!),
                   ),
                   child: Text(
                     controller.trackingErrorMessage,
                     style: TextStyle(
                       color: Colors.red[700],
-                      fontSize: 14,
+                      fontSize: 14.rt(context),
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.rs(context)),
                 ElevatedButton.icon(
                   onPressed: () => controller.refreshTrackingDetail(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorAccent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.rp(context),
+                      vertical: 12.rp(context),
+                    ),
                   ),
-                  icon: const Icon(Icons.refresh, size: 20),
-                  label: const Text('Retry'),
+                  icon: Icon(Icons.refresh, size: 20.ri(context)),
+                  label: Text(
+                    'Retry',
+                    style: TextStyle(fontSize: 16.rt(context)),
+                  ),
                 ),
               ],
             ),
@@ -267,28 +277,27 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
-          // Refresh indicator when loading
           if (controller.isLoadingTrackingDetail.value)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
               color: colorAccent.withOpacity(0.1),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                    width: 16,
-                    height: 16,
+                    width: 16.rs(context),
+                    height: 16.rs(context),
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 2.rs(context),
                       valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.rp(context)),
                   Text(
                     'Refreshing...',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.rt(context),
                       color: colorAccent,
                       fontWeight: FontWeight.w500,
                     ),
@@ -296,15 +305,14 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                 ],
               ),
             ),
-
           _buildTrackingProgress(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.rs(context)),
           _buildCurrentStatus(),
-          const SizedBox(height: 16),
-          const Divider(thickness: 1),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.rs(context)),
+          Divider(thickness: 1.rs(context)),
+          SizedBox(height: 16.rs(context)),
           _buildDeliveryStatusList(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.rs(context)),
           _buildDeliveryInfo(),
         ],
       ),
@@ -315,7 +323,10 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
     final deliveryStatus = controller.deliveryStatusList;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      margin: EdgeInsets.symmetric(
+        horizontal: 32.rp(context),
+        vertical: 24.rp(context),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -348,11 +359,11 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
     return Expanded(
       child: CircleAvatar(
         backgroundColor: isActive ? colorAccent : Colors.grey[300],
-        radius: 24,
+        radius: 24.rs(context),
         child: Icon(
           icon,
           color: isActive ? Colors.white : Colors.grey[600],
-          size: 20,
+          size: 20.ri(context),
         ),
       ),
     );
@@ -360,8 +371,8 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
 
   Widget _buildProgressLine({required bool isActive}) {
     return Container(
-      height: 2,
-      width: 32,
+      height: 2.rs(context) / 2.5,
+      width: 32.rs(context),
       color: isActive ? colorAccent : Colors.grey[300],
     );
   }
@@ -371,7 +382,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
       controller.trackingStatus,
       style: TextStyle(
         color: colorAccent,
-        fontSize: 16,
+        fontSize: 16.rt(context),
         fontWeight: FontWeight.w600,
       ),
     );
@@ -385,7 +396,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: 16.rp(context)),
       child: ListView.builder(
         itemCount: deliveryStatus.length,
         physics: const NeverScrollableScrollPhysics(),
@@ -401,55 +412,55 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
 
   Widget _buildStatusItem(TrackingDeliveryStatus statusItem) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 16.rs(context)),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.rr(context)),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 40.rs(context),
+            height: 40.rs(context),
             decoration: BoxDecoration(
               color: colorAccent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.rr(context)),
             ),
             child: Icon(
               _getStatusIconData(statusItem.statusIcon),
               color: colorAccent,
-              size: 20,
+              size: 20.ri(context),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.rp(context)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   statusItem.statusTitle,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.rt(context),
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.rs(context)),
                 Row(
                   children: [
                     Icon(
                       Icons.access_time,
-                      size: 16,
+                      size: 16.ri(context),
                       color: Colors.grey[600],
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.rp(context)),
                     Text(
                       statusItem.formattedDateTime,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.rt(context),
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
                       ),
@@ -457,7 +468,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                   ],
                 ),
                 if (statusItem.hasDeliveryData) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.rs(context)),
                   _buildReceiverInfo(statusItem.data!),
                 ],
               ],
@@ -476,20 +487,19 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
           Text(
             "Received by: ${data.displayReceiverName}",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.rt(context),
               fontWeight: FontWeight.w500,
               color: Colors.grey[700],
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.rs(context)),
         ],
-        // Always show "View Receipt" button, even if no images
         InkWell(
           onTap: () => _showReceiptImage(data.images ?? []),
           child: Text(
             "View Receipt",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.rt(context),
               color: Colors.blue[600],
               decoration: TextDecoration.underline,
             ),
@@ -509,7 +519,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
       child: Column(
         children: [
           Container(
-            margin: const EdgeInsets.all(20),
+            margin: EdgeInsets.all(20.rp(context)),
             child: Column(
               children: [
                 Row(
@@ -517,20 +527,20 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                     Icon(
                       Icons.local_shipping,
                       color: colorAccent,
-                      size: 24,
+                      size: 24.ri(context),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
+                    SizedBox(width: 8.rp(context)),
+                    Text(
                       "Delivery Info",
                       style: TextStyle(
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 16.rt(context),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 _buildInfoRow("PO Number", controller.currentPoNum.value),
                 _buildInfoRow(
                     "Expected Delivery", controller.expectedDeliveryDate),
@@ -538,7 +548,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                   _buildInfoRow("Driver Name", driverInfo.displayName),
                   _buildInfoRow("Vehicle No", driverInfo.displayPlatNumber),
                 ],
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -550,7 +560,7 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                         style: TextStyle(
                           color: Colors.blue[600],
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 16.rt(context),
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -568,24 +578,24 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8.rs(context)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black87,
-              fontSize: 14,
+              fontSize: 14.rt(context),
             ),
           ),
           Flexible(
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 14.rt(context),
               ),
               textAlign: TextAlign.right,
             ),
@@ -608,7 +618,12 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
         ),
       ),
       child: Container(
-        margin: const EdgeInsets.only(top: 40, left: 32, right: 16, bottom: 16),
+        margin: EdgeInsets.only(
+          top: 40.rs(context),
+          left: 32.rp(context),
+          right: 16.rp(context),
+          bottom: 16.rp(context),
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -616,37 +631,42 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
-                  const Text(
+                  SizedBox(height: 16.rs(context)),
+                  Text(
                     "Need help with\nyour delivery?",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.rt(context),
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.rs(context)),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(30.rr(context)),
                       ),
                       backgroundColor: colorAccent,
                       foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.rp(context),
+                        vertical: 12.rp(context),
+                      ),
                     ),
                     onPressed: _openWhatsApp,
-                    icon: const Icon(Icons.chat, size: 18),
-                    label: const Text(
+                    icon: Icon(Icons.chat, size: 18.ri(context)),
+                    label: Text(
                       "WhatsApp Support",
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
+                        fontSize: 16.rt(context),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.rp(context)),
           ],
         ),
       ),
@@ -675,17 +695,26 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
     Get.dialog(
       Dialog(
         child: Container(
-          constraints: const BoxConstraints(maxHeight: 400, minHeight: 300),
+          constraints: BoxConstraints(
+            maxHeight: 400.rs(context),
+            minHeight: 300.rs(context),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppBar(
-                title: const Text('Receipt'),
+                title: Text(
+                  'Receipt',
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
                 automaticallyImplyLeading: false,
                 actions: [
                   IconButton(
                     onPressed: () => Get.back(),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(
+                      Icons.close,
+                      size: 24.ri(context),
+                    ),
                   ),
                 ],
               ),
@@ -700,7 +729,6 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
   }
 
   Widget _buildReceiptContent(List<String> images) {
-    // Check if images list is empty or null
     if (images.isEmpty) {
       return Center(
         child: Column(
@@ -708,23 +736,23 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
           children: [
             Icon(
               Icons.image_not_supported_outlined,
-              size: 64,
+              size: 64.ri(context),
               color: Colors.grey[400],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.rs(context)),
             Text(
               'Image not available',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.rs(context)),
             Text(
               'No receipt image found for this delivery',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.rt(context),
                 color: Colors.grey[500],
               ),
               textAlign: TextAlign.center,
@@ -734,7 +762,6 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
       );
     }
 
-    // If images exist, try to load the last (most recent) image
     return InteractiveViewer(
       child: Image.network(
         images.last,
@@ -751,11 +778,11 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
                           loadingProgress.expectedTotalBytes!
                       : null,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 Text(
                   'Loading image...',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.rt(context),
                     color: Colors.grey[600],
                   ),
                 ),
@@ -770,36 +797,43 @@ class _OrderTrackingDetailPageState extends State<OrderTrackingDetailPage> {
               children: [
                 Icon(
                   Icons.broken_image_outlined,
-                  size: 64,
+                  size: 64.ri(context),
                   color: Colors.grey[400],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 Text(
                   'Image not available',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Text(
                   'Failed to load receipt image',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.rt(context),
                     color: Colors.grey[500],
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 ElevatedButton.icon(
                   onPressed: () => Get.back(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[300],
                     foregroundColor: Colors.grey[700],
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.rp(context),
+                      vertical: 8.rp(context),
+                    ),
                   ),
-                  icon: const Icon(Icons.close, size: 16),
-                  label: const Text('Close'),
+                  icon: Icon(Icons.close, size: 16.ri(context)),
+                  label: Text(
+                    'Close',
+                    style: TextStyle(fontSize: 14.rt(context)),
+                  ),
                 ),
               ],
             ),

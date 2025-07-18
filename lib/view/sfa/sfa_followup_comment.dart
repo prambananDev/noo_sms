@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 
 class FollowUpCommentDialog extends StatefulWidget {
@@ -31,7 +32,7 @@ class _FollowUpCommentDialogState extends State<FollowUpCommentDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
       ),
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -41,44 +42,50 @@ class _FollowUpCommentDialogState extends State<FollowUpCommentDialog> {
 
   Widget contentBox(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Text(
+          Text(
             'Add Follow-up Comment',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 18.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.rs(context)),
           TextField(
             controller: _commentController,
             minLines: 3,
             maxLines: 5,
+            style: TextStyle(fontSize: 16.rt(context)),
             decoration: InputDecoration(
               hintText: 'Enter your comment here...',
+              hintStyle: TextStyle(fontSize: 16.rt(context)),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.rr(context)),
               ),
               filled: true,
               fillColor: Colors.grey[100],
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.rp(context),
+                vertical: 12.rp(context),
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.rs(context)),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -86,9 +93,12 @@ class _FollowUpCommentDialogState extends State<FollowUpCommentDialog> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text('Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.rs(context)),
               ElevatedButton(
                 onPressed: isSubmitting
                     ? null
@@ -121,22 +131,29 @@ class _FollowUpCommentDialogState extends State<FollowUpCommentDialog> {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.rp(context),
+                    vertical: 12.rp(context),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.rr(context)),
+                  ),
                 ),
                 child: isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
+                    ? SizedBox(
+                        width: 20.rs(context),
+                        height: 20.rs(context),
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: 2.rs(context),
                           valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                              const AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Text(
                         'Submit',
                         style: TextStyle(
                           color: colorNetral,
+                          fontSize: 16.rt(context),
                         ),
                       ),
               ),
@@ -168,13 +185,13 @@ class FollowUpCommentsList extends StatelessWidget {
       }
 
       if (controller.sfaComments.isEmpty) {
-        return const Center(
+        return Center(
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.rp(context)),
             child: Text(
               'No comments yet',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 fontStyle: FontStyle.italic,
                 color: Colors.grey,
               ),
@@ -198,21 +215,21 @@ class FollowUpCommentsList extends StatelessWidget {
           }
 
           return Container(
-            margin: const EdgeInsets.only(
-              top: 4,
-              bottom: 12,
-              left: 4,
-              right: 4,
+            margin: EdgeInsets.only(
+              top: 4.rp(context),
+              bottom: 12.rp(context),
+              left: 4.rp(context),
+              right: 4.rp(context),
             ),
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.rp(context)),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.rr(context)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.3),
-                  blurRadius: 8,
-                  spreadRadius: 1,
+                  blurRadius: 8.rs(context),
+                  spreadRadius: 1.rs(context),
                 ),
               ],
             ),
@@ -221,46 +238,62 @@ class FollowUpCommentsList extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time,
-                      size: 14,
+                      size: 14.ri(context),
                       color: Colors.grey,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.rs(context)),
                     Text(
                       formattedDate,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.grey,
-                        fontSize: 12,
+                        fontSize: 12.rt(context),
                       ),
                     ),
                     if (canDelete && !isVisitClosed)
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete_outline,
                           color: Colors.red,
-                          size: 18,
+                          size: 18.ri(context),
                         ),
                         onPressed: () async {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: const Text('Delete Comment'),
-                                content: const Text(
-                                    'Are you sure you want to delete this comment?'),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(12.rr(context)),
+                                ),
+                                title: Text(
+                                  'Delete Comment',
+                                  style: TextStyle(fontSize: 18.rt(context)),
+                                ),
+                                content: Text(
+                                  'Are you sure you want to delete this comment?',
+                                  style: TextStyle(fontSize: 16.rt(context)),
+                                ),
                                 actions: <Widget>[
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.of(context).pop(false),
-                                    child: const Text('Cancel'),
+                                    child: Text(
+                                      'Cancel',
+                                      style:
+                                          TextStyle(fontSize: 16.rt(context)),
+                                    ),
                                   ),
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.of(context).pop(true),
-                                    child: const Text(
+                                    child: Text(
                                       'Delete',
-                                      style: TextStyle(color: Colors.red),
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 16.rt(context),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -277,10 +310,10 @@ class FollowUpCommentsList extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Text(
                   comment.comment ?? '',
-                  style: const TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: 14.rt(context)),
                 ),
               ],
             ),
@@ -313,8 +346,9 @@ class FollowUpButton extends StatelessWidget {
             backgroundColor: colorNetral,
             context: context,
             isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(20.rr(context))),
             ),
             builder: (context) => DraggableScrollableSheet(
               initialChildSize: 0.7,
@@ -323,17 +357,17 @@ class FollowUpButton extends StatelessWidget {
               expand: false,
               builder: (context, scrollController) {
                 return Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.rp(context)),
                   child: Column(
                     children: [
                       Container(
-                        width: 40,
-                        height: 5,
+                        width: 40.rs(context),
+                        height: 5.rs(context),
                         decoration: BoxDecoration(
                           color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.rr(context)),
                         ),
-                        margin: const EdgeInsets.only(bottom: 20),
+                        margin: EdgeInsets.only(bottom: 20.rp(context)),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -357,16 +391,39 @@ class FollowUpButton extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.redAccent,
                                 foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16.rp(context),
+                                  vertical: 12.rp(context),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(8.rr(context)),
+                                ),
                               ),
-                              child: const Text('Close Visit'),
+                              child: Text(
+                                'Close Visit',
+                                style: TextStyle(fontSize: 16.rt(context)),
+                              ),
                             ),
                             ElevatedButton.icon(
-                              label: const Text('Add Followup Result'),
+                              icon: Icon(
+                                Icons.add,
+                                size: 18.ri(context),
+                              ),
+                              label: Text(
+                                'Add Followup Result',
+                                style: TextStyle(fontSize: 16.rt(context)),
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorAccent,
                                 foregroundColor: colorNetral,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16.rp(context),
+                                  vertical: 12.rp(context),
+                                ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius:
+                                      BorderRadius.circular(8.rr(context)),
                                 ),
                               ),
                               onPressed: () async {
@@ -387,7 +444,7 @@ class FollowUpButton extends StatelessWidget {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.rs(context)),
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
@@ -408,23 +465,24 @@ class FollowUpButton extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: colorAccent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.rr(context)),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(
+              horizontal: 16.rp(context), vertical: 8.rp(context)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.comment,
                 color: Colors.white,
-                size: 18,
+                size: 18.ri(context),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.rs(context)),
               Text(
                 "Follow-up",
                 style: TextStyle(
                   color: colorNetral,
-                  fontSize: 16,
+                  fontSize: 16.rt(context),
                 ),
               ),
             ],

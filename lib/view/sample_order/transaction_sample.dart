@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
-
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/promotion_program/input_pp_wrapper.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_sample_controller.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -41,7 +41,6 @@ class _TransactionPageState extends State<TransactionSample> {
     _customerPICFocusNode.unfocus();
     _customerPhoneFocusNode.unfocus();
     _customerAddressFocusNode.unfocus();
-
     _invoiceIdFocusNode.unfocus();
     _salesIdFocusNode.unfocus();
   }
@@ -87,7 +86,6 @@ class _TransactionPageState extends State<TransactionSample> {
     _customerPICFocusNode.dispose();
     _customerPhoneFocusNode.dispose();
     _customerAddressFocusNode.dispose();
-
     _invoiceIdFocusNode.dispose();
     _salesIdFocusNode.dispose();
     super.dispose();
@@ -205,16 +203,19 @@ class _TransactionPageState extends State<TransactionSample> {
     TextEditingController values = valuesControllers[index];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+          horizontal: 16.rp(context), vertical: 8.rp(context)),
+      padding: EdgeInsets.all(
+          ResponsiveUtil.isIPad(context) ? 20.rp(context) : 16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
+            offset: Offset(0, 2.rs(context)),
           ),
         ],
       ),
@@ -223,25 +224,32 @@ class _TransactionPageState extends State<TransactionSample> {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 "Add Lines",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16.rt(context)),
               ),
               const Spacer(),
-              IconButton(onPressed: _addItem, icon: const Icon(Icons.add)),
+              IconButton(
+                onPressed: _addItem,
+                icon: Icon(Icons.add, size: 24.ri(context)),
+                padding: EdgeInsets.all(8.rp(context)),
+              ),
               IconButton(
                 onPressed: () {
                   _removeItem(index);
                 },
-                icon: const Icon(Icons.delete, color: Colors.black),
+                icon:
+                    Icon(Icons.delete, color: Colors.red, size: 24.ri(context)),
+                padding: EdgeInsets.all(8.rp(context)),
               ),
             ],
           ),
           SearchChoices.single(
             isExpanded: true,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 16,
+              fontSize: 16.rt(context),
             ),
             menuBackgroundColor: Colors.white,
             underline: Container(
@@ -255,31 +263,45 @@ class _TransactionPageState extends State<TransactionSample> {
             items: promotionProgramInputState
                 .productTransactionPageDropdownState?.choiceListWrapper?.value
                 ?.map((item) {
-              return DropdownMenuItem(value: item, child: Text(item.value));
+              return DropdownMenuItem(
+                value: item,
+                child: Text(
+                  item.value,
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
+              );
             }).toList(),
-            hint: const Text(
+            hint: Text(
               "Select Product",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16.rt(context),
+              ),
             ),
             onChanged: (value) {
               inputPagePresenter.changeProduct(index, value);
             },
           ),
+          SizedBox(height: 16.rs(context)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 children: [
-                  const Text(
+                  Text(
                     'QTY',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.rt(context)),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width * 0.4,
-                    height: MediaQuery.of(context).size.height * 0.06,
-                    margin: const EdgeInsets.only(bottom: 8),
+                    width: ResponsiveUtil.isIPad(context)
+                        ? MediaQuery.of(context).size.width * 0.35
+                        : MediaQuery.of(context).size.width * 0.4,
+                    height: ResponsiveUtil.isIPad(context)
+                        ? 55.rs(context)
+                        : MediaQuery.of(context).size.height * 0.06,
+                    margin: EdgeInsets.only(bottom: 8.rp(context)),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.rr(context)),
                       border: Border.all(
                         width: 1.5,
                         color: const Color.fromARGB(167, 37, 37, 37),
@@ -292,19 +314,23 @@ class _TransactionPageState extends State<TransactionSample> {
                           onPressed: () {
                             _addQuantity(index, false);
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.remove,
                             color: Colors.black,
-                            size: 24,
+                            size: 24.ri(context),
                           ),
+                          padding: EdgeInsets.all(4.rp(context)),
                         ),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.1,
+                          width: ResponsiveUtil.isIPad(context)
+                              ? 50.rs(context)
+                              : MediaQuery.of(context).size.width * 0.1,
                           child: TextField(
                             focusNode: qtyFocusNodes[index],
                             autofocus: false,
                             textAlign: TextAlign.center,
                             controller: values,
+                            style: TextStyle(fontSize: 16.rt(context)),
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: false,
                               signed: true,
@@ -325,11 +351,12 @@ class _TransactionPageState extends State<TransactionSample> {
                           onPressed: () {
                             _addQuantity(index, true);
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.add,
                             color: Colors.black,
-                            size: 24,
+                            size: 24.ri(context),
                           ),
+                          padding: EdgeInsets.all(4.rp(context)),
                         ),
                       ],
                     ),
@@ -344,18 +371,21 @@ class _TransactionPageState extends State<TransactionSample> {
                         ?.map((String item) {
                       return DropdownMenuItem<String>(
                         value: item,
-                        child: Text(item),
+                        child: Text(
+                          item,
+                          style: TextStyle(fontSize: 16.rt(context)),
+                        ),
                       );
                     }).toList() ??
                     [],
-                style: const TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(fontSize: 16.rt(context), color: Colors.black),
                 hint: Text(
                   promotionProgramInputState.productTransactionPageDropdownState
                               ?.selectedChoiceWrapper?.value ==
                           null
                       ? "Unit"
                       : "Select Unit",
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16.rt(context)),
                 ),
                 onChanged: promotionProgramInputState
                             .productTransactionPageDropdownState
@@ -379,16 +409,19 @@ class _TransactionPageState extends State<TransactionSample> {
 
   Widget addOrder(TransactionSampleController inputPagePresenter) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+          horizontal: 16.rp(context), vertical: 8.rp(context)),
+      padding: EdgeInsets.all(
+          ResponsiveUtil.isIPad(context) ? 20.rp(context) : 16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
+            offset: Offset(0, 2.rs(context)),
           ),
         ],
       ),
@@ -405,32 +438,34 @@ class _TransactionPageState extends State<TransactionSample> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "Create New Sample Order",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 18.rt(context)),
               ),
+              SizedBox(height: 16.rs(context)),
               SearchChoices.single(
                 isExpanded: true,
                 value: inputPagePresenter.typesList.value.selectedChoice,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 16.rt(context),
                 ),
                 menuBackgroundColor: Colors.white,
                 underline: Container(
                   height: 1,
                   color: Colors.grey,
                 ),
-                hint: const Text(
+                hint: Text(
                   "Sample Types",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16.rt(context)),
                 ),
                 items:
                     inputPagePresenter.typesList.value.choiceList?.map((item) {
                   return DropdownMenuItem(
                     value: item,
-                    child:
-                        Text(item.value, style: const TextStyle(fontSize: 16)),
+                    child: Text(item.value,
+                        style: TextStyle(fontSize: 16.rt(context))),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -443,22 +478,23 @@ class _TransactionPageState extends State<TransactionSample> {
                   FocusScope.of(context).unfocus();
                 },
               ),
+              SizedBox(height: 16.rs(context)),
               Obx(
                 () => SearchChoices.single(
                   isExpanded: true,
                   value: inputPagePresenter.purposeList.value.selectedChoice,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                   ),
                   menuBackgroundColor: Colors.white,
                   underline: Container(
                     height: 1,
                     color: Colors.grey,
                   ),
-                  hint: const Text(
+                  hint: Text(
                     "Select Purpose",
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16.rt(context)),
                   ),
                   items: inputPagePresenter.purposeList.value.choiceList
                       ?.map((purpose) {
@@ -466,7 +502,7 @@ class _TransactionPageState extends State<TransactionSample> {
                       value: purpose,
                       child: Text(
                         purpose.value,
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16.rt(context)),
                       ),
                     );
                   }).toList(),
@@ -481,13 +517,13 @@ class _TransactionPageState extends State<TransactionSample> {
                   },
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(top: 8.0),
+              Padding(
+                padding: EdgeInsets.only(top: 16.rp(context)),
                 child: Text(
                   "Purpose Description",
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -498,23 +534,26 @@ class _TransactionPageState extends State<TransactionSample> {
                 },
                 child: Container(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.only(top: 4.0, bottom: 16.0),
+                  padding: EdgeInsets.only(
+                      top: 8.rp(context), bottom: 16.rp(context)),
                   child: TextField(
                     focusNode: _descriptionFocusNode,
                     controller: inputPagePresenter
                         .purposeDescTextEditingControllerRx.value,
                     maxLines: null,
+                    style: TextStyle(fontSize: 16.rt(context)),
                     onChanged: (value) {
                       setState(() {});
                     },
                     decoration: InputDecoration(
                       hintText: 'Submit description here',
-                      hintStyle: const TextStyle(fontSize: 16),
+                      hintStyle: TextStyle(fontSize: 16.rt(context)),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(width: 1, color: Colors.black),
+                        borderRadius: BorderRadius.circular(10.rr(context)),
+                        borderSide: BorderSide(
+                            width: 1.rs(context), color: Colors.grey),
                       ),
+                      contentPadding: EdgeInsets.all(12.rp(context)),
                     ),
                   ),
                 ),
@@ -525,10 +564,11 @@ class _TransactionPageState extends State<TransactionSample> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SearchChoices.single(
-                        clearSearchIcon: const Icon(Icons.clear_all),
-                        style: const TextStyle(
+                        clearSearchIcon:
+                            Icon(Icons.clear_all, size: 20.ri(context)),
+                        style: TextStyle(
                           color: Colors.black,
-                          fontSize: 16,
+                          fontSize: 16.rt(context),
                         ),
                         menuBackgroundColor: Colors.white,
                         underline: Container(
@@ -540,9 +580,9 @@ class _TransactionPageState extends State<TransactionSample> {
                             .customerNameInputPageDropdownStateRx
                             .value
                             .selectedChoice,
-                        hint: const Text(
+                        hint: Text(
                           "Customer Name",
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16.rt(context)),
                         ),
                         items: inputPagePresenter
                             .customerNameInputPageDropdownStateRx
@@ -552,7 +592,7 @@ class _TransactionPageState extends State<TransactionSample> {
                           return DropdownMenuItem(
                             value: item,
                             child: Text(item.value,
-                                style: const TextStyle(fontSize: 16)),
+                                style: TextStyle(fontSize: 16.rt(context))),
                           );
                         }).toList(),
                         onChanged: (IdAndValue<String> newValue) {
@@ -568,99 +608,114 @@ class _TransactionPageState extends State<TransactionSample> {
                               .selectedChoice
                               ?.id ==
                           'prospect') ...[
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8.0),
+                        Padding(
+                          padding: EdgeInsets.only(top: 16.rp(context)),
                           child: Text(
                             "Customer Name/Alias",
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         Container(
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          padding: EdgeInsets.only(
+                              top: 8.rp(context), bottom: 16.rp(context)),
                           child: TextField(
                             focusNode: _customerNameFocusNode,
                             controller: inputPagePresenter
                                 .custNameTextEditingControllerRx.value,
                             maxLines: null,
+                            style: TextStyle(fontSize: 16.rt(context)),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                    width: 1, color: Colors.black),
+                                borderRadius:
+                                    BorderRadius.circular(10.rr(context)),
+                                borderSide: BorderSide(
+                                    width: 1.rs(context), color: Colors.grey),
                               ),
+                              contentPadding: EdgeInsets.all(12.rp(context)),
                             ),
                           ),
                         ),
-                        const Text(
+                        Text(
                           "Customer PIC",
                           style: TextStyle(
                             color: Colors.black,
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Container(
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          padding: EdgeInsets.only(
+                              top: 8.rp(context), bottom: 16.rp(context)),
                           child: TextField(
                             focusNode: _customerPICFocusNode,
                             controller: inputPagePresenter
                                 .custPicTextEditingControllerRx.value,
                             maxLines: 1,
+                            style: TextStyle(fontSize: 16.rt(context)),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                    width: 1, color: Colors.black),
+                                borderRadius:
+                                    BorderRadius.circular(10.rr(context)),
+                                borderSide: BorderSide(
+                                    width: 1.rs(context), color: Colors.grey),
                               ),
+                              contentPadding: EdgeInsets.all(12.rp(context)),
                             ),
                           ),
                         ),
-                        const Text(
+                        Text(
                           "Customer Phone",
                           style: TextStyle(
                             color: Colors.black,
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Container(
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          padding: EdgeInsets.only(
+                              top: 8.rp(context), bottom: 16.rp(context)),
                           child: TextField(
                             focusNode: _customerPhoneFocusNode,
                             controller: inputPagePresenter
                                 .custPhoneTextEditingControllerRx.value,
                             maxLines: 1,
                             keyboardType: TextInputType.phone,
+                            style: TextStyle(fontSize: 16.rt(context)),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                    width: 1, color: Colors.black),
+                                borderRadius:
+                                    BorderRadius.circular(10.rr(context)),
+                                borderSide: BorderSide(
+                                    width: 1.rs(context), color: Colors.grey),
                               ),
+                              contentPadding: EdgeInsets.all(12.rp(context)),
                             ),
                           ),
                         ),
-                        const Text(
+                        Text(
                           "Customer Address",
                           style: TextStyle(
                             color: Colors.black,
-                            fontSize: 16,
+                            fontSize: 16.rt(context),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Container(
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          padding: EdgeInsets.only(
+                              top: 8.rp(context), bottom: 16.rp(context)),
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxHeight: 300.0,
+                            constraints: BoxConstraints(
+                              maxHeight: ResponsiveUtil.isIPad(context)
+                                  ? 350.rs(context)
+                                  : 300.rs(context),
                             ),
                             child: TextField(
                               focusNode: _customerAddressFocusNode,
@@ -668,13 +723,17 @@ class _TransactionPageState extends State<TransactionSample> {
                               controller: inputPagePresenter
                                   .custAddressTextEditingControllerRx.value,
                               maxLines: null,
+                              style: TextStyle(fontSize: 16.rt(context)),
                               decoration: InputDecoration(
                                 hintText: 'Customer Address',
+                                hintStyle: TextStyle(fontSize: 16.rt(context)),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(
-                                      width: 1, color: Colors.black),
+                                  borderRadius:
+                                      BorderRadius.circular(10.rr(context)),
+                                  borderSide: BorderSide(
+                                      width: 1.rs(context), color: Colors.grey),
                                 ),
+                                contentPadding: EdgeInsets.all(12.rp(context)),
                               ),
                             ),
                           ),
@@ -683,9 +742,9 @@ class _TransactionPageState extends State<TransactionSample> {
                           isExpanded: true,
                           value: inputPagePresenter
                               .distributionChannelList.value.selectedChoice,
-                          hint: const Text(
+                          hint: Text(
                             "Distribution Channel",
-                            style: TextStyle(fontSize: 16),
+                            style: TextStyle(fontSize: 16.rt(context)),
                           ),
                           items: inputPagePresenter
                               .distributionChannelList.value.choiceList
@@ -693,7 +752,7 @@ class _TransactionPageState extends State<TransactionSample> {
                             return DropdownMenuItem(
                               value: item,
                               child: Text(item.value,
-                                  style: const TextStyle(fontSize: 16)),
+                                  style: TextStyle(fontSize: 16.rt(context))),
                             );
                           }).toList(),
                           onChanged: (IdAndValue<String>? value) {
@@ -702,61 +761,69 @@ class _TransactionPageState extends State<TransactionSample> {
                         ),
                       ],
                       if (isBonus) ...[
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8.0),
+                        Padding(
+                          padding: EdgeInsets.only(top: 16.rp(context)),
                           child: Text(
                             "Sales ID AX",
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         Container(
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          padding: EdgeInsets.only(
+                              top: 8.rp(context), bottom: 16.rp(context)),
                           child: TextField(
                             keyboardType: TextInputType.text,
                             focusNode: _salesIdFocusNode,
                             controller: inputPagePresenter
                                 .salesIdTextEditingControllerRx.value,
                             maxLines: null,
+                            style: TextStyle(fontSize: 16.rt(context)),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                    width: 1, color: Colors.black),
+                                borderRadius:
+                                    BorderRadius.circular(10.rr(context)),
+                                borderSide: BorderSide(
+                                    width: 1.rs(context), color: Colors.grey),
                               ),
+                              contentPadding: EdgeInsets.all(12.rp(context)),
                             ),
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8.0),
+                        Padding(
+                          padding: EdgeInsets.only(top: 8.rp(context)),
                           child: Text(
                             "Invoice ID AX",
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 16,
+                              fontSize: 16.rt(context),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         Container(
                           alignment: Alignment.center,
-                          padding: const EdgeInsets.only(top: 4, bottom: 16.0),
+                          padding: EdgeInsets.only(
+                              top: 8.rp(context), bottom: 16.rp(context)),
                           child: TextField(
                             keyboardType: TextInputType.text,
                             focusNode: _invoiceIdFocusNode,
                             controller: inputPagePresenter
                                 .invoiceIdTextEditingControllerRx.value,
                             maxLines: null,
+                            style: TextStyle(fontSize: 16.rt(context)),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                    width: 1, color: Colors.black),
+                                borderRadius:
+                                    BorderRadius.circular(10.rr(context)),
+                                borderSide: BorderSide(
+                                    width: 1.rs(context), color: Colors.grey),
                               ),
+                              contentPadding: EdgeInsets.all(12.rp(context)),
                             ),
                           ),
                         ),
@@ -766,7 +833,15 @@ class _TransactionPageState extends State<TransactionSample> {
                                     context: context,
                                     builder: (context) {
                                       return AlertDialog(
-                                        title: const Text("Attach Document"),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              16.rr(context)),
+                                        ),
+                                        title: Text(
+                                          "Attach Document",
+                                          style: TextStyle(
+                                              fontSize: 18.rt(context)),
+                                        ),
                                         content: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
@@ -784,26 +859,27 @@ class _TransactionPageState extends State<TransactionSample> {
                                                     WidgetStateProperty.all<
                                                         Color>(Colors.white),
                                                 elevation: WidgetStateProperty
-                                                    .all<double>(6.0),
+                                                    .all<double>(4.rs(context)),
                                                 padding: WidgetStateProperty
                                                     .all<EdgeInsets>(
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 20,
-                                                            vertical: 12)),
+                                                        EdgeInsets.symmetric(
+                                                            horizontal:
+                                                                20.rp(context),
+                                                            vertical: 12
+                                                                .rp(context))),
                                                 shape: WidgetStateProperty.all<
                                                     RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            16.0),
+                                                            16.rr(context)),
                                                   ),
                                                 ),
                                               ),
-                                              child: const Text(
+                                              child: Text(
                                                 "Choose File",
                                                 style: TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: 16.rt(context),
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -816,32 +892,34 @@ class _TransactionPageState extends State<TransactionSample> {
                               child: inputPagePresenter
                                       .uploadedFileName.value.isEmpty
                                   ? Container(
-                                      width: inputPagePresenter
-                                              .uploadedFileName.value.isEmpty
+                                      width: ResponsiveUtil.isIPad(context)
                                           ? MediaQuery.of(context).size.width *
-                                              0.5
-                                          : null,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
+                                              0.4
+                                          : MediaQuery.of(context).size.width *
+                                              0.5,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 16.rp(context),
+                                          vertical: 10.rp(context)),
                                       decoration: BoxDecoration(
                                         color: colorAccent,
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(
+                                            10.rr(context)),
                                       ),
                                       alignment: Alignment.center,
-                                      child: const Text(
+                                      child: Text(
                                         "Attach Document",
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 16,
+                                          fontSize: 16.rt(context),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     )
                                   : Text(
                                       inputPagePresenter.uploadedFileName.value,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.black,
-                                        fontSize: 16,
+                                        fontSize: 16.rt(context),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -853,15 +931,16 @@ class _TransactionPageState extends State<TransactionSample> {
               ],
               if (inputPagePresenter.typesList.value.selectedChoice?.value ==
                   'Non Commercial') ...[
+                SizedBox(height: 16.rs(context)),
                 Obx(
                   () {
                     final deptState = inputPagePresenter.deptList.value;
                     return DropdownButtonHideUnderline(
                       child: SearchChoices.single(
                         isExpanded: true,
-                        hint: const Text(
+                        hint: Text(
                           "Select Department",
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16.rt(context)),
                         ),
                         value: deptState.selectedChoice,
                         items: deptState.choiceList?.map((dept) {
@@ -869,7 +948,7 @@ class _TransactionPageState extends State<TransactionSample> {
                             value: dept,
                             child: Text(
                               dept.value,
-                              style: const TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16.rt(context)),
                             ),
                           );
                         }).toList(),
@@ -898,10 +977,13 @@ class _TransactionPageState extends State<TransactionSample> {
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         controller: _scrollController,
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtil.isIPad(context) ? 24.rp(context) : 0,
+        ),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 16.0),
+              padding: EdgeInsets.only(top: 16.rp(context)),
               child: addOrder(inputPagePresenter),
             ),
             Obx(() {
@@ -924,15 +1006,24 @@ class _TransactionPageState extends State<TransactionSample> {
                       if (index ==
                           promotionProgramInputStateList.length - 1) ...[
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          padding:
+                              EdgeInsets.symmetric(vertical: 16.rp(context)),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorAccent,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 32.rp(context),
+                                vertical: 16.rp(context),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(12.rr(context)),
+                              ),
                             ),
-                            child: const Text(
+                            child: Text(
                               "Submit",
                               style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.rt(context),
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold),
                             ),
@@ -967,27 +1058,36 @@ class _TransactionPageState extends State<TransactionSample> {
 
               return showAddNewDataButton
                   ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12.rr(context)),
                           ),
                           backgroundColor: colorAccent,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 32.rp(context),
+                            vertical: 16.rp(context),
+                          ),
                         ),
                         onPressed: isAddItemEnabled
                             ? () {
                                 _addItem();
                               }
                             : null,
-                        child: const Text(
+                        child: Text(
                           "Add New Data",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.rt(context),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     )
                   : const SizedBox();
             }),
+            SizedBox(height: 16.rs(context)),
           ],
         ),
       ),

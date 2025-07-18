@@ -134,7 +134,8 @@ class ApprovalController extends GetxController {
     final url = '${apiNOO}FindApproval/$id?page=${page.value}';
 
     final response = await makeApiCall(url);
-
+    debugPrint(url);
+    debugPrint(response.statusCode.toString());
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
       approvals.value =

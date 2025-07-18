@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/edit_customer/edit_customer_controller.dart';
 import 'package:noo_sms/models/edit_cust_noo_model.dart';
 
@@ -19,18 +20,22 @@ class EditCustScreen extends StatelessWidget {
         title: Text(
           'Edit Customer',
           style: TextStyle(
-              color: colorNetral, fontSize: 16, fontWeight: FontWeight.bold),
+            color: colorNetral,
+            fontSize: 16.rt(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         elevation: 0,
+        toolbarHeight: 56.rs(context),
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
         ),
         backgroundColor: colorAccent,
@@ -39,7 +44,11 @@ class EditCustScreen extends StatelessWidget {
             onPressed: () {
               controller.fetchCust();
             },
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(
+              Icons.refresh,
+              color: Colors.white,
+              size: 24.ri(context),
+            ),
           ),
         ],
       ),
@@ -47,29 +56,32 @@ class EditCustScreen extends StatelessWidget {
         children: [
           Column(
             children: [
-              _buildSearchBar(controller),
-              _buildStatusBar(controller),
+              _buildSearchBar(context, controller),
+              _buildStatusBar(context, controller),
               Expanded(
-                child: _buildBody(controller),
+                child: _buildBody(context, controller),
               ),
             ],
           ),
           Obx(() => controller.showLoadMoreButton.value
               ? Positioned(
-                  bottom: 50,
-                  left: MediaQuery.of(context).size.width / 2 - 75,
+                  bottom: 50.rs(context),
+                  left: MediaQuery.of(context).size.width / 2 - 75.rs(context),
                   child: FloatingActionButton.extended(
                     onPressed: () => controller.loadMoreCustomers(),
                     backgroundColor: colorAccent.withOpacity(0.8),
                     foregroundColor: Colors.white,
-                    label: const Text("Load More"),
+                    label: Text(
+                      "Load More",
+                      style: TextStyle(fontSize: 14.rt(context)),
+                    ),
                   ),
                 )
               : const SizedBox()),
           Obx(() => controller.showScrollButtons.value
               ? Positioned(
-                  bottom: 16,
-                  right: 16,
+                  bottom: 16.rs(context),
+                  right: 16.rs(context),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -79,16 +91,22 @@ class EditCustScreen extends StatelessWidget {
                         backgroundColor: colorAccent.withOpacity(0.8),
                         foregroundColor: Colors.white,
                         heroTag: "scrollTop",
-                        child: const Icon(Icons.keyboard_arrow_up),
+                        child: Icon(
+                          Icons.keyboard_arrow_up,
+                          size: 20.ri(context),
+                        ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.rs(context)),
                       FloatingActionButton(
                         mini: true,
                         onPressed: () => controller.scrollToBottom(),
                         backgroundColor: colorAccent.withOpacity(0.8),
                         foregroundColor: Colors.white,
                         heroTag: "scrollBottom",
-                        child: const Icon(Icons.keyboard_arrow_down),
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 20.ri(context),
+                        ),
                       ),
                     ],
                   ),
@@ -99,9 +117,12 @@ class EditCustScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBar(EditCustController controller) {
+  Widget _buildStatusBar(BuildContext context, EditCustController controller) {
     return Obx(() => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: 16.rp(context),
+            vertical: 8.rp(context),
+          ),
           color: Colors.grey.shade100,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,8 +131,8 @@ class EditCustScreen extends StatelessWidget {
                 controller.isSearching.value
                     ? "Showing: ${controller.filteredCustomers.length}/${controller.customer.length}"
                     : "Total: ${controller.customer.length}",
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.rt(context),
                   color: Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
@@ -120,8 +141,8 @@ class EditCustScreen extends StatelessWidget {
                   controller.customer.isNotEmpty)
                 Text(
                   "Page Size: ${controller.pageSize.value}",
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.rt(context),
                     color: Colors.grey,
                     fontWeight: FontWeight.w500,
                   ),
@@ -131,64 +152,61 @@ class EditCustScreen extends StatelessWidget {
         ));
   }
 
-  Widget _buildSearchBar(EditCustController controller) {
+  Widget _buildSearchBar(BuildContext context, EditCustController controller) {
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(8.rp(context)),
       child: Column(
         children: [
           TextField(
             controller: controller.searchController,
+            style: TextStyle(fontSize: 16.rt(context)),
             decoration: InputDecoration(
               hintText: 'Search by customer name...',
-              prefixIcon: const Icon(Icons.search),
+              hintStyle: TextStyle(fontSize: 16.rt(context)),
+              prefixIcon: Icon(
+                Icons.search,
+                size: 24.ri(context),
+              ),
               suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear),
+                      icon: Icon(
+                        Icons.clear,
+                        size: 24.ri(context),
+                      ),
                       onPressed: controller.clearSearch,
                     )
                   : const SizedBox()),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.rr(context)),
                 borderSide: BorderSide(color: colorAccent),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: colorAccent, width: 2),
+                borderRadius: BorderRadius.circular(10.rr(context)),
+                borderSide:
+                    BorderSide(color: colorAccent, width: 2.rs(context)),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 12.rp(context),
+                horizontal: 16.rp(context),
+              ),
             ),
             onChanged: controller.onSearchChanged,
             textInputAction: TextInputAction.search,
           ),
           Obx(() => controller.isSearching.value
               ? Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: EdgeInsets.only(top: 8.rs(context)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
                         "Found: ${controller.filteredCustomers.length}/${controller.customer.length}",
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: 12.rt(context),
                           color: Colors.grey,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      // TextButton.icon(
-                      //   onPressed: () => controller.loadAllForSearch(),
-                      //   icon: const Icon(Icons.download, size: 16),
-                      //   label: const Text("Load All For Better Search"),
-                      //   style: TextButton.styleFrom(
-                      //     foregroundColor: colorAccent,
-                      //     padding: const EdgeInsets.symmetric(
-                      //       horizontal: 8,
-                      //       vertical: 0,
-                      //     ),
-                      //     minimumSize: Size.zero,
-                      //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      //   ),
-                      // ),
+                      SizedBox(width: 8.rs(context)),
                     ],
                   ),
                 )
@@ -198,7 +216,7 @@ class EditCustScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(EditCustController controller) {
+  Widget _buildBody(BuildContext context, EditCustController controller) {
     return Obx(() {
       if (controller.isLoading.value && controller.filteredCustomers.isEmpty) {
         return const Center(child: CircularProgressIndicator());
@@ -210,24 +228,31 @@ class EditCustScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.search_off,
-                  size: 48,
+                  size: 48.ri(context),
                   color: Colors.grey,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.rs(context)),
                 Text(
                   "No results found for '${controller.searchQuery.value}'",
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16.rt(context)),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 ElevatedButton(
                   onPressed: () => controller.clearSearch(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorAccent,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.rp(context),
+                      vertical: 12.rp(context),
+                    ),
                   ),
-                  child: const Text("Clear Search"),
+                  child: Text(
+                    "Clear Search",
+                    style: TextStyle(fontSize: 16.rt(context)),
+                  ),
                 ),
               ],
             ),
@@ -238,23 +263,30 @@ class EditCustScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
-                size: 48,
+                size: 48.ri(context),
                 color: Colors.red,
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8.rs(context)),
+              Text(
                 "No data available",
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16.rt(context)),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.rs(context)),
               ElevatedButton(
                 onPressed: () => controller.fetchCust(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorAccent,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.rp(context),
+                    vertical: 12.rp(context),
+                  ),
                 ),
-                child: const Text("Retry"),
+                child: Text(
+                  "Retry",
+                  style: TextStyle(fontSize: 16.rt(context)),
+                ),
               ),
             ],
           ),
@@ -270,12 +302,11 @@ class EditCustScreen extends StatelessWidget {
               itemCount: controller.filteredCustomers.length +
                   (controller.isLoadingMore.value ? 1 : 0),
               itemBuilder: (context, index) {
-                // Show loading indicator at the end when loading more
                 if (index == controller.filteredCustomers.length) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(),
+                      padding: EdgeInsets.all(16.rp(context)),
+                      child: const CircularProgressIndicator(),
                     ),
                   );
                 }
@@ -288,10 +319,13 @@ class EditCustScreen extends StatelessWidget {
           if (controller.errorMessage.isNotEmpty)
             Container(
               color: Colors.red.shade100,
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(8.rp(context)),
               child: Text(
                 controller.errorMessage.value,
-                style: TextStyle(color: Colors.red.shade900),
+                style: TextStyle(
+                  color: Colors.red.shade900,
+                  fontSize: 14.rt(context),
+                ),
               ),
             ),
         ],
@@ -301,11 +335,14 @@ class EditCustScreen extends StatelessWidget {
 
   Widget _buildListItem(BuildContext context, EditCustModel item) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(8),
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.rp(context),
+        vertical: 8.rp(context),
+      ),
+      padding: EdgeInsets.all(8.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
@@ -319,18 +356,16 @@ class EditCustScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCustomerInfoRow(item),
-              _buildDateStatusRow(item),
-              _buildStatusInfo(item),
-              _buildStatusItem(item),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.075,
-              ),
+              _buildCustomerInfoRow(context, item),
+              _buildDateStatusRow(context, item),
+              _buildStatusInfo(context, item),
+              _buildStatusItem(context, item),
+              SizedBox(height: 60.rs(context)),
             ],
           ),
           Positioned(
-            bottom: 10,
-            right: 10,
+            bottom: 10.rp(context),
+            right: 10.rp(context),
             child: GestureDetector(
               onTap: () {
                 Get.toNamed(
@@ -344,15 +379,17 @@ class EditCustScreen extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: colorAccent,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.rr(context)),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.rp(context),
+                  vertical: 4.rp(context),
+                ),
                 child: Text(
                   "Detail",
                   style: TextStyle(
                     color: colorNetral,
-                    fontSize: 16,
+                    fontSize: 16.rt(context),
                   ),
                 ),
               ),
@@ -363,29 +400,28 @@ class EditCustScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCustomerInfoRow(EditCustModel item) {
+  Widget _buildCustomerInfoRow(BuildContext context, EditCustModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start, // Align to top when wrapping
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Name : ",
             style: TextStyle(
               color: Colors.black,
-              fontSize: 16,
+              fontSize: 16.rt(context),
               fontWeight: FontWeight.bold,
             ),
           ),
           Expanded(
             child: Text(
               item.custName,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.rt(context),
               ),
-              maxLines: 2, // Allow up to 2 lines
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -394,16 +430,16 @@ class EditCustScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDateStatusRow(EditCustModel item) {
+  Widget _buildDateStatusRow(BuildContext context, EditCustModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               "Date : ",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -413,8 +449,8 @@ class EditCustScreen extends StatelessWidget {
             item.createdDate != null
                 ? _formatDate(item.createdDate!)
                 : "No Date",
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.rt(context),
               color: Colors.black,
             ),
           ),
@@ -434,16 +470,16 @@ class EditCustScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildStatusInfo(EditCustModel item) {
+  Widget _buildStatusInfo(BuildContext context, EditCustModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               "Customer ID : ",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -451,8 +487,8 @@ class EditCustScreen extends StatelessWidget {
           ),
           Text(
             item.custId,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.rt(context),
               color: Colors.black,
             ),
           ),
@@ -461,16 +497,16 @@ class EditCustScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusItem(EditCustModel item) {
+  Widget _buildStatusItem(BuildContext context, EditCustModel item) {
     return Padding(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(6.rp(context)),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               "Company Status : ",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.rt(context),
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
@@ -478,8 +514,8 @@ class EditCustScreen extends StatelessWidget {
           ),
           Text(
             item.companyStatus,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.rt(context),
               color: Colors.black,
             ),
           ),

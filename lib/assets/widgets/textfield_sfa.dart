@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 
 class StableTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -37,24 +38,55 @@ class StableTextField extends StatelessWidget {
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         hintText: hintText,
-        border: const OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(
+        hintStyle: TextStyle(
+          fontSize: 14.rt(context),
+          color: Colors.grey[500],
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4.rr(context)),
           borderSide: BorderSide(
-            color: colorAccent,
-            width: 2.0,
+            width: 1,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4.rr(context)),
+          borderSide: BorderSide(
+            color: Colors.grey,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4.rr(context)),
+          borderSide: BorderSide(
+            color: colorAccent,
+            width: 2,
+          ),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4.rr(context)),
+          borderSide: BorderSide(
+            color: Colors.grey[300]!,
+            width: 1,
+          ),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 12.rp(context),
+          vertical: 8.rp(context),
+        ),
         isDense: true,
         filled: readOnly,
         fillColor: readOnly ? Colors.grey[200] : null,
         suffixIcon: isCalendar == true
-            ? Icon(Icons.calendar_today, color: colorAccent)
+            ? Icon(
+                Icons.calendar_today,
+                color: colorAccent,
+                size: 20.ri(context),
+              )
             : null,
       ),
       style: style ??
           TextStyle(
-            fontSize: 14,
+            fontSize: 14.rt(context),
             color: readOnly ? Colors.grey[600] : Colors.black,
           ),
     );

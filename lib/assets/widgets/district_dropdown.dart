@@ -41,6 +41,7 @@ class DistrictDropdownField extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(width: 16.rs(context)),
           Expanded(
             flex: 2,
             child: Obx(() {
@@ -110,9 +111,6 @@ class DistrictDropdownField extends StatelessWidget {
                     isDense: true,
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: EdgeInsets.all(
-                      ResponsiveUtil.scaleSize(context, 12),
-                    ),
                     focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.transparent),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/view/sfa/sfa_create_visit.dart';
 import 'package:noo_sms/view/sfa/sfa_list.dart';
 
@@ -48,11 +49,13 @@ class DashboardSfaState extends State<DashboardSfa>
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: colorAccent,
+          elevation: 0,
+          toolbarHeight: 70.rs(context),
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.chevron_left,
               color: Colors.white,
-              size: 35,
+              size: 35.ri(context),
             ),
             onPressed: () async {
               if (Get.previousRoute.isNotEmpty) {
@@ -65,36 +68,49 @@ class DashboardSfaState extends State<DashboardSfa>
           title: Text(
             'Customer Visit',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontSize: 18.rt(context),
+              fontWeight: FontWeight.bold,
               color: colorNetral,
               letterSpacing: 0.5,
             ),
           ),
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
+            preferredSize: Size.fromHeight(40.rs(context)),
             child: Container(
               color: colorNetral,
               child: TabBar(
                 controller: tabController,
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   fontWeight: FontWeight.w500,
-                  fontSize: 16,
+                  fontSize: 16.rt(context),
+                ),
+                labelPadding: EdgeInsets.symmetric(
+                  horizontal: 8.rp(context),
+                  vertical: 12.rp(context) / 6,
                 ),
                 indicatorColor: colorAccent,
                 labelColor: colorAccent,
-                unselectedLabelColor: Colors.grey,
+                unselectedLabelColor: colorAccent.withOpacity(0.7),
                 indicator: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
                       color: colorAccent,
-                      width: 2,
                     ),
                   ),
                 ),
-                tabs: const [
-                  Tab(text: "New"),
-                  Tab(text: "List"),
+                tabs: [
+                  Tab(
+                    child: Text(
+                      "New",
+                      style: TextStyle(fontSize: 16.rt(context)),
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      "List",
+                      style: TextStyle(fontSize: 16.rt(context)),
+                    ),
+                  ),
                 ],
               ),
             ),

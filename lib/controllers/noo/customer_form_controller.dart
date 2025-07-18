@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -57,15 +58,6 @@ class CustomerFormController extends GetxController
   String village = "";
   String subDistrict = "";
 
-  final Rx<File?> _imageKTP = Rx<File?>(null);
-  final Rx<File?> _imageNPWP = Rx<File?>(null);
-  final Rx<File?> _imageSIUP = Rx<File?>(null);
-  final Rx<File?> _imageSPPKP = Rx<File?>(null);
-  final Rx<File?> _imageBusinessPhotoFront = Rx<File?>(null);
-  final Rx<File?> _imageBusinessPhotoInside = Rx<File?>(null);
-  final Rx<File?> _imageCompetitorTop = Rx<File?>(null);
-  final Rx<Uint8List?> _imageKTPWeb = Rx<Uint8List?>(null);
-
   final RxString ktpFromServer = ''.obs;
   final RxString npwpFromServer = ''.obs;
   final RxString siupFromServer = ''.obs;
@@ -86,14 +78,180 @@ class CustomerFormController extends GetxController
     exportBackgroundColor: Colors.white,
   );
 
-  File? get imageKTP => _imageKTP.value;
-  File? get imageNPWP => _imageNPWP.value;
-  File? get imageSIUP => _imageSIUP.value;
-  File? get imageSPPKP => _imageSPPKP.value;
-  File? get imageBusinessPhotoFront => _imageBusinessPhotoFront.value;
-  File? get imageBusinessPhotoInside => _imageBusinessPhotoInside.value;
-  File? get imageCompetitorTop => _imageCompetitorTop.value;
-  Uint8List? get imageKTPWeb => _imageKTPWeb.value;
+  final RxMap<String, File?> _images = <String, File?>{}.obs;
+  final RxMap<String, Uint8List?> _webImages = <String, Uint8List?>{}.obs;
+  final RxMap<String, String> _serverFileNames = <String, String>{}.obs;
+  final RxMap<String, String> _imageUrls = <String, String>{}.obs;
+  final RxMap<String, bool> _processingStates = <String, bool>{}.obs;
+
+  Map<String, RxString> get _serverVariableMap => {
+        'KTP': ktpFromServer,
+        'NPWP': npwpFromServer,
+        'SIUP': siupFromServer,
+        'SPPKP': sppkpFromServer,
+        'BUSINESS_PHOTO_FRONT': businessPhotoFrontFromServer,
+        'BUSINESS_PHOTO_INSIDE': businessPhotoInsideFromServer,
+        'COMPETITOR_TOP': competitorTopFromServer,
+        'SIGNATURE_SALES': signatureSalesFromServer,
+        'SIGNATURE_CUSTOMERS': signatureCustomersFromServer,
+      };
+
+  String getServerFileName(String type) {
+    final specificVariable = _serverVariableMap[type];
+    if (specificVariable != null) {
+      return specificVariable.value;
+    }
+    return _serverFileNames[type] ?? '';
+  }
+
+  File? getImage(String type) => _images[type];
+  Uint8List? getWebImage(String type) => _webImages[type];
+  String getImageUrl(String type) => _imageUrls[type] ?? '';
+  bool isProcessing(String type) => _processingStates[type] ?? false;
+
+  File? get imageKTP => getImage('KTP');
+  set imageKTP(File? value) {
+    _images['KTP'] = value;
+    update();
+  }
+
+  File? get imageNPWP => getImage('NPWP');
+  set imageNPWP(File? value) {
+    _images['NPWP'] = value;
+    update();
+  }
+
+  File? get imageSIUP => getImage('SIUP');
+  set imageSIUP(File? value) {
+    _images['SIUP'] = value;
+    update();
+  }
+
+  File? get imageSPPKP => getImage('SPPKP');
+  set imageSPPKP(File? value) {
+    _images['SPPKP'] = value;
+    update();
+  }
+
+  File? get imageBusinessPhotoFront => getImage('BUSINESS_PHOTO_FRONT');
+  set imageBusinessPhotoFront(File? value) {
+    _images['BUSINESS_PHOTO_FRONT'] = value;
+    update();
+  }
+
+  File? get imageBusinessPhotoInside => getImage('BUSINESS_PHOTO_INSIDE');
+  set imageBusinessPhotoInside(File? value) {
+    _images['BUSINESS_PHOTO_INSIDE'] = value;
+    update();
+  }
+
+  File? get imageCompetitorTop => getImage('COMPETITOR_TOP');
+  set imageCompetitorTop(File? value) {
+    _images['COMPETITOR_TOP'] = value;
+    update();
+  }
+
+  File? get imageSignatureSales => getImage('SIGNATURE_SALES');
+  set imageSignatureSales(File? value) {
+    _images['SIGNATURE_SALES'] = value;
+    update();
+  }
+
+  File? get imageSignatureCustomers => getImage('SIGNATURE_CUSTOMERS');
+  set imageSignatureCustomers(File? value) {
+    _images['SIGNATURE_CUSTOMERS'] = value;
+    update();
+  }
+
+  Uint8List? get imageKTPWeb => getWebImage('KTP');
+  set imageKTPWeb(Uint8List? value) {
+    _webImages['KTP'] = value;
+    update();
+  }
+
+  Uint8List? get imageNPWPWeb => getWebImage('NPWP');
+  set imageNPWPWeb(Uint8List? value) {
+    _webImages['NPWP'] = value;
+    update();
+  }
+
+  Uint8List? get imageSIUPWeb => getWebImage('SIUP');
+  set imageSIUPWeb(Uint8List? value) {
+    _webImages['SIUP'] = value;
+    update();
+  }
+
+  Uint8List? get imageSPPKPWeb => getWebImage('SPPKP');
+  set imageSPPKPWeb(Uint8List? value) {
+    _webImages['SPPKP'] = value;
+    update();
+  }
+
+  Uint8List? get imageBusinessPhotoFrontWeb =>
+      getWebImage('BUSINESS_PHOTO_FRONT');
+  set imageBusinessPhotoFrontWeb(Uint8List? value) {
+    _webImages['BUSINESS_PHOTO_FRONT'] = value;
+    update();
+  }
+
+  Uint8List? get imageBusinessPhotoInsideWeb =>
+      getWebImage('BUSINESS_PHOTO_INSIDE');
+  set imageBusinessPhotoInsideWeb(Uint8List? value) {
+    _webImages['BUSINESS_PHOTO_INSIDE'] = value;
+    update();
+  }
+
+  Uint8List? get imageCompetitorTopWeb => getWebImage('COMPETITOR_TOP');
+  set imageCompetitorTopWeb(Uint8List? value) {
+    _webImages['COMPETITOR_TOP'] = value;
+    update();
+  }
+
+  Uint8List? get imageSignatureSalesWeb => getWebImage('SIGNATURE_SALES');
+  set imageSignatureSalesWeb(Uint8List? value) {
+    _webImages['SIGNATURE_SALES'] = value;
+    update();
+  }
+
+  Uint8List? get imageSignatureCustomersWeb =>
+      getWebImage('SIGNATURE_CUSTOMERS');
+  set imageSignatureCustomersWeb(Uint8List? value) {
+    _webImages['SIGNATURE_CUSTOMERS'] = value;
+    update();
+  }
+
+  String get ktpImageUrl => getImageUrl('KTP');
+  set ktpImageUrl(String value) => setImageUrl('KTP', value);
+
+  String get npwpImageUrl => getImageUrl('NPWP');
+  set npwpImageUrl(String value) => setImageUrl('NPWP', value);
+
+  String get siupImageUrl => getImageUrl('SIUP');
+  set siupImageUrl(String value) => setImageUrl('SIUP', value);
+
+  String get sppkpImageUrl => getImageUrl('SPPKP');
+  set sppkpImageUrl(String value) => setImageUrl('SPPKP', value);
+
+  String get businessPhotoFrontImageUrl => getImageUrl('BUSINESS_PHOTO_FRONT');
+  set businessPhotoFrontImageUrl(String value) =>
+      setImageUrl('BUSINESS_PHOTO_FRONT', value);
+
+  String get businessPhotoInsideImageUrl =>
+      getImageUrl('BUSINESS_PHOTO_INSIDE');
+  set businessPhotoInsideImageUrl(String value) =>
+      setImageUrl('BUSINESS_PHOTO_INSIDE', value);
+
+  String get competitorTopImageUrl => getImageUrl('COMPETITOR_TOP');
+  set competitorTopImageUrl(String value) =>
+      setImageUrl('COMPETITOR_TOP', value);
+
+  String get signatureSalesImageUrl => getImageUrl('SIGNATURE_SALES');
+  set signatureSalesImageUrl(String value) =>
+      setImageUrl('SIGNATURE_SALES', value);
+
+  String get signatureCustomersImageUrl => getImageUrl('SIGNATURE_CUSTOMERS');
+  set signatureCustomersImageUrl(String value) =>
+      setImageUrl('SIGNATURE_CUSTOMERS', value);
 
   final TextEditingController customerNameController = TextEditingController();
   final TextEditingController brandNameController = TextEditingController();
@@ -176,10 +334,7 @@ class CustomerFormController extends GetxController
   String? selectedCompanyStatus;
   String? selectedCurrency;
   String? selectedPriceGroup;
-  String? ktpImageUrl;
-  String? npwpImageUrl;
-  String? siupImageUrl;
-  String? sppkpImageUrl;
+
   String? frontImageUrl;
   String? insideImageUrl;
   String? competitorImageUrl;
@@ -875,14 +1030,6 @@ class CustomerFormController extends GetxController
     selectedCurrency = null;
     selectedPriceGroup = null;
     selectedPaymentMode = null;
-    _imageKTP.value = null;
-    _imageKTPWeb.value = null;
-    _imageNPWP.value = null;
-    _imageSIUP.value = null;
-    _imageSPPKP.value = null;
-    _imageBusinessPhotoFront.value = null;
-    _imageBusinessPhotoInside.value = null;
-    _imageCompetitorTop.value = null;
     useCompanyAddressForDelivery.value = false;
     useCompanyAddressForDelivery2.value = false;
     useCompanyAddressForTax.value = false;
@@ -985,15 +1132,15 @@ class CustomerFormController extends GetxController
     longitudeControllerDelivery.text = draft.longitude ?? '';
     latitudeControllerDelivery.text = draft.latitude ?? '';
 
-    if (draft.fotoKTP != null) _imageKTP.value = File(draft.fotoKTP!);
-    if (draft.fotoNPWP != null) _imageNPWP.value = File(draft.fotoNPWP!);
-    if (draft.fotoSIUP != null) _imageSIUP.value = File(draft.fotoSIUP!);
-    if (draft.fotoGedung3 != null) _imageSPPKP.value = File(draft.fotoGedung3!);
+    if (draft.fotoKTP != null) imageKTP = File(draft.fotoKTP!);
+    if (draft.fotoNPWP != null) imageNPWP = File(draft.fotoNPWP!);
+    if (draft.fotoSIUP != null) imageSIUP = File(draft.fotoSIUP!);
+    if (draft.fotoGedung3 != null) imageSPPKP = File(draft.fotoGedung3!);
     if (draft.fotoGedung1 != null) {
-      _imageBusinessPhotoFront.value = File(draft.fotoGedung1!);
+      imageBusinessPhotoFront = File(draft.fotoGedung1!);
     }
     if (draft.fotoGedung2 != null) {
-      _imageBusinessPhotoInside.value = File(draft.fotoGedung2!);
+      imageBusinessPhotoInside = File(draft.fotoGedung2!);
     }
 
     update();
@@ -2199,14 +2346,14 @@ class CustomerFormController extends GetxController
     districtValueDelivery = null;
     districtValueDelivery2 = null;
 
-    _imageKTP.value = null;
-    _imageKTPWeb.value = null;
-    _imageNPWP.value = null;
-    _imageSIUP.value = null;
-    _imageSPPKP.value = null;
-    _imageBusinessPhotoFront.value = null;
-    _imageBusinessPhotoInside.value = null;
-    _imageCompetitorTop.value = null;
+    imageKTP = null;
+    imageKTPWeb = null;
+    imageNPWP = null;
+    imageSIUP = null;
+    imageSPPKP = null;
+    imageBusinessPhotoFront = null;
+    imageBusinessPhotoInside = null;
+    imageCompetitorTop = null;
 
     ktpFromServer.value = '';
     npwpFromServer.value = '';
@@ -2218,10 +2365,6 @@ class CustomerFormController extends GetxController
     signatureSalesFromServer.value = '';
     signatureCustomersFromServer.value = '';
 
-    ktpImageUrl = null;
-    npwpImageUrl = null;
-    siupImageUrl = null;
-    sppkpImageUrl = null;
     frontImageUrl = null;
     insideImageUrl = null;
     competitorImageUrl = null;
@@ -2443,9 +2586,11 @@ class CustomerFormController extends GetxController
       }
 
       final url = Uri.parse("${apiNOO}AX_CustSubGroup");
+
       final response =
           await http.get(url, headers: {'authorization': basicAuth});
-
+      debugPrint(url.toString());
+      debugPrint(response.statusCode.toString());
       if (Get.isDialogOpen ?? false) {
         Get.back();
       }
@@ -2743,7 +2888,7 @@ class CustomerFormController extends GetxController
           "${apiNOO}CustPriceGroup?so=$selectedSalesOfficeCode&bu=$bu");
       final response =
           await http.get(url, headers: {'authorization': basicAuth});
-      debugPrint(response.statusCode.toString() + "succes");
+
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         priceGroup = data.map((json) => PriceGroup.fromJson(json)).toList();
@@ -2859,83 +3004,46 @@ class CustomerFormController extends GetxController
     }
   }
 
-  Future<void> getImageKTPFromCamera() async {
+  Future<void> getImageFromCamera(String type) async {
+    if (isProcessing(type)) return;
+
     if (kIsWeb) {
-      await _handleWebImage('KTP', ImageSource.camera);
+      await _handleWebImageSafe(type, ImageSource.camera);
     } else {
-      await _handleMobileImage(
-          'KTP', ImageSource.camera, _imageKTP, ktpFromServer);
+      await _handleMobileImageSafe(type, ImageSource.camera);
     }
   }
 
-  Future<void> getImageKTPFromGallery() async {
+  Future<void> getImageFromGallery(String type) async {
+    if (isProcessing(type)) return;
+
     if (kIsWeb) {
-      await _handleWebImage('KTP', ImageSource.gallery);
+      await _handleWebImageSafe(type, ImageSource.gallery);
     } else {
-      await _handleMobileImage(
-          'KTP', ImageSource.gallery, _imageKTP, ktpFromServer);
+      await _handleMobileImageSafe(type, ImageSource.gallery);
     }
   }
 
-  Future<void> getImageNPWPFromCamera() async {
-    await _handleMobileImage(
-        'NPWP', ImageSource.camera, _imageNPWP, npwpFromServer);
-  }
-
-  Future<void> getImageNPWPFromGallery() async {
-    await _handleMobileImage(
-        'NPWP', ImageSource.gallery, _imageNPWP, npwpFromServer);
-  }
-
-  Future<void> getImageSIUPFromCamera() async {
-    await _handleMobileImage(
-        'SIUP', ImageSource.camera, _imageSIUP, siupFromServer);
-  }
-
-  Future<void> getImageSIUPFromGallery() async {
-    await _handleMobileImage(
-        'SIUP', ImageSource.gallery, _imageSIUP, siupFromServer);
-  }
-
-  Future<void> getImageSPPKP() async {
-    await _handleMobileImage(
-        'SPPKP', ImageSource.camera, _imageSPPKP, sppkpFromServer);
-  }
-
-  Future<void> getImageSPPKPFromGallery() async {
-    await _handleMobileImage(
-        'SPPKP', ImageSource.gallery, _imageSPPKP, sppkpFromServer);
-  }
-
-  Future<void> getImageBusinessPhotoFrontFromCamera() async {
-    await _handleMobileImage('BUSINESSPHOTOFRONT', ImageSource.camera,
-        _imageBusinessPhotoFront, businessPhotoFrontFromServer);
-  }
-
-  Future<void> getImageBusinessPhotoFrontFromGallery() async {
-    await _handleMobileImage('BUSINESSPHOTOFRONT', ImageSource.gallery,
-        _imageBusinessPhotoFront, businessPhotoFrontFromServer);
-  }
-
-  Future<void> getImageBusinessPhotoInsideFromCamera() async {
-    await _handleMobileImage('BUSINESSPHOTOINSIDE', ImageSource.camera,
-        _imageBusinessPhotoInside, businessPhotoInsideFromServer);
-  }
-
-  Future<void> getImageBusinessPhotoInsideFromGallery() async {
-    await _handleMobileImage('BUSINESSPHOTOINSIDE', ImageSource.gallery,
-        _imageBusinessPhotoInside, businessPhotoInsideFromServer);
-  }
-
-  Future<void> getImageCompetitorTopFromCamera() async {
-    await _handleMobileImage('COMPETITORTOP', ImageSource.camera,
-        _imageCompetitorTop, competitorTopFromServer);
-  }
-
-  Future<void> getImageCompetitorTopFromGallery() async {
-    await _handleMobileImage('COMPETITORTOP', ImageSource.gallery,
-        _imageCompetitorTop, competitorTopFromServer);
-  }
+  Future<void> getImageKTPFromCamera() => getImageFromCamera('KTP');
+  Future<void> getImageKTPFromGallery() => getImageFromGallery('KTP');
+  Future<void> getImageNPWPFromCamera() => getImageFromCamera('NPWP');
+  Future<void> getImageNPWPFromGallery() => getImageFromGallery('NPWP');
+  Future<void> getImageSIUPFromCamera() => getImageFromCamera('SIUP');
+  Future<void> getImageSIUPFromGallery() => getImageFromGallery('SIUP');
+  Future<void> getImageSPPKPFromCamera() => getImageFromCamera('SPPKP');
+  Future<void> getImageSPPKPFromGallery() => getImageFromGallery('SPPKP');
+  Future<void> getImageBusinessPhotoFrontFromCamera() =>
+      getImageFromCamera('BUSINESS_PHOTO_FRONT');
+  Future<void> getImageBusinessPhotoFrontFromGallery() =>
+      getImageFromGallery('BUSINESS_PHOTO_FRONT');
+  Future<void> getImageBusinessPhotoInsideFromCamera() =>
+      getImageFromCamera('BUSINESS_PHOTO_INSIDE');
+  Future<void> getImageBusinessPhotoInsideFromGallery() =>
+      getImageFromGallery('BUSINESS_PHOTO_INSIDE');
+  Future<void> getImageCompetitorTopFromCamera() =>
+      getImageFromCamera('COMPETITOR_TOP');
+  Future<void> getImageCompetitorTopFromGallery() =>
+      getImageFromGallery('COMPETITOR_TOP');
 
   Future<void> _handleSignature(
       String type, Uint8List imageFile, RxString imageFromServerState) async {
@@ -2959,14 +3067,59 @@ class CustomerFormController extends GetxController
     }
   }
 
-  Future<void> _handleMobileImage(String type, ImageSource source,
-      Rx<File?> imageState, RxString imageFromServerState) async {
+  Future<void> _handleMobileImageSafe(String type, ImageSource source) async {
+    _setProcessingState(type, true);
+
     try {
-      final pickedFile =
-          await _picker.pickImage(source: source, imageQuality: 20);
+      File? selectedFile;
 
-      if (pickedFile == null) return;
+      if (source == ImageSource.camera) {
+        selectedFile = await _takePhotoSafely();
+      } else {
+        selectedFile = await _pickFromGallerySafely();
+      }
 
+      if (selectedFile == null) {
+        _setProcessingState(type, false);
+        return;
+      }
+
+      await _processAndUploadImage(selectedFile, type);
+    } catch (e) {
+      debugPrint('Error in _handleMobileImageSafe for $type: $e');
+      _showErrorSnackbar('Failed to process $type image: ${e.toString()}');
+      _resetImageState(type);
+    } finally {
+      _setProcessingState(type, false);
+    }
+  }
+
+  /// STATE MANAGEMENT - Updates both generic and specific variables
+  void _setProcessingState(String type, bool isProcessing) {
+    _processingStates[type] = isProcessing;
+    update();
+  }
+
+  void _resetImageState(String type) {
+    // Clear generic storage
+    _images[type] = null;
+    _webImages[type] = null;
+    _imageUrls[type] = '';
+
+    // Clear specific reactive variable if it exists
+    final specificVariable = _serverVariableMap[type];
+    if (specificVariable != null) {
+      specificVariable.value = '';
+    } else {
+      _serverFileNames[type] = '';
+    }
+
+    update();
+  }
+
+  /// PROCESS AND UPLOAD IMAGE - Updates both systems
+  Future<void> _processAndUploadImage(File imageFile, String type) async {
+    try {
       final username = await _getUsername();
       if (username == null) return;
 
@@ -2978,16 +3131,28 @@ class CustomerFormController extends GetxController
           ? path.join((await getApplicationDocumentsDirectory()).path, fileName)
           : path.join(directory, fileName);
 
-      final newFile = await File(pickedFile.path).copy(filePath);
+      final newFile = await imageFile.copy(filePath);
 
-      imageState.value = newFile;
+      // Update image in generic storage
+      _images[type] = newFile;
       update();
 
+      // Upload to server
+      await _uploadImageToServer(newFile, fileName, type);
+    } catch (e) {
+      throw Exception('Failed to process $type image: $e');
+    }
+  }
+
+  /// UPLOAD TO SERVER - Updates both specific and generic variables
+  Future<void> _uploadImageToServer(
+      File imageFile, String fileName, String type) async {
+    try {
       final uri = Uri.parse("${apiNOO}Upload");
       final request = http.MultipartRequest("POST", uri);
 
       request.files.add(
-        await http.MultipartFile.fromPath('file', newFile.path,
+        await http.MultipartFile.fromPath('file', imageFile.path,
             filename: fileName),
       );
 
@@ -2996,39 +3161,270 @@ class CustomerFormController extends GetxController
 
       if (response.statusCode == 200) {
         final serverFileName = response.body.replaceAll("\"", "");
-        imageFromServerState.value = serverFileName;
+
+        // Update specific reactive variable if it exists
+        final specificVariable = _serverVariableMap[type];
+        if (specificVariable != null) {
+          specificVariable.value = serverFileName;
+        } else {
+          // Fallback to generic storage for unknown types
+          _serverFileNames[type] = serverFileName;
+        }
+
         update();
       } else {
         throw Exception('Upload failed with status: ${response.statusCode}');
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to process image: ${e.toString()}',
-        snackPosition: SnackPosition.TOP,
-      );
-
-      imageState.value = null;
-      imageFromServerState.value = '';
-      update();
+      throw Exception('Server upload failed for $type: $e');
     }
   }
 
-  Future<void> _handleWebImage(String type, ImageSource source) async {
+  /// WEB IMAGE HANDLING
+  Future<void> _handleWebImageSafe(String type, ImageSource source) async {
     try {
       final pickedFile = await _picker.pickImage(source: source);
       if (pickedFile != null) {
         final imageBytes = await pickedFile.readAsBytes();
-        _imageKTPWeb.value = imageBytes;
+        _webImages[type] = imageBytes;
         update();
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to process web image: ${e.toString()}',
-        snackPosition: SnackPosition.TOP,
-      );
+      _showErrorSnackbar('Failed to process $type web image: ${e.toString()}');
     }
+  }
+
+  /// UTILITY METHODS
+
+  void clearImage(String type) {
+    _resetImageState(type);
+  }
+
+  void clearAllImages() {
+    // Clear generic storage
+    _images.clear();
+    _webImages.clear();
+    _serverFileNames.clear();
+    _imageUrls.clear();
+    _processingStates.clear();
+
+    // Clear all specific variables
+    ktpFromServer.value = '';
+    npwpFromServer.value = '';
+    siupFromServer.value = '';
+    sppkpFromServer.value = '';
+    businessPhotoFrontFromServer.value = '';
+    businessPhotoInsideFromServer.value = '';
+    competitorTopFromServer.value = '';
+    signatureSalesFromServer.value = '';
+    signatureCustomersFromServer.value = '';
+
+    update();
+  }
+
+  bool get isAnyProcessing =>
+      _processingStates.values.any((processing) => processing);
+
+  List<String> get processingTypes => _processingStates.entries
+      .where((entry) => entry.value)
+      .map((entry) => entry.key)
+      .toList();
+
+  void setImageUrl(String type, String url) {
+    _imageUrls[type] = url;
+    update();
+  }
+
+  /// SAFE CAMERA ACCESS (same as before)
+  Future<File?> _takePhotoSafely() async {
+    try {
+      final cameraStatus = await Permission.camera.status;
+
+      if (cameraStatus.isDenied) {
+        final result = await Permission.camera.request();
+        if (result.isDenied) {
+          _showPermissionDialog('Camera', 'camera');
+          return null;
+        }
+      }
+
+      if (cameraStatus.isPermanentlyDenied) {
+        _showPermissionSettingsDialog('Camera');
+        return null;
+      }
+
+      if (Platform.isIOS) {
+        final isAvailable = await _isCameraAvailable();
+        if (!isAvailable) {
+          _showErrorSnackbar('Camera not available on this device');
+          return null;
+        }
+      }
+
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 20,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+
+      if (image != null) {
+        return File(image.path);
+      }
+    } on PlatformException catch (e) {
+      debugPrint('Camera Platform Exception: ${e.message}');
+      _handleCameraError(e);
+    } catch (e) {
+      debugPrint('Camera Error: $e');
+      _showErrorSnackbar('Failed to take photo');
+    }
+
+    return null;
+  }
+
+  Future<File?> _pickFromGallerySafely() async {
+    try {
+      final photoStatus = await Permission.photos.status;
+
+      if (photoStatus.isDenied) {
+        final result = await Permission.photos.request();
+        if (result.isDenied) {
+          _showPermissionDialog('Photo Library', 'photos');
+          return null;
+        }
+      }
+
+      if (photoStatus.isPermanentlyDenied) {
+        _showPermissionSettingsDialog('Photo Library');
+        return null;
+      }
+
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 20,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+
+      if (image != null) {
+        return File(image.path);
+      }
+    } on PlatformException catch (e) {
+      debugPrint('Gallery Platform Exception: ${e.message}');
+      _handleGalleryError(e);
+    } catch (e) {
+      debugPrint('Gallery Error: $e');
+      _showErrorSnackbar('Failed to select photo');
+    }
+
+    return null;
+  }
+
+  /// ERROR HANDLING METHODS (same as before)
+  Future<bool> _isCameraAvailable() async {
+    try {
+      return Platform.isIOS || Platform.isAndroid;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  void _handleCameraError(PlatformException e) {
+    String message;
+    switch (e.code) {
+      case 'camera_access_denied':
+        message =
+            'Camera access denied. Please enable camera permission in settings.';
+        break;
+      case 'camera_access_denied_without_prompt':
+        message =
+            'Camera access denied. Please go to Settings and enable camera permission.';
+        break;
+      case 'camera_access_restricted':
+        message = 'Camera access is restricted on this device.';
+        break;
+      default:
+        message = 'Camera error: ${e.message ?? 'Unknown error'}';
+    }
+    _showErrorSnackbar(message);
+  }
+
+  void _handleGalleryError(PlatformException e) {
+    String message;
+    switch (e.code) {
+      case 'photo_access_denied':
+        message =
+            'Photo library access denied. Please enable permission in settings.';
+        break;
+      case 'photo_access_denied_without_prompt':
+        message =
+            'Photo library access denied. Please go to Settings and enable permission.';
+        break;
+      default:
+        message = 'Gallery error: ${e.message ?? 'Unknown error'}';
+    }
+    _showErrorSnackbar(message);
+  }
+
+  void _showPermissionDialog(String permission, String permissionType) {
+    Get.dialog(
+      AlertDialog(
+        title: Text('$permission Permission Required'),
+        content:
+            Text('This app needs $permission permission to function properly.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              if (permissionType == 'camera') {
+                Permission.camera.request();
+              } else {
+                Permission.photos.request();
+              }
+            },
+            child: const Text('Grant Permission'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPermissionSettingsDialog(String permission) {
+    Get.dialog(
+      AlertDialog(
+        title: Text('$permission Permission Denied'),
+        content: Text(
+            '$permission permission is permanently denied. Please enable it in Settings.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red.withOpacity(0.8),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
   }
 
   Future<void> requestPermissions() async {

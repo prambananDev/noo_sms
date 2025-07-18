@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 import 'package:noo_sms/models/sfa_model.dart';
 import 'package:noo_sms/view/sfa/sfa_create_visit.dart';
@@ -43,8 +44,14 @@ class _SfaListViewState extends State<SfaListView> {
             }
 
             if (controller.sfaRecords.isEmpty) {
-              return const Center(
-                child: Text('No SFA records found'),
+              return Center(
+                child: Text(
+                  'No SFA records found',
+                  style: TextStyle(
+                    fontSize: 16.rt(context),
+                    color: colorBlack,
+                  ),
+                ),
               );
             }
 
@@ -68,16 +75,19 @@ class _SfaListViewState extends State<SfaListView> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.rp(context),
+        vertical: 8.rp(context),
+      ),
+      padding: EdgeInsets.all(16.rp(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+            blurRadius: 8.rs(context),
+            spreadRadius: 1.rs(context),
           ),
         ],
       ),
@@ -87,210 +97,72 @@ class _SfaListViewState extends State<SfaListView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                padding: EdgeInsets.only(bottom: 8.rp(context)),
                 child: Text(
                   'Transaction ID - ${record.id}',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.rt(context),
                     fontWeight: FontWeight.bold,
                     color: colorBlack,
                   ),
                 ),
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Date : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: formattedDate,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Date : ',
+                formattedDate,
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Customer : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: record.customerName ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Customer : ',
+                record.customerName ?? 'N/A',
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Contact Person : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: record.contactPerson ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Contact Person : ',
+                record.contactPerson ?? 'N/A',
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Purpose : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: record.purpose ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Purpose : ',
+                record.purpose ?? 'N/A',
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Purpose Description : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: record.purposeDesc ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Purpose Description : ',
+                record.purposeDesc ?? 'N/A',
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Sales Name : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: record.fullName ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Sales Name : ',
+                record.fullName ?? 'N/A',
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    const TextSpan(
-                      text: 'Status : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: record.statusName ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildInfoRow(
+                context,
+                'Status : ',
+                record.statusName ?? 'N/A',
               ),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.075,
+                height:
+                    60.rs(context), // More predictable than percentage-based
               ),
             ],
           ),
           Positioned(
-            bottom: 10,
-            right: 10,
+            bottom: 10.rp(context),
+            right: 10.rp(context),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Get.to(() => SfaCreate(record: record));
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorAccent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Text(
-                      "Edit",
-                      style: TextStyle(
-                        color: colorNetral,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
+                _buildActionButton(
+                  context,
+                  "Edit",
+                  () => Get.to(() => SfaCreate(record: record)),
                 ),
-                SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                GestureDetector(
-                  onTap: () {
+                SizedBox(width: 8.rp(context)),
+                _buildActionButton(
+                  context,
+                  "Detail",
+                  () {
                     if (record.id != null) {
                       Get.to(() => SfaDetail(
                             recordId: record.id!,
@@ -298,23 +170,8 @@ class _SfaListViewState extends State<SfaListView> {
                           ));
                     }
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorAccent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Text(
-                      "Detail",
-                      style: TextStyle(
-                        color: colorNetral,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
                 ),
-                SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                SizedBox(width: 8.rp(context)),
                 FollowUpButton(
                   recordId: record.id!,
                   controller: controller,
@@ -323,6 +180,62 @@ class _SfaListViewState extends State<SfaListView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 4.rp(context)),
+      child: RichText(
+        text: TextSpan(
+          style: DefaultTextStyle.of(context).style,
+          children: [
+            TextSpan(
+              text: label,
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                fontWeight: FontWeight.normal,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(
+    BuildContext context,
+    String text,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorAccent,
+          borderRadius: BorderRadius.circular(12.rr(context)),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.rp(context),
+          vertical: 8.rp(context),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: colorNetral,
+            fontSize: 16.rt(context),
+          ),
+        ),
       ),
     );
   }

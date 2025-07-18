@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/order_tracking/order_tracking_controller.dart';
 
 class DetailOrderTrack extends StatelessWidget {
@@ -24,21 +25,25 @@ class DetailOrderTrack extends StatelessWidget {
         title: Text(
           'Detail Order Tracking',
           style: TextStyle(
-              color: colorNetral, fontSize: 16, fontWeight: FontWeight.bold),
+            color: colorNetral,
+            fontSize: 16.rt(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        elevation: 0,
         centerTitle: true,
+        backgroundColor: colorAccent,
+        elevation: 0,
+        toolbarHeight: 56.rs(context),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
         ),
-        backgroundColor: colorAccent,
       ),
       body: Column(
         children: [
@@ -56,25 +61,25 @@ class DetailOrderTrack extends StatelessWidget {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(20.rp(context)),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Profile Avatar
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: 80.rs(context),
+                    height: 80.rs(context),
                     decoration: const BoxDecoration(
                       color: Color(0xffFBAD02),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.person,
-                      size: 40,
+                      size: 40.ri(context),
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.rp(context)),
                   // Customer Info
                   Expanded(
                     child: Column(
@@ -82,19 +87,19 @@ class DetailOrderTrack extends StatelessWidget {
                       children: [
                         Text(
                           customerName,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.rt(context),
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.rs(context)),
                         Text(
                           customerEmail,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14.rt(context),
                             color: customerEmail == 'Email is empty'
                                 ? Colors.grey[600]
                                 : Colors.black54,
@@ -118,10 +123,11 @@ class DetailOrderTrack extends StatelessWidget {
             child: Container(
               color: Colors.grey[100],
               child: ListView(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.rp(context)),
                 children: [
                   // Profile Menu Item
                   _buildMenuItem(
+                    context,
                     icon: Icons.person_outline,
                     title: 'Profile',
                     onTap: () {
@@ -132,9 +138,10 @@ class DetailOrderTrack extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.rs(context)),
 
                   _buildMenuItem(
+                    context,
                     icon: Icons.history,
                     title: 'Order History',
                     onTap: () {
@@ -145,9 +152,10 @@ class DetailOrderTrack extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.rs(context)),
 
                   _buildMenuItem(
+                    context,
                     icon: Icons.payment_outlined,
                     title: 'Payment Method',
                     onTap: () {
@@ -157,9 +165,10 @@ class DetailOrderTrack extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.rs(context)),
 
                   _buildMenuItem(
+                    context,
                     icon: Icons.pin_drop_outlined,
                     title: 'My Address',
                     onTap: () {
@@ -176,7 +185,8 @@ class DetailOrderTrack extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildMenuItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
@@ -185,11 +195,11 @@ class DetailOrderTrack extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
-            blurRadius: 4,
+            blurRadius: 4.rs(context),
             offset: const Offset(0, 2),
           ),
         ],
@@ -197,22 +207,22 @@ class DetailOrderTrack extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Container(
-          width: 40,
-          height: 40,
+          width: 40.rs(context),
+          height: 40.rs(context),
           decoration: BoxDecoration(
             color: (iconColor ?? Colors.grey[600])?.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.rr(context)),
           ),
           child: Icon(
             icon,
             color: iconColor ?? Colors.grey[600],
-            size: 24,
+            size: 24.ri(context),
           ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.rt(context),
             fontWeight: FontWeight.w500,
             color: Colors.black87,
           ),
@@ -220,9 +230,12 @@ class DetailOrderTrack extends StatelessWidget {
         trailing: Icon(
           Icons.chevron_right,
           color: Colors.grey[400],
-          size: 24,
+          size: 24.ri(context),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16.rp(context),
+          vertical: 8.rp(context),
+        ),
       ),
     );
   }

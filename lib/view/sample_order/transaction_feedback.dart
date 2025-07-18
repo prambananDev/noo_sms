@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/assets/widgets/button_widget.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/assets/widgets/upload_photo_feedback.dart';
 import 'package:noo_sms/controllers/sample_order/transaction_history_controller.dart';
 import 'package:noo_sms/models/id_valaue.dart';
@@ -131,27 +132,33 @@ class FeedbackPageState extends State<FeedbackPage> {
     return Scaffold(
       backgroundColor: colorNetral,
       appBar: AppBar(
-        title: const Text("Submit Feedback"),
+        title: Text(
+          "Submit Feedback",
+          style: TextStyle(fontSize: 18.rt(context)),
+        ),
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.rp(context)),
               child: Column(
                 children: [
                   DropdownButtonHideUnderline(
                     child: DropdownButtonFormField<IdAndValue<String>>(
-                      hint: const Text(
+                      hint: Text(
                         "Select Feedback",
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16.rt(context)),
                       ),
                       value: _selectedFeed,
                       items: widget.inputPagePresenter.feedList.value.choiceList
                           ?.map((feed) {
                         return DropdownMenuItem<IdAndValue<String>>(
                           value: feed,
-                          child: Text(feed.value),
+                          child: Text(
+                            feed.value,
+                            style: TextStyle(fontSize: 16.rt(context)),
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -159,39 +166,67 @@ class FeedbackPageState extends State<FeedbackPage> {
                           _selectedFeed = value;
                         });
                       },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    maxLines: null,
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      hintText: 'Submit notes here',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(width: 1, color: Colors.black),
+                      style: TextStyle(
+                        fontSize: 16.rt(context),
+                        color: Colors.black,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.rs(context)),
+                  TextField(
+                    maxLines: null,
+                    controller: _textController,
+                    style: TextStyle(fontSize: 16.rt(context)),
+                    decoration: InputDecoration(
+                      hintText: 'Submit notes here',
+                      hintStyle: TextStyle(fontSize: 16.rt(context)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.rr(context)),
+                        borderSide:
+                            const BorderSide(width: 1, color: Colors.black),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.rp(context),
+                        vertical: 12.rp(context),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.rs(context)),
                   _selectedImage != null
-                      ? Image.file(_selectedImage!, fit: BoxFit.fitWidth)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8.rr(context)),
+                          child:
+                              Image.file(_selectedImage!, fit: BoxFit.fitWidth),
+                        )
                       : _uploadedImage != null
-                          ? Image.memory(_uploadedImage!, fit: BoxFit.fitWidth)
-                          : const SizedBox(
-                              height: 200,
+                          ? ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(8.rr(context)),
+                              child: Image.memory(_uploadedImage!,
+                                  fit: BoxFit.fitWidth),
+                            )
+                          : Container(
+                              height: 200.rs(context),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius:
+                                    BorderRadius.circular(8.rr(context)),
+                              ),
                               child: Center(
                                 child: Text(
                                   "No Image Loaded",
                                   textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16.rt(context),
+                                    color: Colors.grey.shade600,
+                                  ),
                                 ),
                               ),
                             ),
                   if (_selectedImage == null && _uploadedImage == null)
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: EdgeInsets.symmetric(vertical: 8.rp(context)),
                         child: ButtonOrderSample(
                           size: MediaQuery.of(context).size,
                           onTapAction: () {
@@ -210,18 +245,36 @@ class FeedbackPageState extends State<FeedbackPage> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: isUploading ? null : submitFeedback,
-                    child: const Text("Submit"),
+                  SizedBox(height: 16.rs(context)),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isUploading ? null : submitFeedback,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.rp(context),
+                          horizontal: 24.rp(context),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.rr(context)),
+                        ),
+                      ),
+                      child: Text(
+                        "Submit",
+                        style: TextStyle(fontSize: 16.rt(context)),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
           if (isUploading)
-            const Center(
-              child: CircularProgressIndicator(),
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
         ],
       ),

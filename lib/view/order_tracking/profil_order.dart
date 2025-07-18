@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/order_tracking/order_tracking_controller.dart';
 
 class ProfileOrderPage extends StatefulWidget {
@@ -39,21 +40,25 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
         title: Text(
           'Profile',
           style: TextStyle(
-              color: colorNetral, fontSize: 16, fontWeight: FontWeight.bold),
+            color: colorNetral,
+            fontSize: 16.rt(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        elevation: 0,
         centerTitle: true,
+        backgroundColor: colorAccent,
+        elevation: 0,
+        toolbarHeight: 56.rs(context),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_left,
             color: Colors.white,
-            size: 35,
+            size: 35.ri(context),
           ),
         ),
-        backgroundColor: colorAccent,
         actions: [
           IconButton(
             onPressed: () {
@@ -64,7 +69,11 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
               }
               controller.loadProfileForPage(custId: custId);
             },
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(
+              Icons.refresh,
+              color: Colors.white,
+              size: 24.ri(context),
+            ),
           ),
         ],
       ),
@@ -80,17 +89,17 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.error_outline,
-                  size: 48,
+                  size: 48.ri(context),
                   color: Colors.red,
                 ),
-                const SizedBox(height: 16),
-                const Text(
+                SizedBox(height: 16.rs(context)),
+                Text(
                   'Failed to load profile data',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16.rt(context)),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.rs(context)),
                 ElevatedButton(
                   onPressed: () {
                     String? custId = widget.custId;
@@ -102,8 +111,15 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorAccent,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.rp(context),
+                      vertical: 12.rp(context),
+                    ),
                   ),
-                  child: const Text('Retry'),
+                  child: Text(
+                    'Retry',
+                    style: TextStyle(fontSize: 16.rt(context)),
+                  ),
                 ),
               ],
             ),
@@ -128,21 +144,21 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.rp(context)),
                   child: Column(
                     children: [
                       Stack(
                         children: [
                           Container(
-                            width: 120,
-                            height: 120,
+                            width: 120.rs(context),
+                            height: 120.rs(context),
                             decoration: const BoxDecoration(
                               color: Color(0xffFBAD02),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.person,
-                              size: 60,
+                              size: 60.ri(context),
                               color: Colors.white,
                             ),
                           ),
@@ -150,26 +166,26 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              width: 36,
-                              height: 36,
+                              width: 36.rs(context),
+                              height: 36.rs(context),
                               decoration: const BoxDecoration(
                                 color: Color(0xff1A1A2E),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.camera_alt,
-                                size: 20,
+                                size: 20.ri(context),
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.rs(context)),
                       Text(
                         profile.displayName,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: 20.rt(context),
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -177,12 +193,12 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.rs(context)),
                       if (profile.displayContactName != 'Not provided')
                         Text(
                           'Contact: ${profile.displayContactName}',
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: 14.rt(context),
                             color: Colors.black54,
                           ),
                           textAlign: TextAlign.center,
@@ -194,22 +210,24 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
               Container(
                 width: double.infinity,
                 color: const Color(0xffFFF8E1),
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.rp(context)),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Expanded(
                           child: _buildFinancialCard(
+                            context,
                             label: 'Credit Line (IDR)',
                             value: profile.displayCreditLine,
                             icon: Icons.account_balance_wallet,
                             color: Colors.green,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.rp(context)),
                         Expanded(
                           child: _buildFinancialCard(
+                            context,
                             label: 'Purchased (IDR)',
                             value: profile.displayPurchased,
                             icon: Icons.shopping_cart,
@@ -218,20 +236,22 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.rs(context)),
                     Row(
                       children: [
                         Expanded(
                           child: _buildFinancialCard(
+                            context,
                             label: 'Available Credit (IDR)',
                             value: profile.formattedAvailableCredit,
                             icon: Icons.account_balance,
                             color: Colors.blue,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.rp(context)),
                         Expanded(
                           child: _buildFinancialCard(
+                            context,
                             label: 'TOP (Days)',
                             value: profile.displayTOP,
                             icon: Icons.schedule,
@@ -250,7 +270,8 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
     );
   }
 
-  Widget _buildFinancialCard({
+  Widget _buildFinancialCard(
+    BuildContext context, {
     required String label,
     required String value,
     required IconData icon,
@@ -259,49 +280,49 @@ class _ProfileOrderPageState extends State<ProfileOrderPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.rr(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
+            blurRadius: 8.rs(context),
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.rp(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.rp(context)),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.rr(context)),
                 ),
                 child: Icon(
                   icon,
                   color: color,
-                  size: 20,
+                  size: 20.ri(context),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.rs(context)),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.rt(context),
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.rs(context)),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.rt(context),
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),

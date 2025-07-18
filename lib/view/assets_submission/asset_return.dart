@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:noo_sms/assets/global.dart';
+import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/assets_submission/submission_controller.dart';
 
 class AssetReturnPage extends StatelessWidget {
@@ -48,62 +49,90 @@ class AssetReturnPage extends StatelessWidget {
       backgroundColor: colorNetral,
       resizeToAvoidBottomInset: true,
       body: Container(
-        margin: const EdgeInsets.only(left: 16, right: 16, top: 56),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(
+          left: 16.rp(context),
+          right: 16.rp(context),
+          top: 56.rs(context),
+        ),
+        padding: EdgeInsets.all(16.rp(context)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.rr(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.3),
-              blurRadius: 8,
-              spreadRadius: 1,
+              blurRadius: 8.rs(context),
+              spreadRadius: 1.rs(context),
             ),
           ],
         ),
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.rp(context)),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Asset : $assetName',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16.rt(context),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.rs(context)),
                     Text(
                       'Customer : $customerName',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16.rt(context),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.rs(context)),
                     Text(
                       'Tanggal Peminjaman : $loanDate',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16.rt(context),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    const Text('Tanggal Diterima',
-                        style: TextStyle(fontSize: 14)),
+                    SizedBox(height: 20.rs(context)),
+                    Text(
+                      'Tanggal Diterima',
+                      style: TextStyle(fontSize: 14.rt(context)),
+                    ),
                     TextField(
                       controller: tanggalDiterimaController,
                       readOnly: true,
+                      style: TextStyle(fontSize: 14.rt(context)),
                       decoration: InputDecoration(
                         hintText: 'Tanggal Diterima',
+                        hintStyle: TextStyle(fontSize: 14.rt(context)),
                         filled: true,
                         fillColor: Colors.grey[200],
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.rp(context),
+                          vertical: 12.rp(context),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    const Text('Tanggal Pengembalian',
-                        style: TextStyle(fontSize: 14)),
+                    SizedBox(height: 20.rs(context)),
+                    Text(
+                      'Tanggal Pengembalian',
+                      style: TextStyle(fontSize: 14.rt(context)),
+                    ),
                     TextField(
                       controller: tanggalPengembalianController,
-                      decoration: const InputDecoration(hintText: 'dd/mm/yyyy'),
+                      style: TextStyle(fontSize: 14.rt(context)),
+                      decoration: InputDecoration(
+                        hintText: 'dd/mm/yyyy',
+                        hintStyle: TextStyle(fontSize: 14.rt(context)),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.rp(context),
+                          vertical: 12.rp(context),
+                        ),
+                      ),
                       onTap: () async {
                         DateTime? pickedDate = await showDatePicker(
                           context: context,
@@ -118,53 +147,66 @@ class AssetReturnPage extends StatelessWidget {
                         }
                       },
                     ),
-                    const SizedBox(height: 20),
-                    const Text('Keterangan', style: TextStyle(fontSize: 14)),
+                    SizedBox(height: 20.rs(context)),
+                    Text(
+                      'Keterangan',
+                      style: TextStyle(fontSize: 14.rt(context)),
+                    ),
                     TextField(
                       controller: keteranganController,
                       maxLines: 4,
-                      decoration: const InputDecoration(
+                      style: TextStyle(fontSize: 14.rt(context)),
+                      decoration: InputDecoration(
                         hintText: 'Enter additional information',
-                        border: OutlineInputBorder(),
+                        hintStyle: TextStyle(fontSize: 14.rt(context)),
+                        border: const OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.rp(context),
+                          vertical: 12.rp(context),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 70),
+                    SizedBox(height: 70.rs(context)),
                   ],
                 ),
               ),
             ),
             Positioned(
-              bottom: 16,
-              right: 16,
+              bottom: 16.rp(context),
+              right: 16.rp(context),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(176, 133, 126, 126),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.rr(context)),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.rp(context),
+                      vertical: 8.rp(context),
+                    ),
                     child: GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Text(
                         'Batal',
                         style: TextStyle(
                           color: colorNetral,
-                          fontSize: 16,
+                          fontSize: 16.rt(context),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.rp(context)),
                   Container(
                     decoration: BoxDecoration(
                       color: colorAccent,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.rr(context)),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.rp(context),
+                      vertical: 8.rp(context),
+                    ),
                     child: GestureDetector(
                       onTap: () {
                         String tanggalPengembaliana =
@@ -184,7 +226,7 @@ class AssetReturnPage extends StatelessWidget {
                         'Ajukan Pengembalian',
                         style: TextStyle(
                           color: colorNetral,
-                          fontSize: 16,
+                          fontSize: 16.rt(context),
                         ),
                       ),
                     ),

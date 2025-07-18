@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/controllers/promotion_program/order/create_order_controller.dart';
 import 'package:noo_sms/view/sms/create/dimension.dart';
+import 'package:noo_sms/view/sms/order/transaction_card.dart';
 import 'package:noo_sms/view/sms/order/transaction_header_card.dart';
 
 class TransactionPage extends StatefulWidget {
@@ -58,11 +59,11 @@ class _TransactionPageState extends State<TransactionPage> {
         itemCount: state.promotionProgramInputState.length,
         itemBuilder: (context, index) => Column(
           children: [
-            // TransactionLineItemCard(
-            //   index: index,
-            //   controller: _controller,
-            //   dimensions: _dimensions,
-            // ),
+            TransactionLineItemCard(
+              index: index,
+              controller: _controller,
+              dimensions: _dimensions,
+            ),
             if (index == state.promotionProgramInputState.length - 1)
               _buildSubmitButton(),
           ],

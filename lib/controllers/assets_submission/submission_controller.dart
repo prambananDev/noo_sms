@@ -23,72 +23,128 @@ class AssetController extends GetxController {
 
   final RxString errorMessage = ''.obs;
 
+  // Safe state update method that schedules updates after current build
+  void _safeStateUpdate(VoidCallback updateCallback) {
+    if (Get.isRegistered<AssetController>()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        updateCallback();
+      });
+    } else {
+      updateCallback();
+    }
+  }
+
   Future<void> fetchAssets(int page, int pageSize) async {
     try {
-      isLoading.value = true;
-      errorMessage.value = '';
+      _safeStateUpdate(() {
+        isLoading.value = true;
+        errorMessage.value = '';
+      });
 
       List<Asset> fetchedAssets = await _repository.fetchAssets(page, pageSize);
 
-      assets.value = fetchedAssets;
+      _safeStateUpdate(() {
+        assets.value = fetchedAssets;
+      });
     } catch (e) {
-      errorMessage.value = 'Error fetching assets: $e';
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error fetching assets: $e';
+      });
     } finally {
-      isLoading.value = false;
+      _safeStateUpdate(() {
+        isLoading.value = false;
+      });
     }
   }
 
   Future<void> fetchAssetsHistory(int page, int pageSize) async {
     try {
-      isLoading.value = true;
-      errorMessage.value = '';
+      _safeStateUpdate(() {
+        isLoading.value = true;
+        errorMessage.value = '';
+      });
 
       AssetHistory historyData =
           await _repository.fetchAssetsHistory(page, pageSize);
 
-      assetsHistory.value = historyData.items;
+      _safeStateUpdate(() {
+        assetsHistory.value = historyData.items;
+      });
     } catch (e) {
-      errorMessage.value = 'Error fetching assets: $e';
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error fetching assets: $e';
+      });
     } finally {
-      isLoading.value = false;
+      _safeStateUpdate(() {
+        isLoading.value = false;
+      });
     }
   }
 
   Future<void> fetchCustomers() async {
     try {
-      isLoading(true);
+      _safeStateUpdate(() {
+        isLoading.value = true;
+      });
+
       var fetchedCustomers = await _repository.fetchCustomers();
-      customers.value = fetchedCustomers;
+
+      _safeStateUpdate(() {
+        customers.value = fetchedCustomers;
+      });
     } catch (e) {
-      errorMessage.value = 'Error fetching customersz: $e';
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error fetching customers: $e';
+      });
     } finally {
-      isLoading(false);
+      _safeStateUpdate(() {
+        isLoading.value = false;
+      });
     }
   }
 
   Future<void> fetchAssetAvail() async {
     try {
-      isLoading(true);
+      _safeStateUpdate(() {
+        isLoading.value = true;
+      });
+
       var fetchAssetAvail = await _repository.fetchAssetAvail();
-      assetAvail.value = fetchAssetAvail;
+
+      _safeStateUpdate(() {
+        assetAvail.value = fetchAssetAvail;
+      });
     } catch (e) {
-      errorMessage.value = 'Error fetching customers2: $e';
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error fetching asset availability: $e';
+      });
     } finally {
-      isLoading(false);
+      _safeStateUpdate(() {
+        isLoading.value = false;
+      });
     }
   }
 
   Future<void> fetchAssetDetail(int id) async {
     try {
-      isLoading(true);
-      assetDetail.value = null;
+      _safeStateUpdate(() {
+        isLoading.value = true;
+        assetDetail.value = null;
+      });
 
       var detail = await _repository.fetchAssetDetail(id);
-      assetDetail.value = detail;
+
+      _safeStateUpdate(() {
+        assetDetail.value = detail;
+      });
     } catch (e) {
-      errorMessage.value = 'Error fetching asset detail: $e';
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error fetching asset detail: $e';
+      });
     } finally {
-      isLoading(false);
+      _safeStateUpdate(() {
+        isLoading.value = false;
+      });
     }
   }
 
@@ -98,12 +154,16 @@ class AssetController extends GetxController {
           selectedAssetId.value == 0 ||
           selectedDate.value == null ||
           keteranganController.text.isEmpty) {
-        errorMessage.value = 'Semua field harus diisi';
+        _safeStateUpdate(() {
+          errorMessage.value = 'Semua field harus diisi';
+        });
         return;
       }
 
-      isSubmitting.value = true;
-      errorMessage.value = '';
+      _safeStateUpdate(() {
+        isSubmitting.value = true;
+        errorMessage.value = '';
+      });
 
       String formattedDate =
           "${selectedDate.value!.month.toString().padLeft(2, '0')}/${selectedDate.value!.day.toString().padLeft(2, '0')}/${selectedDate.value!.year}";
@@ -118,15 +178,21 @@ class AssetController extends GetxController {
       bool result = await _repository.submitAssetLoan(assetLoan);
 
       if (result) {
-        isSuccess.value = true;
+        _safeStateUpdate(() {
+          isSuccess.value = true;
+        });
         clearForm();
         // Refresh the available assets list after successful submission
         await fetchAssetsHistory(1, 10);
       }
     } catch (e) {
-      errorMessage.value = 'Error submitting loan: $e';
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error submitting loan: $e';
+      });
     } finally {
-      isSubmitting.value = false;
+      _safeStateUpdate(() {
+        isSubmitting.value = false;
+      });
     }
   }
 
@@ -136,8 +202,10 @@ class AssetController extends GetxController {
     BuildContext context,
   ) async {
     try {
-      isSubmitting.value = true;
-      errorMessage.value = '';
+      _safeStateUpdate(() {
+        isSubmitting.value = true;
+        errorMessage.value = '';
+      });
 
       AssetReturn assetReturn = AssetReturn(
         assetId: assetId,
@@ -147,24 +215,39 @@ class AssetController extends GetxController {
       bool result = await _repository.submitAssetReturn(assetReturn);
 
       if (result) {
-        isSuccess.value = true;
+        _safeStateUpdate(() {
+          isSuccess.value = true;
+        });
         clearForm();
         await fetchAssetAvail();
-        ScaffoldMessenger.of(Get.context!).showSnackBar(
-          const SnackBar(content: Text('Asset return submitted successfully!')),
-        );
-        await fetchAssetsHistory(1, 10);
-        if (!context.mounted) return;
 
-        Navigator.pop(context);
+        if (Get.context != null) {
+          ScaffoldMessenger.of(Get.context!).showSnackBar(
+            const SnackBar(
+                content: Text('Asset return submitted successfully!')),
+          );
+        }
+
+        await fetchAssetsHistory(1, 10);
+
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
-      errorMessage.value = 'Error submitting asset return: $e';
-      ScaffoldMessenger.of(Get.context!).showSnackBar(
-        SnackBar(content: Text('Error submitting asset return: $e')),
-      );
+      _safeStateUpdate(() {
+        errorMessage.value = 'Error submitting asset return: $e';
+      });
+
+      if (Get.context != null) {
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          SnackBar(content: Text('Error submitting asset return: $e')),
+        );
+      }
     } finally {
-      isSubmitting.value = false;
+      _safeStateUpdate(() {
+        isSubmitting.value = false;
+      });
     }
   }
 
@@ -173,5 +256,11 @@ class AssetController extends GetxController {
     selectedAssetId.value = 0;
     selectedDate.value = null;
     keteranganController.text = '';
+  }
+
+  @override
+  void onClose() {
+    keteranganController.dispose();
+    super.onClose();
   }
 }

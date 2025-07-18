@@ -67,25 +67,23 @@ class DashboardPageState extends State<DashboardPage> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    final isIPad = ResponsiveUtil.isIPad(context);
-
     return AppBar(
       elevation: 0,
       backgroundColor: colorAccent,
-      toolbarHeight: isIPad ? 64.rs(context) : null,
+      toolbarHeight: 70.rs(context),
       leading: IconButton(
         icon: Icon(
           Icons.chevron_left,
           color: Colors.white,
-          size: isIPad ? 40.ri(context) : 35.ri(context),
+          size: 35.ri(context),
         ),
         onPressed: _handleBackPress,
       ),
       title: Text(
         'Promotion Program',
         style: TextStyle(
-          fontSize: isIPad ? 20.rt(context) : 18.rt(context),
-          fontWeight: FontWeight.w800,
+          fontSize: 18.rt(context),
+          fontWeight: FontWeight.bold,
           color: colorNetral,
           letterSpacing: 0.5,
         ),
