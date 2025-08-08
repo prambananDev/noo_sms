@@ -10,6 +10,9 @@ import 'package:noo_sms/assets/widgets/responsive_util.dart';
 import 'package:noo_sms/controllers/noo/customer_form_controller.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:signature/signature.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 
 class BasicInfoSection extends StatelessWidget {
   final CustomerFormController controller;
@@ -36,9 +39,9 @@ class BasicInfoSection extends StatelessWidget {
                   inputType: TextInputType.text,
                 ),
                 CustomTextField(
-                  label: "Brand Name",
+                  label: "Alias Name",
                   controller: controller.brandNameController,
-                  validationText: "Please enter Brand Name",
+                  validationText: "Please enter Alias Name",
                   capitalization: TextCapitalization.words,
                   inputType: TextInputType.text,
                 ),
@@ -67,7 +70,6 @@ class BasicInfoSection extends StatelessWidget {
             builder: (_) => CustomDropdownField(
               label: "Customer Group",
               value: controller.selectedCustomerGroup,
-              validationText: "Please select a Customer Group",
               items: controller.customerGroups
                   .map((group) => {'name': group.name, 'value': group.value})
                   .toList(),
@@ -301,12 +303,17 @@ class BasicInfoSection extends StatelessWidget {
   }
 }
 
-class CompanyAndTaxSection extends StatelessWidget {
+class CompanyAndTaxSection extends StatefulWidget {
   final CustomerFormController controller;
 
   const CompanyAndTaxSection({Key? key, required this.controller})
       : super(key: key);
 
+  @override
+  State<CompanyAndTaxSection> createState() => _CompanyAndTaxSectionState();
+}
+
+class _CompanyAndTaxSectionState extends State<CompanyAndTaxSection> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -332,50 +339,89 @@ class CompanyAndTaxSection extends StatelessWidget {
               children: [
                 CustomTextField(
                   label: "Company Name",
-                  controller: controller.companyNameController,
+                  controller: widget.controller.companyNameController,
                   inputType: TextInputType.text,
                 ),
-                CustomTextField(
-                  label: "Street Name",
-                  controller: controller.streetCompanyController,
-                  inputType: TextInputType.text,
-                ),
+                Obx(() => CustomTextField(
+                      label: "Street Name",
+                      controller: widget.controller.streetCompanyController,
+                      inputType: TextInputType.text,
+                      readOnly: widget.controller.useKtpAddressForCompany.value,
+                    )),
                 CustomTextField(
                   label: "Country",
-                  controller: controller.countryController,
+                  controller: widget.controller.countryController,
                   inputType: TextInputType.text,
                 ),
                 ProvinceDropdownField(
                   label: "Provinsi",
-                  controller: controller.provinceController,
-                  formController: controller,
-                  cityController: controller.cityController,
+                  controller: widget.controller.provinceController,
+                  formController: widget.controller,
+                  cityController: widget.controller.cityController,
                   addressType: 'main',
                   search: true,
                 ),
                 CityDropdownField(
                   label: "City",
-                  controller: controller.cityController,
-                  formController: controller,
+                  controller: widget.controller.cityController,
+                  formController: widget.controller,
                   addressType: 'main',
                   search: true,
                 ),
                 DistrictDropdownField(
                   label: "Kecamatan",
-                  controller: controller.kecamatanController,
-                  formController: controller,
+                  controller: widget.controller.kecamatanController,
+                  formController: widget.controller,
                   addressType: 'main',
                   search: true,
                 ),
                 CustomTextField(
                   label: "Kelurahan",
-                  controller: controller.kelurahanController,
+                  controller: widget.controller.kelurahanController,
                   inputType: TextInputType.text,
                 ),
                 CustomTextField(
                   label: "ZIP Code",
-                  controller: controller.zipCodeController,
+                  controller: widget.controller.zipCodeController,
                   inputType: TextInputType.number,
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 8.rp(context)),
+                  padding: EdgeInsets.all(12.rp(context)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8.rr(context)),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Obx(() => Checkbox(
+                            value:
+                                widget.controller.useKtpAddressForCompany.value,
+                            activeColor: colorAccent,
+                            onChanged: (bool? value) {
+                              if (value == true) {
+                                widget.controller.streetCompanyController.text =
+                                    widget.controller.ktpAddressController.text;
+                              } else {
+                                widget.controller.streetCompanyController
+                                    .clear();
+                              }
+                              widget.controller.useKtpAddressForCompany.value =
+                                  value ?? false;
+                            },
+                          )),
+                      Expanded(
+                        child: Text(
+                          "Use KTP Address for Company Address",
+                          style: TextStyle(
+                            fontSize: 14.rt(context),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -405,78 +451,140 @@ class CompanyAndTaxSection extends StatelessWidget {
             id: 'taxAddress',
             builder: (_) => Column(
               children: [
+                Obx(() => CustomTextField(
+                      label: "NPWP",
+                      controller: widget.controller.npwpController,
+                      validationText: "Please enter NPWP",
+                      inputType: TextInputType.number,
+                      maxLength: 16,
+                      readOnly: widget.controller.useKtpAddressForTax.value,
+                    )),
+
+                Obx(() => CustomTextField(
+                      label: "TAX Name",
+                      controller: widget.controller.taxNameController,
+                      inputType: TextInputType.text,
+                      readOnly: widget.controller.useKtpAddressForTax.value,
+                    )),
+
+                Obx(() => CustomTextField(
+                      label: "Tax Address",
+                      controller: widget.controller.taxStreetController,
+                      inputType: TextInputType.text,
+                      readOnly: widget.controller.useKtpAddressForTax.value,
+                    )),
                 CustomTextField(
-                  label: "NPWP",
-                  controller: controller.npwpController,
-                  validationText: "Please enter NPWP",
+                  label: "Country",
+                  controller: widget.controller.countryTaxController,
+                  inputType: TextInputType.text,
+                ),
+                ProvinceDropdownField(
+                  label: "Provinsi",
+                  controller: widget.controller.provinceTaxController,
+                  formController: widget.controller,
+                  cityController: widget.controller.cityTaxController,
+                  addressType: 'tax',
+                  search: true,
+                ),
+                CityDropdownField(
+                  label: "City",
+                  controller: widget.controller.cityTaxController,
+                  formController: widget.controller,
+                  addressType: 'tax',
+                  search: true,
+                ),
+                DistrictDropdownField(
+                  label: "Kecamatan",
+                  controller: widget.controller.kecamatanTaxController,
+                  formController: widget.controller,
+                  addressType: 'tax',
+                  search: true,
+                ),
+
+                CustomTextField(
+                  label: "Kelurahan",
+                  controller: widget.controller.kelurahanTaxController,
+                  inputType: TextInputType.text,
+                ),
+                CustomTextField(
+                  label: "ZIP Code",
+                  controller: widget.controller.zipCodeTaxController,
                   inputType: TextInputType.number,
-                  maxLength: 16,
                 ),
-                CustomTextField(
-                  label: "TAX Name",
-                  controller: controller.taxNameController,
-                  inputType: TextInputType.text,
-                ),
-                CustomTextField(
-                  label: "Tax Address",
-                  controller: controller.taxStreetController,
-                  inputType: TextInputType.text,
-                ),
-                Row(
-                  children: [
-                    Obx(() => Checkbox(
-                          value: controller.useKtpAddressForTax.value,
-                          activeColor: colorAccent,
-                          onChanged: (bool? value) {
-                            if (value == true) {
-                              controller.useCompanyAddressForTax.value = false;
-                              controller.taxNameController.text =
-                                  controller.contactPersonController.text;
-                              controller.taxStreetController.text =
-                                  controller.ktpAddressController.text;
-                              controller.npwpController.text =
-                                  controller.ktpController.text;
-                            }
-                            controller.useKtpAddressForTax.value =
-                                value ?? false;
-                            controller.ktpAddressController.text;
-                          },
-                        )),
-                    Expanded(
-                      child: Text(
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 8.rp(context)),
+                  padding: EdgeInsets.all(12.rp(context)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8.rr(context)),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Obx(() => Checkbox(
+                            value: widget.controller.useKtpAddressForTax.value,
+                            activeColor: colorAccent,
+                            onChanged: (bool? value) {
+                              if (value == true) {
+                                widget.controller.useCompanyAddressForTax
+                                    .value = false;
+
+                                widget.controller.taxNameController.text =
+                                    widget.controller.contactPersonController
+                                        .text;
+                                widget.controller.taxStreetController.text =
+                                    widget.controller.ktpAddressController.text;
+                                widget.controller.npwpController.text =
+                                    widget.controller.ktpController.text;
+                              } else {
+                                // Clear tax fields when unchecked (optional)
+                                // controller.taxNameController.clear();
+                                // controller.taxStreetController.clear();
+                                // controller.npwpController.clear();
+                              }
+                              widget.controller.useKtpAddressForTax.value =
+                                  value ?? false;
+                            },
+                          )),
+                      Text(
                         "Use KTP Data for Tax Data",
-                        style: TextStyle(fontSize: 14.rt(context)),
+                        style: TextStyle(
+                          fontSize: 14.rt(context),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Row(
-                  children: [
-                    Obx(() => Checkbox(
-                          value: controller.useCompanyAddressForTax.value,
-                          activeColor: colorAccent,
-                          onChanged: (bool? value) {
-                            if (value == true) {
-                              controller.useKtpAddressForTax.value = false;
-                              controller.copyCompanyAddressToTax();
-                            }
-                            controller.useCompanyAddressForTax.value =
-                                value ?? false;
-                            controller.update(['taxAddress']);
-                          },
-                        )),
-                    Expanded(
-                      child: Text(
-                        "Use Company Address for Tax Data",
-                        style: TextStyle(fontSize: 14.rt(context)),
-                      ),
-                    ),
-                  ],
-                ),
+
+                // Row(
+                //   children: [
+                //     Obx(() => Checkbox(
+                //           value: controller.useCompanyAddressForTax.value,
+                //           activeColor: colorAccent,
+                //           onChanged: (bool? value) {
+                //             if (value == true) {
+                //               controller.useKtpAddressForTax.value = false;
+                //               controller.copyCompanyAddressToTax();
+                //             }
+                //             controller.useCompanyAddressForTax.value =
+                //                 value ?? false;
+                //             controller.update(['taxAddress']);
+                //           },
+                //         )),
+                //     Expanded(
+                //       child: Text(
+                //         "Use Company Address for Tax Data",
+                //         style: TextStyle(fontSize: 14.rt(context)),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+
+                // Optional: Add a button to manually unlock fields if needed
               ],
             ),
           ),
-          LocationInfoCard(controller: controller),
         ],
       ),
     );
@@ -565,31 +673,41 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                   controller: widget.controller.zipCodeControllerDelivery,
                   inputType: TextInputType.number,
                 ),
-                Row(
-                  children: [
-                    Obx(() => Checkbox(
-                          value: widget
-                              .controller.useCompanyAddressForDelivery.value,
-                          activeColor: colorAccent,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              widget.controller.useCompanyAddressForDelivery
-                                  .value = value ?? false;
-                              if (value == true) {
-                                widget.controller
-                                    .copyCompanyAddressToDelivery();
-                              }
-                            });
-                          },
-                        )),
-                    Expanded(
-                      child: Text(
-                        "Use Company Address Data",
-                        style: TextStyle(fontSize: 14.rt(context)),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 8.rp(context)),
+                  padding: EdgeInsets.all(12.rp(context)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8.rr(context)),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Obx(() => Checkbox(
+                            value: widget
+                                .controller.useCompanyAddressForDelivery.value,
+                            activeColor: colorAccent,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                widget.controller.useCompanyAddressForDelivery
+                                    .value = value ?? false;
+                                if (value == true) {
+                                  widget.controller
+                                      .copyCompanyAddressToDelivery();
+                                }
+                              });
+                            },
+                          )),
+                      Expanded(
+                        child: Text(
+                          "Use Company Address Data",
+                          style: TextStyle(fontSize: 14.rt(context)),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                LocationInfoCard(controller: widget.controller),
               ],
             ),
           ),
@@ -666,28 +784,28 @@ class _DeliveryAddressSectionState extends State<DeliveryAddressSection> {
                   controller: widget.controller.zipCodeControllerDelivery2,
                   inputType: TextInputType.number,
                 ),
-                Row(
-                  children: [
-                    Obx(() => Checkbox(
-                          value: widget
-                              .controller.useCompanyAddressForDelivery2.value,
-                          activeColor: colorAccent,
-                          onChanged: (bool? value) {
-                            widget.controller.useCompanyAddressForDelivery2
-                                .value = value ?? false;
-                            if (value == true) {
-                              widget.controller.copyCompanyAddressToDelivery2();
-                            }
-                          },
-                        )),
-                    Expanded(
-                      child: Text(
-                        "Use Company Address Data",
-                        style: TextStyle(fontSize: 14.rt(context)),
-                      ),
-                    ),
-                  ],
-                ),
+                // Row(
+                //   children: [
+                //     Obx(() => Checkbox(
+                //           value: widget
+                //               .controller.useCompanyAddressForDelivery2.value,
+                //           activeColor: colorAccent,
+                //           onChanged: (bool? value) {
+                //             widget.controller.useCompanyAddressForDelivery2
+                //                 .value = value ?? false;
+                //             if (value == true) {
+                //               widget.controller.copyCompanyAddressToDelivery2();
+                //             }
+                //           },
+                //         )),
+                //     Expanded(
+                //       child: Text(
+                //         "Use Company Address Data",
+                //         style: TextStyle(fontSize: 14.rt(context)),
+                //       ),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ),
@@ -741,7 +859,6 @@ class DocumentsSection extends StatelessWidget {
 
 class LocationInfoCard extends StatefulWidget {
   final CustomerFormController controller;
-
   const LocationInfoCard({Key? key, required this.controller})
       : super(key: key);
 
@@ -751,78 +868,695 @@ class LocationInfoCard extends StatefulWidget {
 
 class _LocationInfoCardState extends State<LocationInfoCard> {
   bool _isFront = true;
+  bool _isEditing = false;
+  bool _isUpdatingAddress = false;
+  bool _isGettingLocation = false;
+
+  late TextEditingController _longitudeController;
+  late TextEditingController _latitudeController;
+
+  final FocusNode _longitudeFocus = FocusNode();
+  final FocusNode _latitudeFocus = FocusNode();
+  static const Color successColor = Color(0xFF4CAF50);
+
+  static const Color errorColor = Color(0xFFF44336);
+  static const Color surfaceColor = Color(0xFFF8F9FA);
+  static const Color cardColor = Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF212121);
+  static const Color textSecondary = Color(0xFF757575);
+  static const Color borderColor = Color(0xFFE0E0E0);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _longitudeController =
+        TextEditingController(text: widget.controller.longitudeData.toString());
+    _latitudeController =
+        TextEditingController(text: widget.controller.latitudeData.toString());
+  }
+
+  @override
+  void dispose() {
+    _longitudeController.dispose();
+    _latitudeController.dispose();
+    _longitudeFocus.dispose();
+    _latitudeFocus.dispose();
+    super.dispose();
+  }
+
+  void _toggleEditMode() {
+    setState(() {
+      _isEditing = !_isEditing;
+      if (!_isEditing) {
+        _saveChanges();
+      }
+    });
+  }
+
+  Future<String> _getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    try {
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latitude, longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+
+        List<String> addressParts = [];
+
+        if (place.street != null && place.street!.isNotEmpty) {
+          addressParts.add(place.street!);
+        }
+        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+          addressParts.add(place.subLocality!);
+        }
+        if (place.locality != null && place.locality!.isNotEmpty) {
+          addressParts.add(place.locality!);
+        }
+        if (place.subAdministrativeArea != null &&
+            place.subAdministrativeArea!.isNotEmpty) {
+          addressParts.add(place.subAdministrativeArea!);
+        }
+        if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty) {
+          addressParts.add(place.administrativeArea!);
+        }
+        if (place.postalCode != null && place.postalCode!.isNotEmpty) {
+          addressParts.add(place.postalCode!);
+        }
+        if (place.country != null && place.country!.isNotEmpty) {
+          addressParts.add(place.country!);
+        }
+
+        return addressParts.join(', ');
+      } else {
+        return 'Address not found for these coordinates';
+      }
+    } catch (e) {
+      return 'Unable to retrieve address';
+    }
+  }
+
+  void _saveChanges() async {
+    try {
+      double longitude = double.parse(_longitudeController.text);
+      if (longitude < -180 || longitude > 180) {
+        _showErrorSnackbar('Longitude must be between -180 and 180');
+        return;
+      }
+
+      double latitude = double.parse(_latitudeController.text);
+      if (latitude < -90 || latitude > 90) {
+        _showErrorSnackbar('Latitude must be between -90 and 90');
+        return;
+      }
+
+      widget.controller.longitudeData = longitude.toString();
+      widget.controller.latitudeData = latitude.toString();
+
+      setState(() {
+        _isUpdatingAddress = true;
+      });
+
+      String newAddress = await _getAddressFromCoordinates(latitude, longitude);
+
+      widget.controller.addressDetail = newAddress;
+
+      setState(() {
+        _isUpdatingAddress = false;
+      });
+
+      _showSuccessSnackbar(
+          'Location coordinates and address updated successfully');
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _isFront = false;
+          });
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isUpdatingAddress = false;
+      });
+
+      _showErrorSnackbar(
+          'Invalid coordinate format. Please enter valid numbers.');
+      _longitudeController.text = widget.controller.longitudeData.toString();
+      _latitudeController.text = widget.controller.latitudeData.toString();
+    }
+  }
+
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: successColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: errorColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _getCurrentGPSLocation() async {
+    setState(() {
+      _isGettingLocation = true;
+    });
+
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showErrorSnackbar(
+            'Please enable location services in your device settings');
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          _showErrorSnackbar(
+              'Location permission denied. Please grant location access.');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showErrorSnackbar(
+            'Location permission permanently denied. Please enable in app settings.');
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+
+      _longitudeController.text = position.longitude.toStringAsFixed(6);
+      _latitudeController.text = position.latitude.toStringAsFixed(6);
+
+      _showSuccessSnackbar(
+          'GPS coordinates loaded. Click Save to confirm or continue editing.');
+    } catch (e) {
+      if (e is TimeoutException || e.toString().contains('timeout')) {
+        _showErrorSnackbar(
+            'GPS timeout. Please try again or check if you\'re in an open area.');
+      } else {
+        _showErrorSnackbar('Failed to get GPS location: ${e.toString()}');
+      }
+    } finally {
+      setState(() {
+        _isGettingLocation = false;
+      });
+    }
+  }
+
+  void _cancelEdit() {
+    setState(() {
+      _isEditing = false;
+
+      _longitudeController.text = widget.controller.longitudeData.toString();
+      _latitudeController.text = widget.controller.latitudeData.toString();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: <Widget>[
-            Expanded(
-              flex: 2,
-              child: Text(
-                "Your Current\nLocation               :   ",
-                style: TextStyle(fontSize: 14.rt(context)),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isFront = !_isFront;
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12.rr(context)),
-                  ),
-                  width: ResponsiveUtil.isIPad(context)
-                      ? MediaQuery.of(context).size.width * 0.4
-                      : MediaQuery.of(context).size.width * 0.5,
-                  height: MediaQuery.of(context).size.height * 0.15,
-                  child: _isFront ? _buildFront() : _buildBack(),
+    return Container(
+      padding: EdgeInsets.all(16.rp(context)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(16.rr(context)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: <Widget>[
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Current Location",
+                      style: TextStyle(
+                        fontSize: 16.rt(context),
+                        fontWeight: FontWeight.w600,
+                        color: textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Tap to view details",
+                      style: TextStyle(
+                        fontSize: 12.rt(context),
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+              Expanded(
+                flex: 3,
+                child: GestureDetector(
+                  onTap:
+                      (_isEditing || _isUpdatingAddress || _isGettingLocation)
+                          ? null
+                          : () {
+                              setState(() {
+                                _isFront = !_isFront;
+                              });
+                            },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(12.rr(context)),
+                      border: Border.all(
+                        color: _isEditing ? colorAccent : borderColor,
+                        width: _isEditing ? 2 : 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    width: ResponsiveUtil.isIPad(context)
+                        ? MediaQuery.of(context).size.width * 0.4
+                        : MediaQuery.of(context).size.width * 0.5,
+                    height: MediaQuery.of(context).size.height * 0.15,
+                    child: _isFront ? _buildFront() : _buildBack(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_isFront) _buildEditControls(),
+        ],
+      ),
     );
   }
 
   Widget _buildFront() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: EdgeInsets.all(12.rp(context)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.location_on, color: colorAccent, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                "Coordinates",
+                style: TextStyle(
+                  fontSize: 12.rt(context),
+                  fontWeight: FontWeight.w600,
+                  color: colorAccent,
+                ),
+              ),
+              if (_isGettingLocation) ...[
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_isGettingLocation) ...[
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Getting current location...",
+                      style: TextStyle(
+                        fontSize: 10.rt(context),
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            _buildCoordinateField(
+              label: "Longitude",
+              controller: _longitudeController,
+              focusNode: _longitudeFocus,
+              onSubmitted: (_) =>
+                  FocusScope.of(context).requestFocus(_latitudeFocus),
+              value: widget.controller.longitudeData.toString(),
+            ),
+            const SizedBox(height: 6),
+            _buildCoordinateField(
+              label: "Latitude",
+              controller: _latitudeController,
+              focusNode: _latitudeFocus,
+              onSubmitted: (_) => _toggleEditMode(),
+              value: widget.controller.latitudeData.toString(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCoordinateField({
+    required String label,
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required Function(String) onSubmitted,
+    required String value,
+  }) {
+    return Row(
       children: [
-        Padding(
-          padding: EdgeInsets.all(6.rp(context)),
+        SizedBox(
+          width: 65,
           child: Text(
-            "Longitude: ${widget.controller.longitudeData}",
+            "$label:",
             style: TextStyle(
-                fontSize: 14.rt(context), fontWeight: FontWeight.w600),
+              fontSize: 11.rt(context),
+              fontWeight: FontWeight.w500,
+              color: textSecondary,
+            ),
           ),
         ),
-        Padding(
-          padding: EdgeInsets.all(6.rp(context)),
-          child: Text(
-            "Latitude: ${widget.controller.latitudeData}",
-            style: TextStyle(
-                fontSize: 14.rt(context), fontWeight: FontWeight.w600),
-          ),
+        Expanded(
+          child: _isEditing
+              ? SizedBox(
+                  height: 28,
+                  child: TextFormField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true),
+                    style: TextStyle(
+                      fontSize: 11.rt(context),
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: const BorderSide(color: borderColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: BorderSide(color: colorAccent, width: 2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: const BorderSide(color: borderColor),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    textInputAction: label == "Latitude"
+                        ? TextInputAction.done
+                        : TextInputAction.next,
+                    onFieldSubmitted: onSubmitted,
+                  ),
+                )
+              : Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: surfaceColor,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: borderColor.withOpacity(0.5)),
+                  ),
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 11.rt(context),
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                  ),
+                ),
         ),
       ],
     );
   }
 
   Widget _buildBack() {
-    return Padding(
-      padding: EdgeInsets.all(8.rp(context)),
-      child: Text(
-        widget.controller.addressDetail,
-        maxLines: 3,
-        style: TextStyle(fontSize: 14.rt(context), fontWeight: FontWeight.w600),
+    return Container(
+      padding: EdgeInsets.all(12.rp(context)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.place, color: colorAccent, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                "Address",
+                style: TextStyle(
+                  fontSize: 12.rt(context),
+                  fontWeight: FontWeight.w600,
+                  color: colorAccent,
+                ),
+              ),
+              if (_isUpdatingAddress) ...[
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: _isUpdatingAddress
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(colorAccent),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Updating address...",
+                          style: TextStyle(
+                            fontSize: 10.rt(context),
+                            color: textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Text(
+                    widget.controller.addressDetail,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.rt(context),
+                      fontWeight: FontWeight.w500,
+                      color: textPrimary,
+                      height: 1.3,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditControls() {
+    return Container(
+      margin: EdgeInsets.only(top: 16.rp(context)),
+      padding: EdgeInsets.all(12.rp(context)),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12.rr(context)),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            "Location Controls",
+            style: TextStyle(
+              fontSize: 13.rt(context),
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (!_isEditing) ...[
+            _buildModernButton(
+              onPressed: _toggleEditMode,
+              icon: Icons.edit_location,
+              label: 'Edit Coordinates',
+              color: colorAccent,
+              isFullWidth: true,
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildModernButton(
+                    onPressed: (_isUpdatingAddress || _isGettingLocation)
+                        ? null
+                        : _toggleEditMode,
+                    icon: (_isUpdatingAddress || _isGettingLocation)
+                        ? Icons.hourglass_empty
+                        : Icons.save,
+                    label: (_isUpdatingAddress || _isGettingLocation)
+                        ? 'Saving...'
+                        : 'Save',
+                    color: (_isUpdatingAddress || _isGettingLocation)
+                        ? Colors.grey
+                        : successColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildModernButton(
+                    onPressed: (_isUpdatingAddress || _isGettingLocation)
+                        ? null
+                        : _cancelEdit,
+                    icon: Icons.close,
+                    label: 'Cancel',
+                    color: (_isUpdatingAddress || _isGettingLocation)
+                        ? Colors.grey
+                        : errorColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildModernButton(
+                    onPressed: (_isUpdatingAddress || _isGettingLocation)
+                        ? null
+                        : _getCurrentGPSLocation,
+                    icon: _isGettingLocation
+                        ? Icons.gps_fixed
+                        : Icons.my_location,
+                    label: _isGettingLocation ? 'Getting GPS...' : 'Use GPS',
+                    color: (_isUpdatingAddress || _isGettingLocation)
+                        ? Colors.grey
+                        : const Color(0xFF2196F3),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernButton({
+    required VoidCallback? onPressed,
+    required IconData icon,
+    required String label,
+    required Color color,
+    bool isFullWidth = false,
+  }) {
+    return SizedBox(
+      width: isFullWidth ? double.infinity : null,
+      height: 36,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.rt(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -1065,65 +1799,73 @@ class FormActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        right: 16.rp(context),
-        left: 16.rp(context),
-        bottom: 16.rp(context),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(right: 8.rp(context)),
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12.rp(context)),
-                  side: BorderSide(
-                    color: colorAccent,
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final additionalPadding = bottomPadding > 0 ? bottomPadding : 16.0;
+
+    return Container(
+      color: colorNetral,
+      child: Padding(
+        padding: EdgeInsets.only(
+          right: 16.rp(context),
+          left: 16.rp(context),
+          top: 16.rp(context),
+          bottom: 16.rp(context),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: 8.rp(context)),
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
+                    side: BorderSide(
+                      color: colorAccent,
+                      width: 2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.rr(context)),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.rr(context)),
-                  ),
-                ),
-                onPressed: _handlePreviewOrUpdate,
-                child: Obx(() => Text(
-                      controller.isEditMode.value ? 'Update' : 'Preview',
-                      style: TextStyle(
-                        color: colorAccent,
-                        fontSize: 16.rt(context),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: 8.rp(context)),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorAccent,
-                  foregroundColor: colorNetral,
-                  padding: EdgeInsets.symmetric(vertical: 12.rp(context)),
-                  elevation: 2.rs(context),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.rr(context)),
-                  ),
-                ),
-                onPressed: _handleSubmit,
-                child: Text(
-                  'Submit',
-                  style: TextStyle(
-                    fontSize: 16.rt(context),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  onPressed: _handlePreviewOrUpdate,
+                  child: Obx(() => Text(
+                        controller.isEditMode.value ? 'Update' : 'Preview',
+                        style: TextStyle(
+                          color: colorAccent,
+                          fontSize: 16.rt(context),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )),
                 ),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(left: 8.rp(context)),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorAccent,
+                    foregroundColor: colorNetral,
+                    padding: EdgeInsets.symmetric(vertical: 16.rp(context)),
+                    elevation: 4.rs(context),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.rr(context)),
+                    ),
+                  ),
+                  onPressed: _handleSubmit,
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(
+                      fontSize: 16.rt(context),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

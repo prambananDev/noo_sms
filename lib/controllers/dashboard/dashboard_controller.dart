@@ -1,5 +1,3 @@
-// ignore_for_file: empty_catches
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
@@ -70,6 +68,11 @@ class DashboardController extends GetxController {
         "title": "Order\nTracking",
         "svgPath": "assets/icons/order_tracking _icon.svg",
         "route": "/order_dashboard"
+      },
+      {
+        "title": "Mobile\nApproval",
+        "svgPath": "assets/icons/approve.svg",
+        "route": "/sales_approve"
       },
     ];
   }
@@ -146,15 +149,28 @@ class DashboardController extends GetxController {
   Future<void> _clearRememberedCredentials() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Clear username, password, and remember me flag
-    await prefs.remove('username');
-    await prefs.remove('password');
-    await prefs.setBool('rememberMe', false);
+    bool shouldRememberMe = prefs.getBool('rememberMe') ?? false;
+    String? savedUsername;
+    String? savedPassword;
 
-    // Also clear any authentication tokens
+    if (shouldRememberMe) {
+      savedUsername = prefs.getString('username');
+      savedPassword = prefs.getString('password');
+    }
+
     await prefs.remove('token');
     await prefs.remove('userToken');
     await prefs.remove('scs_token');
+
+    if (!shouldRememberMe) {
+      await prefs.remove('username');
+      await prefs.remove('password');
+      await prefs.remove('rememberMe');
+    } else if (savedUsername != null && savedPassword != null) {
+      await prefs.setString('username', savedUsername);
+      await prefs.setString('password', savedPassword);
+      await prefs.setBool('rememberMe', true);
+    }
   }
 
   Future<Map<String, String>> _preserveLocationData() async {

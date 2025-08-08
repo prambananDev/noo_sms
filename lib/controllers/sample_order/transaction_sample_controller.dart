@@ -125,7 +125,7 @@ class TransactionSampleController extends GetxController
     );
     update();
     await loadPurpose();
-
+    await _loadDept();
     update();
   }
 
@@ -140,7 +140,7 @@ class TransactionSampleController extends GetxController
   void changeSelectCustomer(IdAndValue<String>? selectedChoice) {
     customerNameInputPageDropdownStateRx.value.selectedChoice = selectedChoice;
     checkAddItemStatus();
-    // loadDistrChannel();
+    loadDistrChannel();
     update();
     if (selectedChoice?.id == 'prospect') {
       validateProspectFields();
@@ -253,26 +253,85 @@ class TransactionSampleController extends GetxController
     update();
   }
 
-  // void loadDistrChannel() async {
-  //   var urlGetDistr = "http://sms.prb.co.id/sample/SampleDistChannel";
-  //   final response = await http.get(Uri.parse(urlGetDistr));
-  //   var listData = jsonDecode(response.body);
+  _loadDept() async {
+    const String urlGetDept = "http://sms.prb.co.id/sample/SampleDept";
 
-  //   List<IdAndValue<String>> mappedList =
-  //       listData.map<IdAndValue<String>>((element) {
-  //     return IdAndValue<String>(
-  //       id: element["Value"].toString(),
-  //       value: element["Text"],
-  //     );
-  //   }).toList();
-  //   distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
-  //     choiceList: mappedList,
-  //     selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
-  //     loadingState: 2,
-  //   );
+    deptList.value = InputPageDropdownState<IdAndValue<String>>(
+      choiceList: [],
+      selectedChoice: null,
+      loadingState: 1,
+    );
+    update();
 
-  //   update();
-  // }
+    final response = await http.get(
+      Uri.parse(urlGetDept),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      final listData = jsonDecode(response.body);
+
+      if (listData == null || listData is! List) {
+        throw Exception('Invalid response format');
+      }
+
+      List<IdAndValue<String>> mappedList = listData
+          .where((element) =>
+              element != null &&
+              element["Value"] != null &&
+              element["Text"] != null)
+          .map<IdAndValue<String>>((element) {
+        return IdAndValue<String>(
+          id: element["Value"].toString(),
+          value: element["Text"].toString(),
+        );
+      }).toList();
+
+      deptList.value = InputPageDropdownState<IdAndValue<String>>(
+        choiceList: mappedList,
+        selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+        loadingState: 2,
+      );
+
+      if (mappedList.isEmpty) {
+        Get.snackbar(
+          'Info',
+          'No departments available',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } else {
+      throw Exception('Server error: ${response.statusCode}');
+    }
+
+    update();
+  }
+
+  void loadDistrChannel() async {
+    var urlGetDistr = "http://sms.prb.co.id/sample/SampleDistChannel";
+    final response = await http.get(Uri.parse(urlGetDistr));
+    var listData = jsonDecode(response.body);
+
+    List<IdAndValue<String>> mappedList =
+        listData.map<IdAndValue<String>>((element) {
+      return IdAndValue<String>(
+        id: element["Value"].toString(),
+        value: element["Text"],
+      );
+    }).toList();
+    distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(
+      choiceList: mappedList,
+      selectedChoice: mappedList.isNotEmpty ? mappedList[0] : null,
+      loadingState: 2,
+    );
+
+    update();
+  }
 
   void changeDistributionChannel(IdAndValue<String>? newValue) {
     distributionChannelList.value = InputPageDropdownState<IdAndValue<String>>(

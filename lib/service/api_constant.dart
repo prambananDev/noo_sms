@@ -2,6 +2,7 @@ var apiSMS = "http://sms-api.prb.co.id/api";
 var apiSCS = "http://api-scs.prb.co.id";
 var apiNOO = "http://noo.prb.co.id:8893/api/";
 var apiOrder = "http://api-ordertracking.prb.co.id/api";
+var apiSalesOrder = "http://mapproval.prb.co.id";
 
 // class UrlAPI {
 //   // Base URLs

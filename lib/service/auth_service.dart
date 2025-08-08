@@ -368,13 +368,26 @@ class AuthService {
         );
       }
 
+      // Store remember me data before clearing
+      bool rememberMe = prefs.getBool('rememberMe') ?? false;
+      String? savedUsername = prefs.getString('username');
+      String? savedPassword = prefs.getString('password');
+
       Box userBox = await Hive.openBox('users');
       await userBox.clear();
 
       Box scsBox = await Hive.openBox('scs_users');
       await scsBox.clear();
 
+      // Clear all preferences
       await prefs.clear();
+
+      // Restore remember me data if it was enabled
+      if (rememberMe && savedUsername != null && savedPassword != null) {
+        await prefs.setBool('rememberMe', true);
+        await prefs.setString('username', savedUsername);
+        await prefs.setString('password', savedPassword);
+      }
 
       return true;
     } catch (e) {

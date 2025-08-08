@@ -2,9 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/service/auth_controller.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  String appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _getAppVersion();
+  }
+
+  Future<void> _getAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      appVersion = packageInfo.version;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,6 +207,17 @@ class LoginView extends StatelessWidget {
                                 ),
                               ),
                       )),
+                  SizedBox(height: screenHeight * 0.05),
+                  Center(
+                    child: Text(
+                      'Version $appVersion',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: const Color(0xFF333333).withOpacity(0.7),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),

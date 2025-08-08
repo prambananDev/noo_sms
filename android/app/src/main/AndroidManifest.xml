@@ -22,6 +22,7 @@
             <data android:scheme="file" />
         </intent>
     </queries>
+    <uses-sdk android:targetSdkVersion="35" />
     <application
         android:label="PRB Super"
         android:name="${applicationName}"

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:noo_sms/assets/global.dart';
 import 'package:noo_sms/service/api_constant.dart';
 import 'package:noo_sms/models/approval_status.dart';
 import 'package:noo_sms/models/noo_approval.dart';
@@ -98,7 +99,7 @@ class ApprovalController extends GetxController {
     if (!_approvalControllers.containsKey(id)) {
       initializeApprovalControllers(id);
     }
-    _approvalControllers[id]!['selectedPaymentTerm'] = value; // Store as String
+    _approvalControllers[id]!['selectedPaymentTerm'] = value;
     update(['payment-terms-$id']);
   }
 
@@ -201,23 +202,28 @@ class ApprovalController extends GetxController {
     }
   }
 
-  Future<void> processApproval(BuildContext context, int id, String remark,
-      bool ignoreCreditLimitValidation) async {
+  Future<void> processApproval(
+    BuildContext context,
+    int id,
+    String remark,
+  ) async {
     try {
-      if (!ignoreCreditLimitValidation) {
-        final creditLimitText = getCreditLimitController(id).text;
-        final isValid = validateCreditLimitForSubmission(id, creditLimitText);
-        if (!isValid) {
-          Get.snackbar(
-            'Validation Error',
-            'Please correct the credit limit value.',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return;
-        }
-      }
-
+      // // Only validate if user has entered a value
+      // if (!ignoreCreditLimitValidation) {
+      //   final creditLimitText = getCreditLimitController(id).text;
+      //   if (creditLimitText.isNotEmpty) {
+      //     final isValid = validateCreditLimitForSubmission(id, creditLimitText);
+      //     if (!isValid) {
+      //       Get.snackbar(
+      //         'Validation Error',
+      //         'Please correct the credit limit value.',
+      //         backgroundColor: Colors.red,
+      //         colorText: Colors.white,
+      //       );
+      //       return;
+      //     }
+      //   }
+      // }
       final signatureController = getSignatureController(id);
       final signature = await signatureController.toPngBytes();
 
@@ -235,7 +241,22 @@ class ApprovalController extends GetxController {
 
       await uploadSignature(signature);
 
-      final apiCreditLimit = formatForApi(getCreditLimitController(id).text);
+      String apiCreditLimit;
+      String paymentTermId;
+
+      final creditLimitText = getCreditLimitController(id).text;
+      if (creditLimitText.isEmpty) {
+        apiCreditLimit = currentApproval.value.creditLimit?.toString() ?? '0';
+      } else {
+        apiCreditLimit = formatForApi(creditLimitText);
+      }
+
+      final selectedPaymentTerm = getSelectedPaymentTerm(id);
+      if (selectedPaymentTerm.isEmpty) {
+        paymentTermId = currentApproval.value.paymentTerm ?? '';
+      } else {
+        paymentTermId = selectedPaymentTerm;
+      }
 
       final url = '${apiNOO}Approval?'
           'id=$id&'
@@ -243,7 +264,7 @@ class ApprovalController extends GetxController {
           'approveBy=${idUser.value}&'
           'ApprovedSignature=${signatureApprovalFromServer.value}&'
           'Remark=$remark&'
-          'paymentId=${getSelectedPaymentTerm(id)}&'
+          'paymentId=$paymentTermId&'
           'creditLimit=$apiCreditLimit';
 
       final response = await makeApiCall(url, method: 'POST');
@@ -255,16 +276,9 @@ class ApprovalController extends GetxController {
           Get.back();
         }
 
-        Get.snackbar(
-          'Success',
-          'Approval processed successfully',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        _showNavigationLoading('Completing Approve...');
 
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(milliseconds: 1500));
         await Get.offNamed('/noo_approve');
       } else {
         if (Get.isDialogOpen ?? false) {
@@ -284,8 +298,8 @@ class ApprovalController extends GetxController {
   bool validateCreditLimitForSubmission(int id, String value) {
     try {
       if (value.isEmpty) {
-        setCreditLimitError(id, 'Credit limit is required');
-        return false;
+        setCreditLimitError(id, '');
+        return true;
       }
 
       final cleanValue = value.replaceAll('.', '');
@@ -302,24 +316,12 @@ class ApprovalController extends GetxController {
         }
       }
 
-      // No errors
       setCreditLimitError(id, '');
       return true;
     } catch (e) {
       setCreditLimitError(id, 'Invalid number format');
       return false;
     }
-  }
-
-  Future<void> showSuccessMessage(String message) async {
-    Get.snackbar(
-      'Success',
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
   }
 
   void handleError(String message, String errorDetail) {
@@ -342,21 +344,76 @@ class ApprovalController extends GetxController {
 
     final response = await makeApiCall(url, method: 'POST');
 
-    showSuccessMessage('Rejection processed successfully');
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
+    }
+
     if (response.statusCode == 200) {
       _disposeApprovalControllers(id);
 
-      Get.back();
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      _showNavigationLoading('Completing Rejection...');
 
-      showSuccessMessage('Rejection processed successfully');
+      await Future.delayed(const Duration(milliseconds: 1500));
 
-      await Future.delayed(const Duration(milliseconds: 500));
-      Get.toNamed('/noo_pending');
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      await Get.offNamed('/noo_pending');
     } else {
       Get.back();
       handleError('Failed to process approval',
           'Server returned ${response.statusCode}');
     }
+  }
+
+  void _showNavigationLoading(String message) {
+    Get.dialog(
+      WillPopScope(
+        onWillPop: () async => false,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(colorAccent),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please wait...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   Future<void> uploadSignature(Uint8List signature) async {
@@ -436,8 +493,9 @@ class ApprovalController extends GetxController {
 
     try {
       final cleanValue = value.replaceAll('.', '');
+
       if (cleanValue.isEmpty) {
-        setCreditLimitError(id, 'Credit limit is required');
+        setCreditLimitError(id, '');
         return;
       }
 
@@ -491,7 +549,7 @@ class ApprovalController extends GetxController {
     } on TimeoutException {
       return http.Response(
         '{"error": "Request timed out"}',
-        408, // 408 is Request Timeout
+        408,
         headers: {'content-type': 'application/json'},
       );
     } catch (e) {

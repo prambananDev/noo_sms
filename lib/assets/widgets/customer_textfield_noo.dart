@@ -13,6 +13,7 @@ class CustomTextField extends StatelessWidget {
   final int? maxLength;
   final bool isCurrency;
   final String? prefix;
+  final bool readOnly;
 
   const CustomTextField({
     super.key,
@@ -24,6 +25,7 @@ class CustomTextField extends StatelessWidget {
     this.maxLength,
     this.isCurrency = false,
     this.prefix,
+    this.readOnly = false,
   });
 
   @override
@@ -44,6 +46,7 @@ class CustomTextField extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16.rt(context),
                 fontWeight: FontWeight.w500,
+                color: readOnly ? Colors.grey.shade600 : Colors.black,
               ),
             ),
           ),
@@ -52,6 +55,7 @@ class CustomTextField extends StatelessWidget {
             flex: 2,
             child: TextFormField(
               controller: controller,
+              readOnly: readOnly,
               keyboardType: isCurrency
                   ? TextInputType.number
                   : (isKTP || isNPWP)
@@ -61,19 +65,20 @@ class CustomTextField extends StatelessWidget {
               autovalidateMode: AutovalidateMode.onUserInteraction,
               textAlign: TextAlign.left,
               maxLength: (isKTP || isNPWP) ? ktpNPWPLength : maxLength,
-              inputFormatters: _getInputFormatters(isKTP, isNPWP),
+              inputFormatters:
+                  readOnly ? [] : _getInputFormatters(isKTP, isNPWP),
               style: TextStyle(
                 fontSize: 16.rt(context),
-                color: Colors.black,
+                color: readOnly ? Colors.grey.shade600 : Colors.black,
               ),
               decoration: InputDecoration(
                 prefixText: isCurrency ? prefix : null,
                 prefixStyle: TextStyle(
                   fontSize: 16.rt(context),
-                  color: Colors.black,
+                  color: readOnly ? Colors.grey.shade600 : Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
-                hintText: _getHintText(isKTP, isNPWP),
+                hintText: readOnly ? null : _getHintText(isKTP, isNPWP),
                 hintStyle: TextStyle(
                   fontSize: 16.rt(context),
                   color: Colors.grey.shade600,
@@ -81,47 +86,66 @@ class CustomTextField extends StatelessWidget {
                 isDense: true,
                 contentPadding: EdgeInsets.only(bottom: 8.rp(context)),
                 counterText: '',
+                filled: readOnly,
+                fillColor: readOnly ? Colors.grey.shade100 : null,
                 border: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.grey.shade300,
+                    color:
+                        readOnly ? Colors.grey.shade400 : Colors.grey.shade300,
                     width: 1.rs(context),
                   ),
                 ),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.grey.shade300,
+                    color:
+                        readOnly ? Colors.grey.shade400 : Colors.grey.shade300,
+                    width: 1.0,
+                  ),
+                ),
+                disabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade400,
                     width: 1.0,
                   ),
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: colorAccent,
+                    color: readOnly ? Colors.grey.shade400 : colorAccent,
                     width: 1.0,
                   ),
                 ),
                 errorBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
-                    width: 1.rs(context),
+                    width: 2,
                   ),
                 ),
                 focusedErrorBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: Colors.red.shade400,
-                    width: 2.rs(context),
+                    width: 2,
                   ),
                 ),
                 errorStyle: TextStyle(
                   fontSize: 12.rt(context),
                   color: Colors.red.shade400,
                 ),
+                suffixIcon: readOnly
+                    ? Icon(
+                        Icons.lock_outline,
+                        size: 16.rs(context),
+                        color: Colors.grey.shade500,
+                      )
+                    : null,
               ),
-              validator: (value) => _validateInput(
-                value,
-                isKTP,
-                isNPWP,
-                ktpNPWPLength,
-              ),
+              validator: readOnly
+                  ? null
+                  : (value) => _validateInput(
+                        value,
+                        isKTP,
+                        isNPWP,
+                        ktpNPWPLength,
+                      ),
             ),
           ),
         ],

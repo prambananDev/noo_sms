@@ -50,7 +50,7 @@ class PreviewDialog extends StatelessWidget {
                     const SizedBox(height: 12),
                     buildRow("Customer Name",
                         controller.customerNameController.text),
-                    buildRow("Brand Name", controller.brandNameController.text),
+                    buildRow("Alias Name", controller.brandNameController.text),
                     buildRow("Contact Person",
                         controller.contactPersonController.text),
                     buildRow("KTP", controller.ktpController.text),

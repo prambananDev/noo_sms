@@ -29,6 +29,87 @@ class StatusPage extends StatelessWidget {
               ),
             ],
           ),
+          floatingActionButton: Obx(() {
+            bool showBackToTop = controller.data.length > 10;
+
+            bool showBackToBottom = true;
+            // if (controller.scrollController.hasClients) {
+            //   final currentPosition =
+            //       controller.scrollController.position.pixels;
+            //   final maxPosition =
+            //       controller.scrollController.position.maxScrollExtent;
+            //   showBackToBottom = currentPosition <
+            //       maxPosition - 300; // Show when 100px from bottom
+            // }
+
+            return Stack(
+              children: [
+                Positioned(
+                  bottom: 70,
+                  right: 0,
+                  child: AnimatedScale(
+                    scale: showBackToTop ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: FloatingActionButton(
+                        mini: true,
+                        backgroundColor: colorAccent.withOpacity(0.7),
+                        heroTag: "backToTop",
+                        onPressed: showBackToTop
+                            ? () {
+                                controller.scrollController.animateTo(
+                                  0,
+                                  duration: const Duration(milliseconds: 800),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            : null,
+                        child: Icon(
+                          Icons.keyboard_arrow_up,
+                          color: colorNetral,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 16,
+                  right: 0,
+                  child: AnimatedScale(
+                    scale: showBackToBottom ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: FloatingActionButton(
+                        mini: true,
+                        backgroundColor: colorAccent.withOpacity(0.7),
+                        heroTag: "backToBottom",
+                        onPressed: showBackToBottom
+                            ? () {
+                                controller.scrollController.animateTo(
+                                  controller.scrollController.position
+                                      .maxScrollExtent,
+                                  duration: const Duration(milliseconds: 800),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            : null,
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          color: colorNetral,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
         );
       },
     );
@@ -141,18 +222,18 @@ class StatusPage extends StatelessWidget {
                                     vertical: 8.rp(context),
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
+                                    color: colorAccent.withOpacity(0.1),
                                     borderRadius:
                                         BorderRadius.circular(8.rr(context)),
                                     border: Border.all(
-                                      color: Colors.blue,
-                                      width: 1.rs(context),
+                                      color: colorAccent,
+                                      width: 1,
                                     ),
                                   ),
                                   child: Text(
                                     "Load More",
                                     style: TextStyle(
-                                      color: Colors.blue,
+                                      color: colorAccent,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16.rt(context),
                                     ),
@@ -196,8 +277,9 @@ class StatusPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildCustomerInfoRow(item, context),
-              _buildDateStatusRow(item, context),
+              _buildAXInfo(item, context),
               _buildStatusInfo(item, context),
+              _buildDateStatusRow(item, context),
               _buildStatusItem(item, context),
               SizedBox(
                 height: ResponsiveUtil.isIPad(context)
@@ -328,6 +410,40 @@ class StatusPage extends StatelessWidget {
     }
   }
 
+  Widget _buildAXInfo(NOOModel item, BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(6.rp(context)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
+            child: Text(
+              "Customer ID Ax : ",
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: ResponsiveUtil.isIPad(context) ? 3 : 2,
+            child: Text(
+              item.custId,
+              style: TextStyle(
+                fontSize: 16.rt(context),
+                color: Colors.black,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatusInfo(NOOModel item, BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(6.rp(context)),
@@ -337,7 +453,7 @@ class StatusPage extends StatelessWidget {
           Expanded(
             flex: ResponsiveUtil.isIPad(context) ? 2 : 1,
             child: Text(
-              "CustStatus : ",
+              "Customer Status : ",
               style: TextStyle(
                 fontSize: 16.rt(context),
                 color: Colors.black,

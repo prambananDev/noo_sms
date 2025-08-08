@@ -50,9 +50,7 @@ class StatusController extends GetxController {
           'authorization': 'Basic ${base64Encode(utf8.encode('test:test456'))}'
         },
       );
-      debugPrint(Uri.parse(
-              '${apiNOO}FindNOObyUserId/${userId.value}?page=${page.value}')
-          .toString());
+
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = jsonDecode(response.body);
         final newData = jsonData

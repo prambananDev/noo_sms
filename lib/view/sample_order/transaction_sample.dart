@@ -192,12 +192,22 @@ class _TransactionPageState extends State<TransactionSample> {
   }
 
   Widget customCard(int index, TransactionSampleController inputPagePresenter) {
+    if (inputPagePresenter.promotionProgramInputStateRx.value
+            .promotionProgramInputState.isEmpty ||
+        index < 0 ||
+        index >=
+            inputPagePresenter.promotionProgramInputStateRx.value
+                .promotionProgramInputState.length) {
+      return Container();
+    }
+
     PromotionProgramInputState promotionProgramInputState = inputPagePresenter
         .promotionProgramInputStateRx.value.promotionProgramInputState[index];
 
-    while (valuesControllers.length <= index) {
-      valuesControllers.add(TextEditingController(text: "1"));
-      qtyFocusNodes.add(FocusNode());
+    _initializeControllersAndNodes(index);
+
+    if (index >= valuesControllers.length || index >= qtyFocusNodes.length) {
+      return Container();
     }
 
     TextEditingController values = valuesControllers[index];
@@ -257,8 +267,8 @@ class _TransactionPageState extends State<TransactionSample> {
               color: Colors.grey,
             ),
             value: promotionProgramInputState
-                .productTransactionPageDropdownState!
-                .selectedChoiceWrapper
+                .productTransactionPageDropdownState
+                ?.selectedChoiceWrapper
                 ?.value,
             items: promotionProgramInputState
                 .productTransactionPageDropdownState?.choiceListWrapper?.value
@@ -405,6 +415,16 @@ class _TransactionPageState extends State<TransactionSample> {
         ],
       ),
     );
+  }
+
+  void _initializeControllersAndNodes(int index) {
+    while (valuesControllers.length <= index) {
+      valuesControllers.add(TextEditingController(text: "1"));
+    }
+
+    while (qtyFocusNodes.length <= index) {
+      qtyFocusNodes.add(FocusNode());
+    }
   }
 
   Widget addOrder(TransactionSampleController inputPagePresenter) {

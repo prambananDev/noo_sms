@@ -112,6 +112,8 @@ class ApprovedViewState extends State<ApprovedView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInfoRow("Customer Name", approval.custName),
+              // _buildInfoRow("Customer ID AX", approval.custId),
+              // _buildInfoRow("Customer Status", approval.custStatus),
               _buildInfoRow(
                   "Date", _formatDate(approval.createdDate.toString())),
               _buildStatusRow("Status", approval.status),

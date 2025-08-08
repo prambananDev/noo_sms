@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:noo_sms/models/edit_cust_noo_model.dart';
 import 'package:noo_sms/service/api_constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditCustRepository {
   static final EditCustRepository _instance = EditCustRepository._internal();
@@ -26,6 +27,9 @@ class EditCustRepository {
     final String cacheKey =
         'edit_cust_page_${page.value}_size_${pageSize.value}';
 
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? username = preferences.getString("username");
+
     if (_editCustCache.containsKey(cacheKey) &&
         _cacheTimestamps.containsKey(cacheKey) &&
         DateTime.now().difference(_cacheTimestamps[cacheKey]!).inMilliseconds <
@@ -34,7 +38,7 @@ class EditCustRepository {
     }
 
     final url = Uri.parse(
-        "${apiNOO}AXCustTable?page=${page.value}&pageSize=${pageSize.value}");
+        "${apiNOO}AXCustTable?page=${page.value}&pageSize=${pageSize.value}&username=$username");
 
     final response = await _client.get(
       url,

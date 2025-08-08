@@ -71,7 +71,7 @@ class ApprovedController extends GetxController {
   Future<void> getStatusDetail(int id) async {
     isLoading(true);
     var urlGetApprovalDetail = "${apiNOO}NOOCustTables/$id";
-    debugPrint(urlGetApprovalDetail);
+
     final response = await http.get(Uri.parse(urlGetApprovalDetail),
         headers: <String, String>{'authorization': basicAuth});
     (response.body);

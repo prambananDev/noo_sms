@@ -6,7 +6,7 @@ import 'package:search_choices/search_choices.dart';
 class CustomDropdownField extends StatelessWidget {
   final String label;
   final String? value;
-  final String validationText;
+  final String? validationText;
   final List<Map<String, dynamic>> items;
   final ValueChanged<String?> onChanged;
   final bool? search;
@@ -16,7 +16,7 @@ class CustomDropdownField extends StatelessWidget {
     super.key,
     required this.label,
     required this.value,
-    required this.validationText,
+    this.validationText,
     required this.items,
     required this.onChanged,
     this.search,

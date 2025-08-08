@@ -50,6 +50,9 @@ class DistrictDropdownField extends StatelessWidget {
                 case 'main':
                   isLoading = formController.isDistrictsLoading.value;
                   break;
+                case 'tax':
+                  isLoading = formController.isDistrictsTaxLoading.value;
+                  break;
                 case 'delivery':
                   isLoading = formController.isDistrictsDeliveryLoading.value;
                   break;
@@ -81,6 +84,9 @@ class DistrictDropdownField extends StatelessWidget {
                 case 'main':
                   districtsList = formController.districts;
                   break;
+                case 'tax':
+                  districtsList = formController.districtsTax;
+                  break;
                 case 'delivery':
                   districtsList = formController.districtsDelivery;
                   break;
@@ -95,6 +101,9 @@ class DistrictDropdownField extends StatelessWidget {
               switch (addressType) {
                 case 'main':
                   currentCityId = formController.selectedCityId;
+                  break;
+                case 'tax':
+                  currentCityId = formController.selectedCityTax;
                   break;
                 case 'delivery':
                   currentCityId = formController.selectedCityIdDelivery;
@@ -137,7 +146,6 @@ class DistrictDropdownField extends StatelessWidget {
                 );
               }
 
-              // Return search dropdown or regular dropdown based on search parameter
               return (search ?? false)
                   ? _buildSearchDropdown(context, districtsList)
                   : _buildRegularDropdown(context, districtsList);
@@ -247,12 +255,10 @@ class DistrictDropdownField extends StatelessWidget {
     List<int> shownIndexes = [];
 
     if (keyword.isEmpty) {
-      // Return all items if search is empty
       for (int i = 0; i < items.length; i++) {
         shownIndexes.add(i);
       }
     } else {
-      // Filter based on keyword
       for (int i = 0; i < items.length; i++) {
         String? itemValue = items[i].value;
         if (itemValue != null &&

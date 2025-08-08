@@ -172,6 +172,9 @@ class ProvinceDropdownField extends StatelessWidget {
           case 'main':
             formController.selectedProvinceId = provinceId;
             break;
+          case 'tax':
+            formController.selectedProvinceIdTax = provinceId;
+            break;
           case 'delivery':
             formController.selectedProvinceIdDelivery = provinceId;
             break;

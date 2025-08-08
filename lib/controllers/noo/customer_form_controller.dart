@@ -38,6 +38,7 @@ class CustomerFormController extends GetxController
   final NOOModel? editData;
   final _picker = ImagePicker();
   final useCompanyAddressForDelivery = false.obs;
+  final useKtpAddressForCompany = false.obs;
   final useCompanyAddressForDelivery2 = false.obs;
   final useCompanyAddressForTax = false.obs;
   final RxBool useKtpAddressForTax = false.obs;
@@ -263,6 +264,7 @@ class CustomerFormController extends GetxController
   final TextEditingController faxController = TextEditingController();
   final TextEditingController emailAddressController = TextEditingController();
   final TextEditingController websiteController = TextEditingController();
+
   final TextEditingController companyNameController = TextEditingController();
   final TextEditingController streetCompanyController = TextEditingController();
   final TextEditingController kelurahanController = TextEditingController();
@@ -271,8 +273,16 @@ class CustomerFormController extends GetxController
   final TextEditingController provinceController = TextEditingController();
   final TextEditingController countryController = TextEditingController();
   final TextEditingController zipCodeController = TextEditingController();
+
   final TextEditingController taxNameController = TextEditingController();
   final TextEditingController taxStreetController = TextEditingController();
+  final TextEditingController countryTaxController = TextEditingController();
+  final TextEditingController provinceTaxController = TextEditingController();
+  final TextEditingController cityTaxController = TextEditingController();
+  final TextEditingController kecamatanTaxController = TextEditingController();
+  final TextEditingController kelurahanTaxController = TextEditingController();
+  final TextEditingController zipCodeTaxController = TextEditingController();
+
   final TextEditingController deliveryNameController = TextEditingController();
   final TextEditingController streetCompanyControllerDelivery =
       TextEditingController();
@@ -340,18 +350,22 @@ class CustomerFormController extends GetxController
   String? competitorImageUrl;
 
   String? cityApiValueMain;
+  String? cityApiValueTax;
   String? cityApiValueDelivery;
   String? cityApiValueDelivery2;
 
   String? cityDisplayValueMain;
+  String? cityDisplayValueTax;
   String? cityDisplayValueDelivery;
   String? cityDisplayValueDelivery2;
 
   String? selectedCityId;
+  String? selectedCityTax;
   String? selectedCityIdDelivery;
   String? selectedCityIdDelivery2;
 
   String? districtValueMain;
+  String? districtValueTax;
   String? districtValueDelivery;
   String? districtValueDelivery2;
 
@@ -366,16 +380,22 @@ class CustomerFormController extends GetxController
   final isCitiesDeliveryLoading = false.obs;
   String? selectedProvinceIdDelivery;
 
+  RxList<Map<String, dynamic>> citiesTax = <Map<String, dynamic>>[].obs;
+  final isCitiesTaxLoading = false.obs;
+  String? selectedProvinceIdTax;
+
   RxList<Map<String, dynamic>> citiesDelivery2 = <Map<String, dynamic>>[].obs;
   final isCitiesDelivery2Loading = false.obs;
   String? selectedProvinceIdDelivery2;
 
   RxList<Map<String, dynamic>> districts = <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> districtsTax = <Map<String, dynamic>>[].obs;
   RxList<Map<String, dynamic>> districtsDelivery = <Map<String, dynamic>>[].obs;
   RxList<Map<String, dynamic>> districtsDelivery2 =
       <Map<String, dynamic>>[].obs;
 
   final isDistrictsLoading = false.obs;
+  final isDistrictsTaxLoading = false.obs;
   final isDistrictsDeliveryLoading = false.obs;
   final isDistrictsDelivery2Loading = false.obs;
 
@@ -1031,6 +1051,7 @@ class CustomerFormController extends GetxController
     selectedPriceGroup = null;
     selectedPaymentMode = null;
     useCompanyAddressForDelivery.value = false;
+    useKtpAddressForCompany.value = false;
     useCompanyAddressForDelivery2.value = false;
     useCompanyAddressForTax.value = false;
     useKtpAddressForTax.value = false;
@@ -1179,13 +1200,17 @@ class CustomerFormController extends GetxController
     final salesSignaturePoints = signatureSalesController.points;
     final customerSignaturePoints = signatureCustomerController.points;
 
-    if (salesSignaturePoints.isEmpty &&
-        signatureSalesFromServer.value.isEmpty) {
+    bool hasSalesSignature = salesSignaturePoints.isNotEmpty ||
+        signatureSalesFromServer.value.isNotEmpty;
+
+    if (!hasSalesSignature) {
       missingDocuments.add('Sales Signature');
     }
 
-    if (customerSignaturePoints.isEmpty &&
-        signatureCustomersFromServer.value.isEmpty) {
+    bool hasCustomerSignature = customerSignaturePoints.isNotEmpty ||
+        signatureCustomersFromServer.value.isNotEmpty;
+
+    if (!hasCustomerSignature) {
       missingDocuments.add('Customer Signature');
     }
 
@@ -1194,16 +1219,16 @@ class CustomerFormController extends GetxController
     }
 
     if (brandNameController.text.isEmpty) {
-      missingFields.add('Brand Name');
+      missingFields.add('Alias Name');
     }
 
     if (selectedSalesOffice == null) {
       missingFields.add('Sales Office');
     }
 
-    if (selectedCustomerGroup == null) {
-      missingFields.add('Customer Group');
-    }
+    // if (selectedCustomerGroup == null) {
+    //   missingFields.add('Customer Group');
+    // }
 
     if (selectedBusinessUnit == null) {
       missingFields.add('Business Unit');
@@ -1265,6 +1290,10 @@ class CustomerFormController extends GetxController
       missingFields.add('Phone');
     }
 
+    if (emailAddressController.text.isEmpty) {
+      missingFields.add('Email Address');
+    }
+
     if (companyNameController.text.isEmpty) {
       missingFields.add('Company Name');
     }
@@ -1307,6 +1336,30 @@ class CustomerFormController extends GetxController
 
     if (taxStreetController.text.isEmpty) {
       missingFields.add('Tax Address');
+    }
+
+    if (kelurahanTaxController.text.isEmpty) {
+      missingFields.add('Kelurahan (Tax Address)');
+    }
+
+    if (provinceTaxController.text.isEmpty) {
+      missingFields.add('Provinsi (Tax Address)');
+    }
+
+    if (cityTaxController.text.isEmpty) {
+      missingFields.add('City (Tax Address)');
+    }
+
+    if (kecamatanTaxController.text.isEmpty) {
+      missingFields.add('Kecamatan (Tax Address)');
+    }
+
+    if (countryTaxController.text.isEmpty) {
+      missingFields.add('Country (Tax Address)');
+    }
+
+    if (zipCodeTaxController.text.isEmpty) {
+      missingFields.add('ZIP Code (Tax Address)');
     }
 
     if (deliveryNameController.text.isEmpty) {
@@ -1454,6 +1507,9 @@ class CustomerFormController extends GetxController
           case 'delivery':
             selectedProvinceIdDelivery = provinceId;
             break;
+          case 'tax':
+            selectedProvinceIdTax = provinceId;
+            break;
           case 'delivery2':
             selectedProvinceIdDelivery2 = provinceId;
             break;
@@ -1480,6 +1536,9 @@ class CustomerFormController extends GetxController
             break;
           case 'delivery':
             selectedProvinceIdDelivery = provinceId;
+            break;
+          case 'tax':
+            selectedProvinceIdTax = provinceId;
             break;
           case 'delivery2':
             selectedProvinceIdDelivery2 = provinceId;
@@ -1509,6 +1568,10 @@ class CustomerFormController extends GetxController
         isCitiesDeliveryLoading.value = true;
         citiesDelivery.clear();
         break;
+      case 'tax':
+        isCitiesTaxLoading.value = true;
+        citiesTax.clear();
+        break;
       case 'delivery2':
         isCitiesDelivery2Loading.value = true;
         citiesDelivery2.clear();
@@ -1522,6 +1585,9 @@ class CustomerFormController extends GetxController
         break;
       case 'delivery':
         currentCityText = cityControllerDelivery.text;
+        break;
+      case 'tax':
+        currentCityText = cityTaxController.text;
         break;
       case 'delivery2':
         currentCityText = cityControllerDelivery2.text;
@@ -1544,6 +1610,9 @@ class CustomerFormController extends GetxController
           case 'delivery':
             citiesDelivery.value = List<Map<String, dynamic>>.from(data);
             break;
+          case 'tax':
+            citiesTax.value = List<Map<String, dynamic>>.from(data);
+            break;
           case 'delivery2':
             citiesDelivery2.value = List<Map<String, dynamic>>.from(data);
             break;
@@ -1557,6 +1626,9 @@ class CustomerFormController extends GetxController
               break;
             case 'delivery':
               cityController = cityControllerDelivery;
+              break;
+            case 'tax':
+              cityController = cityTaxController;
               break;
             case 'delivery2':
               cityController = cityControllerDelivery2;
@@ -1584,6 +1656,9 @@ class CustomerFormController extends GetxController
           break;
         case 'delivery':
           isCitiesDeliveryLoading.value = false;
+          break;
+        case 'tax':
+          isCitiesTaxLoading.value = false;
           break;
         case 'delivery2':
           isCitiesDelivery2Loading.value = false;
@@ -1616,6 +1691,12 @@ class CustomerFormController extends GetxController
         controller = cityControllerDelivery;
         if (cityId != null) selectedCityIdDelivery = cityId;
         break;
+      case 'tax':
+        cityApiValueTax = apiValue;
+        cityDisplayValueTax = actualDisplayValue;
+        controller = cityTaxController;
+        if (cityId != null) selectedCityTax = cityId;
+        break;
       case 'delivery2':
         cityApiValueDelivery2 = apiValue;
         cityDisplayValueDelivery2 = actualDisplayValue;
@@ -1641,6 +1722,8 @@ class CustomerFormController extends GetxController
         return cityApiValueMain;
       case 'delivery':
         return cityApiValueDelivery;
+      case 'tax':
+        return cityApiValueTax;
       case 'delivery2':
         return cityApiValueDelivery2;
       default:
@@ -1671,6 +1754,9 @@ class CustomerFormController extends GetxController
         break;
       case 'delivery':
         citiesList = citiesDelivery;
+        break;
+      case 'tax':
+        citiesList = citiesTax;
         break;
       case 'delivery2':
         citiesList = citiesDelivery2;
@@ -1739,6 +1825,9 @@ class CustomerFormController extends GetxController
             districtsDelivery.value =
                 List<Map<String, dynamic>>.from(cachedData);
             break;
+          case 'tax':
+            districtsTax.value = List<Map<String, dynamic>>.from(cachedData);
+            break;
           case 'delivery2':
             districtsDelivery2.value =
                 List<Map<String, dynamic>>.from(cachedData);
@@ -1757,6 +1846,10 @@ class CustomerFormController extends GetxController
         isDistrictsDeliveryLoading.value = true;
         districtsDelivery.clear();
         break;
+      case 'tax':
+        isDistrictsTaxLoading.value = true;
+        districtsTax.clear();
+        break;
       case 'delivery2':
         isDistrictsDelivery2Loading.value = true;
         districtsDelivery2.clear();
@@ -1770,6 +1863,9 @@ class CustomerFormController extends GetxController
         break;
       case 'delivery':
         currentDistrictText = kecamatanControllerDelivery.value.text;
+        break;
+      case 'tax':
+        currentDistrictText = kecamatanTaxController.text;
         break;
       case 'delivery2':
         currentDistrictText = kecamatanControllerDelivery2.value.text;
@@ -1794,6 +1890,9 @@ class CustomerFormController extends GetxController
           case 'delivery':
             districtsDelivery.value = List<Map<String, dynamic>>.from(data);
             break;
+          case 'tax':
+            districtsTax.value = List<Map<String, dynamic>>.from(data);
+            break;
           case 'delivery2':
             districtsDelivery2.value = List<Map<String, dynamic>>.from(data);
             break;
@@ -1807,6 +1906,9 @@ class CustomerFormController extends GetxController
               break;
             case 'delivery':
               districtController = kecamatanControllerDelivery.value;
+              break;
+            case 'tax':
+              districtController = kecamatanTaxController;
               break;
             case 'delivery2':
               districtController = kecamatanControllerDelivery2.value;
@@ -1835,6 +1937,9 @@ class CustomerFormController extends GetxController
         case 'delivery':
           isDistrictsDeliveryLoading.value = false;
           break;
+        case 'tax':
+          isDistrictsTaxLoading.value = false;
+          break;
         case 'delivery2':
           isDistrictsDelivery2Loading.value = false;
           break;
@@ -1850,6 +1955,9 @@ class CustomerFormController extends GetxController
       case 'delivery':
         districtValueDelivery = value;
         break;
+      case 'tax':
+        districtValueTax = value;
+        break;
       case 'delivery2':
         districtValueDelivery2 = value;
         break;
@@ -1862,6 +1970,8 @@ class CustomerFormController extends GetxController
         return districtValueMain;
       case 'delivery':
         return districtValueDelivery;
+      case 'tax':
+        return districtValueTax;
       case 'delivery2':
         return districtValueDelivery2;
       default:
@@ -1879,6 +1989,9 @@ class CustomerFormController extends GetxController
         break;
       case 'delivery':
         districtsList = districtsDelivery;
+        break;
+      case 'tax':
+        districtsList = districtsTax;
         break;
       case 'delivery2':
         districtsList = districtsDelivery2;
@@ -1931,6 +2044,9 @@ class CustomerFormController extends GetxController
         break;
       case 'delivery':
         citiesList = citiesDelivery;
+        break;
+      case 'tax':
+        citiesList = citiesTax;
         break;
       case 'delivery2':
         citiesList = citiesDelivery2;
@@ -2130,6 +2246,14 @@ class CustomerFormController extends GetxController
         {
           "Name": taxNameController.text,
           "StreetName": taxStreetController.text,
+          "Kelurahan": kelurahanTaxController.text,
+          "Kecamatan": kecamatanTaxController.text,
+          "City": cityTaxController.text,
+          "Country": countryTaxController.text,
+          "State": provinceTaxController.text,
+          "ZipCode": zipCodeController.text.isEmpty
+              ? 0
+              : int.tryParse(zipCodeController.text) ?? 0
         }
       ],
       "DeliveryAddresses": [
@@ -2144,7 +2268,7 @@ class CustomerFormController extends GetxController
           "State": provinceControllerDelivery.text,
           "ZipCode": zipCodeControllerDelivery.text.isEmpty
               ? 0
-              : int.tryParse(zipCodeController.text) ?? 0
+              : int.tryParse(zipCodeControllerDelivery.text) ?? 0
         },
         {
           "Name": deliveryNameController2.text,
@@ -2156,7 +2280,7 @@ class CustomerFormController extends GetxController
           "State": provinceControllerDelivery2.text,
           "ZipCode": zipCodeControllerDelivery2.text.isEmpty
               ? 0
-              : int.tryParse(zipCodeController.text) ?? 0
+              : int.tryParse(zipCodeControllerDelivery2.text) ?? 0
         }
       ]
     };
@@ -2185,19 +2309,21 @@ class CustomerFormController extends GetxController
         barrierDismissible: false,
       );
 
-      final requestBody = await prepareSubmitData();
-      final response = await _sendRequest(requestBody);
-      const encoder = JsonEncoder.withIndent('  ');
-      final prettyBody = encoder.convert(requestBody);
-
-      final directory = Directory.systemTemp;
-      final file = File('${directory.path}/debug_request_body.json');
-      await file.writeAsString(prettyBody);
-
       if (!await _uploadSignatures()) {
         Get.back();
+        Get.snackbar(
+          'Error',
+          'Failed to upload signatures. Please try again.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
         return;
       }
+
+      final requestBody = await prepareSubmitData();
+
+      final response = await _sendRequest(requestBody);
 
       Get.back();
 
@@ -2211,7 +2337,6 @@ class CustomerFormController extends GetxController
         );
 
         _disposeAllResources();
-
         Get.offAllNamed('/noo', arguments: {'initialIndex': 1});
       } else {
         throw Exception('Failed to submit customer: ${response.body}');
@@ -2221,9 +2346,10 @@ class CustomerFormController extends GetxController
         Get.back();
       }
 
+      debugPrint('Submit Error: $e');
       Get.snackbar(
         'Error',
-        'Submit failed. Please Try Again.',
+        'Submit failed. Please try again.',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
@@ -2387,28 +2513,63 @@ class CustomerFormController extends GetxController
   }
 
   Future<bool> _uploadSignatures() async {
-    final signatureSalesImage = await signatureSalesController.toPngBytes();
-    final signatureCustomerImage =
-        await signatureCustomerController.toPngBytes();
+    try {
+      final salesSignaturePoints = signatureSalesController.points;
+      final customerSignaturePoints = signatureCustomerController.points;
 
-    if (signatureSalesImage == null || signatureCustomerImage == null) {
-      Get.snackbar('Error', 'Please provide both signatures');
+      if (isEditMode.value) {
+        if (signatureSalesFromServer.value.isNotEmpty &&
+            signatureCustomersFromServer.value.isNotEmpty) {
+          return true;
+        }
+      }
+
+      final signatureSalesImage = await signatureSalesController.toPngBytes();
+      final signatureCustomerImage =
+          await signatureCustomerController.toPngBytes();
+
+      if (salesSignaturePoints.isEmpty &&
+          signatureSalesFromServer.value.isEmpty) {
+        Get.snackbar('Error', 'Please provide Sales signature');
+        return false;
+      }
+
+      if (customerSignaturePoints.isEmpty &&
+          signatureCustomersFromServer.value.isEmpty) {
+        Get.snackbar('Error', 'Please provide Customer signature');
+        return false;
+      }
+
+      if (signatureSalesImage == null || signatureCustomerImage == null) {
+        Get.snackbar('Error',
+            'Failed to process signatures. Please try drawing them again.');
+        return false;
+      }
+
+      await _handleSignature(
+        'SIGNATURESALES',
+        signatureSalesImage,
+        signatureSalesFromServer,
+      );
+
+      await _handleSignature(
+        'SIGNATURECUSTOMER',
+        signatureCustomerImage,
+        signatureCustomersFromServer,
+      );
+
+      if (signatureSalesFromServer.value.isEmpty ||
+          signatureCustomersFromServer.value.isEmpty) {
+        Get.snackbar('Error', 'Signature upload incomplete. Please try again.');
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint('Error in _uploadSignatures: $e');
+      Get.snackbar('Error', 'Failed to upload signatures: ${e.toString()}');
       return false;
     }
-
-    await _handleSignature(
-      'SIGNATURESALES',
-      signatureSalesImage,
-      signatureSalesFromServer,
-    );
-
-    await _handleSignature(
-      'SIGNATURECUSTOMER',
-      signatureCustomerImage,
-      signatureCustomersFromServer,
-    );
-
-    return true;
   }
 
   Future<http.Response> _sendRequest(Map<String, dynamic> requestBody) async {
@@ -3047,23 +3208,45 @@ class CustomerFormController extends GetxController
 
   Future<void> _handleSignature(
       String type, Uint8List imageFile, RxString imageFromServerState) async {
-    final username = await _getUsername();
-    if (username == null) return;
+    try {
+      final username = await _getUsername();
+      if (username == null) {
+        throw Exception('Username not found');
+      }
 
-    final newFile =
-        "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_$username.jpg";
-    final uri = Uri.parse("${apiNOO}Upload");
+      final newFile =
+          "${type}_${DateFormat("ddMMyyyy_hhmmss").format(DateTime.now())}_$username.jpg";
 
-    final request = http.MultipartRequest("POST", uri)
-      ..files.add(
-          http.MultipartFile.fromBytes('file', imageFile, filename: newFile));
+      final uri = Uri.parse("${apiNOO}Upload");
 
-    final response = await http.Response.fromStream(await request.send());
+      final request = http.MultipartRequest("POST", uri)
+        ..headers.addAll({'authorization': basicAuth})
+        ..files.add(
+            http.MultipartFile.fromBytes('file', imageFile, filename: newFile));
 
-    if (response.statusCode == 200) {
-      imageFromServerState.value = response.body.replaceAll("\"", "");
-    } else {
-      throw Exception('Failed to upload signature: ${response.statusCode}');
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException('Signature upload timeout');
+        },
+      );
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final serverFileName = response.body.replaceAll("\"", "").trim();
+
+        if (serverFileName.isEmpty) {
+          throw Exception('Server returned empty filename');
+        }
+
+        imageFromServerState.value = serverFileName;
+      } else {
+        throw Exception(
+            'Upload failed with status: ${response.statusCode}, body: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Failed to upload $type: ${e.toString()}');
     }
   }
 

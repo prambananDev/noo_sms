@@ -125,68 +125,71 @@ class CustomerFormState extends State<CustomerForm>
         return Scaffold(
           backgroundColor: colorNetral,
           resizeToAvoidBottomInset: true,
-          body: GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(FocusNode());
-            },
-            child: Column(
-              children: [
-                _buildHeaderSection(),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      BasicInfoSection(controller: controller),
-                      CompanyAndTaxSection(controller: controller),
-                      DeliveryAddressSection(controller: controller),
-                      DocumentsSection(controller: controller),
-                    ],
+          body: SafeArea(
+            child: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+              },
+              child: Column(
+                children: [
+                  _buildHeaderSection(),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        BasicInfoSection(controller: controller),
+                        CompanyAndTaxSection(controller: controller),
+                        DeliveryAddressSection(controller: controller),
+                        DocumentsSection(controller: controller),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(4, (index) {
-                      return GestureDetector(
-                        onTap: () {
-                          _tabController.animateTo(index);
-                          setState(() {
-                            _currentIndex = index;
-                          });
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeInOut,
-                          width: _currentIndex == index ? 24.0 : 8.0,
-                          height: 8.0,
-                          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(4.0),
-                            color: _currentIndex == index
-                                ? colorAccent
-                                : Colors.grey.withOpacity(0.5),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(4, (index) {
+                        return GestureDetector(
+                          onTap: () {
+                            _tabController.animateTo(index);
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut,
+                            width: _currentIndex == index ? 24.0 : 8.0,
+                            height: 8.0,
+                            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(4.0),
+                              color: _currentIndex == index
+                                  ? colorAccent
+                                  : Colors.grey.withOpacity(0.5),
+                            ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   ),
-                ),
-                FormActionButtons(
-                  controller: controller,
-                  onSubmit: () => controller.handleSubmit(),
-                  onPreview: () {
-                    if (controller.validateRequiredDocuments()) {
-                      final previewController =
-                          Get.isRegistered<PreviewController>()
-                              ? Get.find<PreviewController>()
-                              : Get.put(PreviewController());
-                      Get.dialog(PreviewDialog(controller: previewController));
-                    }
-                  },
-                ),
-              ],
+                  FormActionButtons(
+                    controller: controller,
+                    onSubmit: () => controller.handleSubmit(),
+                    onPreview: () {
+                      if (controller.validateRequiredDocuments()) {
+                        final previewController =
+                            Get.isRegistered<PreviewController>()
+                                ? Get.find<PreviewController>()
+                                : Get.put(PreviewController());
+                        Get.dialog(
+                            PreviewDialog(controller: previewController));
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           floatingActionButton: _buildFloatingActionButtons(),

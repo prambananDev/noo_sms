@@ -453,7 +453,7 @@ class CustomerDetailFormController extends GetxController {
     }
 
     if (brandNameController.text.isEmpty) {
-      missingFields.add('Brand Name');
+      missingFields.add('Alias Name');
     }
 
     if (selectedSalesOffice == null) {
@@ -561,7 +561,7 @@ class CustomerDetailFormController extends GetxController {
     }
 
     if (kelurahanTaxController.text.isEmpty) {
-      missingFields.add('Kelurahan (CompTAXany Address)');
+      missingFields.add('Kelurahan (TAX Address)');
     }
 
     if (countryTaxController.text.isEmpty) {

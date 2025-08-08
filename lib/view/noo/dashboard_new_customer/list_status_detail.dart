@@ -208,7 +208,7 @@ class StatusDetailView extends GetView<StatusDetailController> {
       children: [
         _buildSectionTitle('Basic Information', context),
         _buildDetailRow('Customer Name', data.custName, context),
-        _buildDetailRow('Brand Name', data.brandName, context),
+        _buildDetailRow('Alias Name', data.brandName, context),
         _buildDetailRow('Sales Office', data.salesOffice, context),
         _buildDetailRow('Customer Group', data.customerGroup, context),
         _buildDetailRow('Business Unit', data.businessUnit, context),
@@ -338,6 +338,33 @@ class StatusDetailView extends GetView<StatusDetailController> {
           SizedBox(height: 16.rs(context)),
           _buildSectionSubtitle('Delivery Address', context),
           _buildAddressDetails(data.deliveryAddresses!, context),
+          SizedBox(height: 4.rs(context)),
+          Row(
+            children: [
+              Text(
+                "Latitude : ",
+                style: TextStyle(
+                    fontSize: 16.rt(context), fontWeight: FontWeight.bold),
+              ),
+              Text(
+                data.lat!,
+                style: TextStyle(fontSize: 16.rt(context)),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Text(
+                "Longitude : ",
+                style: TextStyle(
+                    fontSize: 16.rt(context), fontWeight: FontWeight.bold),
+              ),
+              Text(
+                data.long!,
+                style: TextStyle(fontSize: 16.rt(context)),
+              ),
+            ],
+          ),
         ],
         if (data.taxAddresses != null) ...[
           SizedBox(height: 16.rs(context)),

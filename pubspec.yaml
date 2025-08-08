@@ -1,7 +1,7 @@
 name: noo_sms
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.1
+version: 1.0.4
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -40,6 +40,7 @@ dependencies:
   whatsapp_unilink: ^2.1.0
   google_maps_flutter: ^2.10.1
   file_picker: ^10.2.0
+  package_info_plus: ^8.3.0
 
 
 dev_dependencies:
@@ -63,4 +64,5 @@ flutter:
     - assets/icons/catalog.svg
     - assets/icons/edit_table.svg
     - assets/icons/order_tracking _icon.svg
+    - assets/icons/approve.svg
     

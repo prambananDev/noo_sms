@@ -126,7 +126,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       children: [
         _buildSectionTitle('Basic Information'),
         detailRow("Customer Name", controller.currentApproval.value.custName),
-        detailRow("Brand Name", controller.currentApproval.value.brandName),
+        detailRow("Alias Name", controller.currentApproval.value.brandName),
         detailRow("Sales Office", controller.currentApproval.value.salesOffice),
         detailRow(
             "Customer Group", controller.currentApproval.value.customerGroup),
@@ -328,7 +328,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Payment and Credit'),
+          _buildSectionTitle('Payment and Credit (Optional)'),
           GetBuilder<ApprovalController>(
             builder: (controller) {
               return FutureBuilder<int>(
@@ -343,7 +343,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Credit Limit',
+                          'Credit Limit (Optional - leave empty to keep current value)',
                           style: TextStyle(
                             fontSize: 16,
                             color: colorBlack,
@@ -370,8 +370,10 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
                               );
                             }),
                           ],
-                          decoration: const InputDecoration(
-                            hintText: "Enter credit limit",
+                          decoration: InputDecoration(
+                            hintText: "Enter credit limit (optional)",
+                            helperText:
+                                "Current: ${controller.currentApproval.value.creditLimit?.toString() ?? 'Not set'}",
                           ),
                         ),
                         GetBuilder<ApprovalController>(
@@ -383,7 +385,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
                               return Padding(
                                 padding: const EdgeInsets.only(top: 4.0),
                                 child: Text(
-                                  "Credit limit range ${controller.formatCurrency(controller.minCreditLimit.value)} - ${controller.formatCurrency(controller.maxCreditLimit.value)}",
+                                  "Valid range: ${controller.formatCurrency(controller.minCreditLimit.value)} - ${controller.formatCurrency(controller.maxCreditLimit.value)}",
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
@@ -430,43 +432,37 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
                               final selectedTerm =
                                   controller.getSelectedPaymentTerm(widget.id!);
                               final paymentTermsList = controller.paymentTerms;
-                              final bool isValidSelection =
-                                  selectedTerm.isEmpty ||
-                                      paymentTermsList.contains(selectedTerm);
-
-                              if (!isValidSelection &&
-                                  controller.paymentTerms.isNotEmpty) {
-                                Future.microtask(() {
-                                  controller.setSelectedPaymentTerm(
-                                      widget.id!,
-                                      controller.paymentTerms.isNotEmpty
-                                          ? controller.paymentTerms.first
-                                          : "");
-                                });
-                              }
+                              final currentPaymentTerm =
+                                  controller.currentApproval.value.paymentTerm;
 
                               return DropdownButtonFormField<String>(
-                                value:
-                                    isValidSelection && selectedTerm.isNotEmpty
-                                        ? selectedTerm
-                                        : null,
-                                items: paymentTermsList.map((term) {
-                                  return DropdownMenuItem(
-                                    value: term,
-                                    child: Text(term),
-                                  );
-                                }).toList(),
+                                value: selectedTerm.isNotEmpty &&
+                                        paymentTermsList.contains(selectedTerm)
+                                    ? selectedTerm
+                                    : null,
+                                items: [
+                                  const DropdownMenuItem(
+                                    value: "",
+                                    child: Text("Keep current value"),
+                                  ),
+                                  ...paymentTermsList.map((term) {
+                                    return DropdownMenuItem(
+                                      value: term,
+                                      child: Text(term),
+                                    );
+                                  }).toList(),
+                                ],
                                 onChanged: (value) {
-                                  if (value != null) {
-                                    controller.setSelectedPaymentTerm(
-                                        widget.id!, value);
-                                  }
+                                  controller.setSelectedPaymentTerm(
+                                      widget.id!, value ?? "");
                                 },
-                                decoration: const InputDecoration(
-                                  labelText: 'Payment Terms',
-                                  contentPadding: EdgeInsets.symmetric(
+                                decoration: InputDecoration(
+                                  labelText: 'Payment Terms (Optional)',
+                                  helperText:
+                                      "Current: ${currentPaymentTerm ?? 'Not set'}",
+                                  contentPadding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 12),
-                                  border: OutlineInputBorder(),
+                                  border: const OutlineInputBorder(),
                                 ),
                               );
                             },
@@ -555,6 +551,11 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Are you sure you want to approve this request?'),
+              const SizedBox(height: 8),
+              const Text(
+                'Note: Credit limit and payment terms are optional. Leave empty to keep current values.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
               if (isLoading)
                 const Padding(
                   padding: EdgeInsets.only(top: 8.0),
@@ -575,35 +576,33 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
             ),
             TextButton(
               onPressed: () async {
-                final creditLimitText =
-                    controller.getCreditLimitController(widget.id!).text;
+                Navigator.of(context).pop();
 
-                // Use captured loading state
-                bool skipValidation = isLoading;
+                // final creditLimitText = "1";
+                // // controller.getCreditLimitController(widget.id!).text;
 
-                if (!skipValidation) {
-                  bool isValid = controller.validateCreditLimitForSubmission(
-                      widget.id!, creditLimitText);
+                // bool skipValidation = isLoading;
 
-                  if (!isValid) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please correct the credit limit value'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-                }
+                // if (!skipValidation && creditLimitText.isNotEmpty) {
+                //   bool isValid = controller.validateCreditLimitForSubmission(
+                //       widget.id!, creditLimitText);
+
+                //   if (!isValid) {
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(
+                //         content: Text('Please correct the credit limit value'),
+                //         backgroundColor: Colors.red,
+                //       ),
+                //     );
+                //     return;
+                //   }
+                // }
 
                 await controller.processApproval(
                   context,
                   widget.id!,
                   controller.getRemarkController(widget.id!).text,
-                  skipValidation,
                 );
-
-                Navigator.of(context).pop();
               },
               child: Text(
                 'Approve',
@@ -622,20 +621,30 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Rejection'),
-          content: const Text('Are you sure you want to reject this request?'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Are you sure you want to reject this request?'),
+              SizedBox(height: 8),
+            ],
+          ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: colorAccent),
+              ),
             ),
             TextButton(
               onPressed: () async {
-                await controller.processReject(
-                    widget.id!, controller.remarkController.text);
-
                 Navigator.of(context).pop();
+
+                final remarkText =
+                    controller.getRemarkController(widget.id!).text;
+
+                await controller.processReject(widget.id!, remarkText);
               },
               child: const Text(
                 'Reject',

@@ -340,9 +340,9 @@ class BasicInfoSection extends StatelessWidget {
             inputType: TextInputType.text,
           ),
           CustomTextField(
-            label: "Brand Name",
+            label: "Alias Name",
             controller: controller.brandNameController,
-            validationText: "Please enter Brand Name",
+            validationText: "Please enter Alias Name",
             capitalization: TextCapitalization.words,
             inputType: TextInputType.text,
           ),

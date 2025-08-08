@@ -11,6 +11,7 @@ import 'package:noo_sms/controllers/sfa/sfa_controller.dart';
 import 'package:noo_sms/models/noo_user.dart';
 import 'package:noo_sms/models/order_tracking_model.dart';
 import 'package:noo_sms/models/user.dart';
+import 'package:noo_sms/view/approval/sales_approval/sales_approve_screen.dart';
 import 'package:noo_sms/view/dashboard/dashboard.dart';
 import 'package:noo_sms/view/dashboard/dashboard_asset_submission.dart';
 import 'package:noo_sms/view/dashboard/dashboard_noo.dart';
@@ -282,6 +283,7 @@ class MainAppState extends State<MainApp> with WidgetsBindingObserver {
       ..._buildNOORoutes(),
       ..._buildSFARoutes(),
       ..._buildOrderTrackingRoutes(),
+      ..._buildApproveRoutes(),
       ..._buildOtherRoutes(),
     ];
   }
@@ -411,6 +413,41 @@ class MainAppState extends State<MainApp> with WidgetsBindingObserver {
       GetPage(
         name: '/order_dashboard',
         page: () => const DashboardOrderTrack(),
+        transition: Transition.fadeIn,
+      ),
+      GetPage(
+        name: '/order_detail',
+        page: () => DetailOrderTrack(),
+        transition: Transition.fadeIn,
+      ),
+      GetPage(
+        name: '/profile_order',
+        page: () => const ProfileOrderPage(),
+        transition: Transition.fadeIn,
+      ),
+      GetPage(
+        name: '/order_history_tracking',
+        page: () => const OrderHistoryPage(),
+        transition: Transition.fadeIn,
+      ),
+      GetPage(
+        name: '/delivery-detail',
+        page: () => const DeliveryDetailPage(),
+        transition: Transition.fadeIn,
+      ),
+      GetPage(
+        name: '/order-tracking-detail',
+        page: () => const OrderTrackingDetailPage(),
+        transition: Transition.fadeIn,
+      ),
+    ];
+  }
+
+  List<GetPage> _buildApproveRoutes() {
+    return [
+      GetPage(
+        name: '/sales_approve',
+        page: () => SalesApproveScreen(),
         transition: Transition.fadeIn,
       ),
       GetPage(

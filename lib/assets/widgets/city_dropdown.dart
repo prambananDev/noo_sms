@@ -13,8 +13,7 @@ class CityDropdownField extends StatelessWidget {
   final String addressType;
   final bool autoOpenDropdown;
   final bool? search;
-  final String?
-      initialValue; // New parameter for initial value - can be from controller.text or manual input
+  final String? initialValue;
 
   const CityDropdownField({
     Key? key,
@@ -25,7 +24,7 @@ class CityDropdownField extends StatelessWidget {
     this.addressType = 'main',
     this.autoOpenDropdown = false,
     this.search,
-    this.initialValue, // Can be null, from controller.text, or manual string
+    this.initialValue,
   }) : super(key: key);
 
   @override
@@ -54,6 +53,9 @@ class CityDropdownField extends StatelessWidget {
               switch (addressType) {
                 case 'main':
                   isLoading = formController.isCitiesLoading.value;
+                  break;
+                case 'tax':
+                  isLoading = formController.isCitiesTaxLoading.value;
                   break;
                 case 'delivery':
                   isLoading = formController.isCitiesDeliveryLoading.value;
@@ -86,6 +88,9 @@ class CityDropdownField extends StatelessWidget {
                 case 'main':
                   citiesList = formController.cities;
                   break;
+                case 'tax':
+                  citiesList = formController.citiesTax;
+                  break;
                 case 'delivery':
                   citiesList = formController.citiesDelivery;
                   break;
@@ -100,6 +105,9 @@ class CityDropdownField extends StatelessWidget {
               switch (addressType) {
                 case 'main':
                   currentProvinceId = formController.selectedProvinceId;
+                  break;
+                case 'tax':
+                  currentProvinceId = formController.selectedProvinceIdTax;
                   break;
                 case 'delivery':
                   currentProvinceId = formController.selectedProvinceIdDelivery;
@@ -146,7 +154,6 @@ class CityDropdownField extends StatelessWidget {
                 );
               }
 
-              // Return search dropdown or regular dropdown based on search parameter
               return (search ?? false)
                   ? _buildSearchDropdown(context, citiesList)
                   : _buildRegularDropdown(context, citiesList);
@@ -245,7 +252,6 @@ class CityDropdownField extends StatelessWidget {
   }
 
   String? _getDropdownValue(RxList<Map<String, dynamic>> citiesList) {
-    // Priority 1: Use controller.text if it exists in cities list
     if (controller.text.isNotEmpty) {
       final controllerMatch = citiesList.firstWhereOrNull(
         (city) => city["Text"].toString() == controller.text,
@@ -255,14 +261,11 @@ class CityDropdownField extends StatelessWidget {
       }
     }
 
-    // Priority 2: Use initialValue if provided and valid
     if (initialValue != null && initialValue!.isNotEmpty) {
-      // Check if initialValue exists in the cities list
       final initialMatch = citiesList.firstWhereOrNull(
         (city) => city["Text"].toString() == initialValue,
       );
       if (initialMatch != null) {
-        // Also update the controller to match the initial value if it's different
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (controller.text != initialValue) {
             controller.text = initialValue!;
@@ -272,7 +275,6 @@ class CityDropdownField extends StatelessWidget {
       }
     }
 
-    // Priority 3: Use existing findBestCityMatch logic for fuzzy matching
     return _findBestCityMatch(citiesList);
   }
 
@@ -280,18 +282,19 @@ class CityDropdownField extends StatelessWidget {
     if (value != null) {
       final displayValue = value;
 
-      // Update the city value
       formController.setCityValue(addressType,
           apiValue: value,
           displayValue: displayValue,
           updateController: true,
           fetchDistrictsAfter: true);
 
-      // Only clear the district controller for the same address type
       TextEditingController? districtController;
       switch (addressType) {
         case 'main':
           districtController = formController.kecamatanController;
+          break;
+        case 'tax':
+          districtController = formController.kecamatanTaxController;
           break;
         case 'delivery':
           districtController = formController.kecamatanControllerDelivery.value;
@@ -306,7 +309,6 @@ class CityDropdownField extends StatelessWidget {
         districtController.clear();
       }
 
-      // Use a more targeted update instead of updating the entire controller
       formController.update([addressType]);
     }
   }
@@ -316,12 +318,10 @@ class CityDropdownField extends StatelessWidget {
     List<int> shownIndexes = [];
 
     if (keyword.isEmpty) {
-      // Return all items if search is empty
       for (int i = 0; i < items.length; i++) {
         shownIndexes.add(i);
       }
     } else {
-      // Filter based on keyword
       for (int i = 0; i < items.length; i++) {
         String? itemValue = items[i].value;
         if (itemValue != null &&

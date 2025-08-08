@@ -274,20 +274,6 @@ class EditCustScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16.rt(context)),
               ),
               SizedBox(height: 16.rs(context)),
-              ElevatedButton(
-                onPressed: () => controller.fetchCust(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorAccent,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.rp(context),
-                    vertical: 12.rp(context),
-                  ),
-                ),
-                child: Text(
-                  "Retry",
-                  style: TextStyle(fontSize: 16.rt(context)),
-                ),
-              ),
             ],
           ),
         );

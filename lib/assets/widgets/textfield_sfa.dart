@@ -44,13 +44,13 @@ class StableTextField extends StatelessWidget {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4.rr(context)),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4.rr(context)),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: Colors.grey,
             width: 1,
           ),

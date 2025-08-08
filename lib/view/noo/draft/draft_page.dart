@@ -62,7 +62,7 @@ class DraftPage extends GetView<DraftController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInfoRow("Customer Name", draft.custName),
-              _buildInfoRow("Brand Name", draft.brandName),
+              _buildInfoRow("Alias Name", draft.brandName),
               Align(
                 alignment: Alignment.bottomRight,
                 child: GestureDetector(

@@ -72,10 +72,10 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
                   controller.taxAddress.value,
                 )),
                 SizedBox(height: 16.rs(context)),
-                _buildCustomCard(_buildAddressSection(
-                  "Delivery Address",
-                  controller.deliveryAddress.value,
-                )),
+                _buildCustomCard(_buildAddressSectionDelivery(
+                    "Delivery Address",
+                    controller.deliveryAddress.value,
+                    controller.currentApproval.value)),
                 SizedBox(height: 16.rs(context)),
                 _buildCustomCard(_buildDocumentsSection()),
                 SizedBox(height: 16.rs(context)),
@@ -130,7 +130,7 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
           ),
         ),
         detailRow("Customer Name", controller.currentApproval.value.custName),
-        detailRow("Brand Name", controller.currentApproval.value.brandName),
+        detailRow("Alias Name", controller.currentApproval.value.brandName),
         detailRow("Sales Office", controller.currentApproval.value.salesOffice),
         detailRow(
             "Customer Group", controller.currentApproval.value.customerGroup),
@@ -163,7 +163,10 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
     );
   }
 
-  Widget _buildAddressSection(String title, Address address) {
+  Widget _buildAddressSection(
+    String title,
+    Address address,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -187,6 +190,37 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
         detailRow("Province", address.state),
         detailRow("Country", address.country),
         detailRow("ZIP Code", address.zipCode?.toString()),
+      ],
+    );
+  }
+
+  Widget _buildAddressSectionDelivery(
+      String title, Address address, ApprovalModel approve) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 16.rp(context)),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 18.rt(context),
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        detailRow("Name", address.name),
+        detailRow("Street Name", address.streetName),
+        detailRow("Village", address.kelurahan),
+        detailRow("Districts", address.kecamatan),
+        detailRow("City", address.city),
+        detailRow("Province", address.state),
+        detailRow("Country", address.country),
+        detailRow("ZIP Code", address.zipCode?.toString()),
+        detailRow("Latitude", approve.lat),
+        detailRow("Longitude", approve.long),
       ],
     );
   }
@@ -332,9 +366,9 @@ class ApprovalDetailViewState extends State<ApprovalDetailView> {
           Text(
             title,
             style: TextStyle(
-              fontSize: 16.rt(context),
-              color: Colors.grey,
-            ),
+                fontSize: 16.rt(context),
+                color: Colors.black,
+                fontWeight: FontWeight.bold),
           ),
           Text(
             value ?? '',
